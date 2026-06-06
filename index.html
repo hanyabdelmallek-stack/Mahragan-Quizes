@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Holy Cross Educational Game</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap');
+
+        :root {
+            --primary: #4A90E2;
+            --secondary: #FFB347;
+            --success: #7ED321;
+            --danger: #FF4757;
+            --bg: #F0F8FF;
+            --text: #2C3E50;
+            --card-bg: #FFFFFF;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-image: radial-gradient(circle at center, #ffffff 0%, #F0F8FF 100%);
+        }
+
+        /* Ribbon */
+        #ribbon {
+            background-color: var(--secondary);
+            color: #FFF;
+            width: 100%;
+            padding: 15px 0;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 900;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+        }
+
+        #music-btn {
+            background: #FFF;
+            color: var(--secondary);
+            border: none;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: transform 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        #music-btn:hover {
+            transform: scale(1.05);
+        }
+
+        /* Game Container */
+        #game-container {
+            background: var(--card-bg);
+            max-width: 800px;
+            width: 90%;
+            margin: 40px auto;
+            border-radius: 20px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            padding: 40px;
+            text-align: center;
+            position: relative;
+            transition: box-shadow 0.3s ease;
+            border: 4px solid var(--primary);
+        }
+
+        /* Warning Animation */
+        @keyframes gentleWarning {
+            0% { box-shadow: 0 0 0px var(--danger); border-color: var(--primary); }
+            50% { box-shadow: 0 0 30px var(--danger); border-color: var(--danger); }
+            100% { box-shadow: 0 0 0px var(--danger); border-color: var(--primary); }
+        }
+
+        .warning-state {
+            animation: gentleWarning 1s ease;
+        }
+
+        .difficulty-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+        .diff-easy { background: #e0f7fa; color: #00838f; }
+        .diff-medium { background: #fff3e0; color: #ef6c00; }
+        .diff-hard { background: #ffebee; color: #c62828; }
+
+        #question-text {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 30px;
+            line-height: 1.4;
+            color: var(--primary);
+        }
+
+        /* Options Grid */
+        #options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .option-btn {
+            background-color: var(--bg);
+            border: 3px solid var(--primary);
+            color: var(--text);
+            padding: 20px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Nunito', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 80px;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            background-color: var(--primary);
+            color: #FFF;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(74, 144, 226, 0.3);
+        }
+
+        .option-btn.correct {
+            background-color: var(--success) !important;
+            border-color: var(--success) !important;
+            color: #FFF !important;
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(126, 211, 33, 0.5);
+        }
+
+        .option-btn.wrong {
+            background-color: var(--danger) !important;
+            border-color: var(--danger) !important;
+            color: #FFF !important;
+            opacity: 0.7;
+            animation: shake 0.4s;
+        }
+
+        .option-btn:disabled {
+            cursor: not-allowed;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        /* Star Effects */
+        .star {
+            position: fixed;
+            font-size: 2rem;
+            pointer-events: none;
+            z-index: 1000;
+            animation: flyOut 1s ease-out forwards;
+        }
+
+        @keyframes flyOut {
+            0% { transform: translate(0, 0) scale(0.5); opacity: 1; }
+            100% { transform: translate(var(--tx), var(--ty)) scale(1.5) rotate(360deg); opacity: 0; }
+        }
+
+        /* Start / End Screens */
+        #start-screen, #end-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .big-btn {
+            background-color: var(--secondary);
+            color: #FFF;
+            border: none;
+            padding: 20px 40px;
+            font-size: 1.5rem;
+            font-weight: 900;
+            border-radius: 30px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(255, 179, 71, 0.4);
+            font-family: 'Nunito', sans-serif;
+        }
+
+        .big-btn:hover {
+            transform: translateY(-5px) scale(1.05);
+            background-color: #ff9f1a;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            #options-grid {
+                grid-template-columns: 1fr;
+            }
+            #question-text {
+                font-size: 1.4rem;
+            }
+            #ribbon {
+                font-size: 1.2rem;
+                flex-direction: column;
+                gap: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="ribbon" class="hidden">
+        <span id="progress-text">⭐ Question 1 of 30 ⭐</span>
+        <button id="music-btn" onclick="toggleMusic()">🎵 Play Music</button>
+    </div>
+
+    <div id="game-container">
+        
+        <!-- Start Screen -->
+        <div id="start-screen">
+            <h1 style="color: var(--primary); font-size: 2.5rem;">✝️ The Holy Cross Quest ✝️</h1>
+            <p style="font-size: 1.2rem; color: #666; margin-bottom: 30px;">
+                Welcome to the Sunday School challenge! Let's test your knowledge about the Holy Cross. <br><br>
+                <strong>Rules:</strong> Find the correct answer to move forward. If you guess wrong, the question stays until you get it right!
+            </p>
+            <button class="big-btn" onclick="startGame()">▶️ START GAME</button>
+        </div>
+
+        <!-- Question Screen -->
+        <div id="question-screen" class="hidden">
+            <div id="difficulty-badge" class="difficulty-badge">EASY</div>
+            <div id="question-text">Question goes here?</div>
+            <div id="options-grid">
+                <!-- Buttons injected via JS -->
+            </div>
+        </div>
+
+        <!-- End Screen -->
+        <div id="end-screen" class="hidden">
+            <h1 style="color: var(--success); font-size: 3rem;">🎉 AMAZING JOB! 🎉</h1>
+            <p style="font-size: 1.5rem;">You completed the quest!</p>
+            <p id="score-text" style="font-size: 1.2rem; margin: 20px 0; color: #555;"></p>
+            <button class="big-btn" onclick="location.reload()">🔄 PLAY AGAIN</button>
+        </div>
+
+    </div>
+
+    <script>
+        // Data derived exclusively from the uploaded file citations.
+        const questionsData = [
+            {
+                q: "Christianity and the Cross are inseparable in our Coptic Orthodox Church.[cite: 1]",
+                options: ["True", "False"],
+                correct: 0,
+                difficulty: "Easy"
+            },
+            {
+                q: "According to Romans 8:37, 'Yet in all these things we are more than ________ through Him who loved us.'[cite: 1]",
+                options: ["Fighters", "Conquerors", "Angels", "Survivors"],
+                correct: 1,
+                difficulty: "Easy"
+            },
+            {
+                q: "What are the two aspects of the Cross that a Christian lives and experiences?[cite: 1]",
+                options: ["Wealth and Health", "Fasting and Praying", "Joy and Suffering", "Peace and War"],
+                correct: 2,
+                difficulty: "Medium"
+            },
+            {
+                q: "Our Lord Jesus Christ's death on the Cross was incidental and happened by chance.[cite: 1]",
+                options: ["True", "False"],
+                correct: 1,
+                difficulty: "Easy"
+            },
+            {
+                q: "Which of the following Old Testament figures is NOT listed as a symbolic person (type of Christ)?[cite: 1]",
+                options: ["Abel", "Melchizedek", "David", "Jonah"],
+                correct: 2,
+                difficulty: "Hard"
+            },
+            {
+                q: "The sacrifice on the Cross is unlimited in power but needs to be repeated every year for our salvation.[cite: 1]",
+                options: ["True", "False"],
+                correct: 1,
+                difficulty: "Medium"
+            },
+            {
+                q: "According to Hebrews 10:10, by what have we been sanctified once for all?[cite: 1]",
+                options: ["The offering of the body of Jesus Christ", "The blood of bulls and goats", "The ashes of a red heifer", "Our good deeds and fasting"],
+                correct: 0,
+                difficulty: "Medium"
+            },
+            {
+                q: "What is 'the wages of sin' according to Romans 6:23?[cite: 1]",
+                options: ["Poverty", "Suffering", "Illness", "Death"],
+                correct: 3,
+                difficulty: "Easy"
+            },
+            {
+                q: "As a result of Adam and Eve's disobedience, humanity inherited original sin and its nature became corrupt.[cite: 1]",
+                options: ["True", "False"],
+                correct: 0,
+                difficulty: "Medium"
+            },
+            {
+                q: "Which of these is NOT a required characteristic of the Savior?[cite: 1]",
+                options: ["He must be able to die", "He must be an Angel", "He must be human", "He must be without sin"],
+                correct: 1,
+                difficulty: "Medium"
+            },
+            {
+                q: "Why did the Savior need to be 'unlimited'?[cite: 1]",
+                options: ["Because human nature is unlimited", "To carry the heavy weight of the wooden cross", "Because Adam's sin is unlimited against the infinite God", "To travel fast across the world"],
+                correct: 2,
+                difficulty: "Hard"
+            },
+            {
+                q: "Historically, crucifixion was considered a highly blessed and honorable method of death.[cite: 1]",
+                options: ["True", "False"],
+                correct: 1,
+                difficulty: "Easy"
+            },
+            {
+                q: "In Galatians 3:13, Christ redeemed us from the curse of the law by becoming a ____ for us.[cite: 1]",
+                options: ["King", "Curse", "Judge", "Prophet"],
+                correct: 1,
+                difficulty: "Hard"
+            },
+            {
+                q: "Which type of death is defined as 'separation from God'?[cite: 1]",
+                options: ["Spiritual death", "Physical death", "Eternal death", "Moral (relational) death"],
+                correct: 0,
+                difficulty: "Medium"
+            },
+            {
+                q: "What does 'Moral (relational) death' refer to?[cite: 1]",
+                options: ["Eternal destruction in hell", "Corruption entering human nature", "Being driven out of the glory of Eden to a land of misery", "Sinful behavior toward others"],
+                correct: 2,
+                difficulty: "Hard"
+            },
+            {
+                q: "'Without shedding of blood there is no ________.' (Hebrews 9:22)[cite: 1]",
+                options: ["Joy", "Life", "Suffering", "Remission"],
+                correct: 3,
+                difficulty: "Easy"
+            },
+            {
+                q: "Making the sign of the cross from our forehead to our chest declares God the Son coming from heaven and being born of St. Mary.[cite: 1]",
+                options: ["True", "False"],
+                correct: 0,
+                difficulty: "Medium"
+            },
+            {
+                q: "When we cross from our left to right shoulder, it declares:[cite: 1]",
+                options: ["The Holy Trinity", "Moving from east to west", "Being transferred from darkness to light", "The Old and New Testament"],
+                correct: 2,
+                difficulty: "Hard"
+            },
+            {
+                q: "The doctrine of the Holy Trinity declared in the sign of the Cross means:[cite: 1]",
+                options: ["3 Gods", "1 Hypostasis, 3 Gods", "3 Hypostases, 1 God", "3 Hypostases, 3 Gods"],
+                correct: 2,
+                difficulty: "Easy"
+            },
+            {
+                q: "In Church architecture, how many shapes of the cross are used?[cite: 1]",
+                options: ["1", "2", "3", "4"],
+                correct: 2,
+                difficulty: "Medium"
+            },
+            {
+                q: "The sign of the cross is ONLY used during Holy Week and not in other Church rites.[cite: 1]",
+                options: ["True", "False"],
+                correct: 1,
+                difficulty: "Easy"
+            },
+            {
+                q: "What do we celebrate on Thoout 17 (September 27)?[cite: 1]",
+                options: ["Discovery of the Holy Cross by St. Queen Helen", "Consecration of the Church of the Resurrection in Jerusalem", "Christmas Day", "The Resurrection"],
+                correct: 1,
+                difficulty: "Hard"
+            },
+            {
+                q: "Who discovered the Holy Cross in 326 AD?[cite: 1]",
+                options: ["St. Queen Helen", "St. Mary", "St. Demiana", "St. Marina"],
+                correct: 0,
+                difficulty: "Medium"
+            },
+            {
+                q: "In the Feast of the Cross doxology, we proclaim the Cross as the weapon of ________.[cite: 1]",
+                options: ["War", "Destruction", "Anger", "Victory"],
+                correct: 3,
+                difficulty: "Easy"
+            },
+            {
+                q: "'The blood of Jesus Christ His Son cleanses us from all sin.' (1 John 1:7) refers to the blessing of:[cite: 1]",
+                options: ["Purification", "Sanctification", "Eternal Life", "Abiding in Him"],
+                correct: 0,
+                difficulty: "Hard"
+            },
+            {
+                q: "Which blessing of the Cross means 'consecration, dedication, and setting the person apart'?[cite: 1]",
+                options: ["Forgiveness", "Purification", "Sanctification", "Eternal Life"],
+                correct: 2,
+                difficulty: "Hard"
+            },
+            {
+                q: "According to John 6:56, abiding in the Lord Jesus Christ by eating His flesh and drinking His blood provides us with:[cite: 1]",
+                options: ["Wealth", "Spiritual stability and growth", "Physical strength", "A long earthly life"],
+                correct: 1,
+                difficulty: "Medium"
+            },
+            {
+                q: "Christ's suffering on the Cross was a sign of His weakness.[cite: 1]",
+                options: ["True", "False"],
+                correct: 1,
+                difficulty: "Easy"
+            },
+            {
+                q: "How ought we, as Christians, live spiritually crucified lives?[cite: 1]",
+                options: ["By living in isolation away from people", "By never smiling", "By rejecting sinful desires and remaining faithful to God", "By physically hurting ourselves"],
+                correct: 2,
+                difficulty: "Medium"
+            },
+            {
+                q: "Through the Cross, Christ opened Paradise again, defeated Satan, and granted believers eternal life.[cite: 1]",
+                options: ["True", "False"],
+                correct: 0,
+                difficulty: "Easy"
+            }
+        ];
+
+        let currentIndex = 0;
+        let scoreOnFirstTry = 0;
+        let isFirstTryForCurrent = true;
+
+        // DOM Elements
+        const startScreen = document.getElementById('start-screen');
+        const questionScreen = document.getElementById('question-screen');
+        const endScreen = document.getElementById('end-screen');
+        const ribbon = document.getElementById('ribbon');
+        const progressText = document.getElementById('progress-text');
+        const questionText = document.getElementById('question-text');
+        const optionsGrid = document.getElementById('options-grid');
+        const gameContainer = document.getElementById('game-container');
+        const difficultyBadge = document.getElementById('difficulty-badge');
+        const scoreText = document.getElementById('score-text');
+
+        function startGame() {
+            startScreen.classList.add('hidden');
+            ribbon.classList.remove('hidden');
+            questionScreen.classList.remove('hidden');
+            currentIndex = 0;
+            scoreOnFirstTry = 0;
+            loadQuestion();
+            initAudio(); // Initialize audio context on first user interaction
+        }
+
+        function loadQuestion() {
+            const qData = questionsData[currentIndex];
+            isFirstTryForCurrent = true;
+            
+            // Update Progress
+            progressText.innerText = `⭐ Question ${currentIndex + 1} of ${questionsData.length} ⭐`;
+            
+            // Update Text & Difficulty
+            questionText.innerText = qData.q;
+            difficultyBadge.innerText = qData.difficulty;
+            difficultyBadge.className = `difficulty-badge diff-${qData.difficulty.toLowerCase()}`;
+            
+            // Generate Options
+            optionsGrid.innerHTML = '';
+            
+            // If T/F, just center the two buttons nicely, otherwise grid
+            if(qData.options.length === 2) {
+                optionsGrid.style.gridTemplateColumns = '1fr';
+                optionsGrid.style.maxWidth = '400px';
+                optionsGrid.style.margin = '0 auto';
+            } else {
+                optionsGrid.style.gridTemplateColumns = '1fr 1fr';
+                optionsGrid.style.maxWidth = '100%';
+            }
+
+            qData.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerText = opt;
+                btn.onclick = () => handleAnswer(index, btn);
+                optionsGrid.appendChild(btn);
+            });
+        }
+
+        function handleAnswer(selectedIndex, btn) {
+            const qData = questionsData[currentIndex];
+            const isCorrect = (selectedIndex === qData.correct);
+
+            // Disable all buttons temporarily
+            const allBtns = document.querySelectorAll('.option-btn');
+            
+            if (isCorrect) {
+                // Correct!
+                btn.classList.add('correct');
+                allBtns.forEach(b => b.disabled = true);
+                createStars(btn);
+                
+                if (isFirstTryForCurrent) {
+                    scoreOnFirstTry++;
+                }
+
+                // Proceed to next question after delay
+                setTimeout(() => {
+                    currentIndex++;
+                    if (currentIndex < questionsData.length) {
+                        loadQuestion();
+                    } else {
+                        endGame();
+                    }
+                }, 1500);
+
+            } else {
+                // Wrong!
+                btn.classList.add('wrong');
+                btn.disabled = true;
+                isFirstTryForCurrent = false;
+                
+                // Show gentle warning
+                gameContainer.classList.remove('warning-state');
+                void gameContainer.offsetWidth; // trigger reflow
+                gameContainer.classList.add('warning-state');
+            }
+        }
+
+        function createStars(targetBtn) {
+            const rect = targetBtn.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+
+            for (let i = 0; i < 15; i++) {
+                const star = document.createElement('div');
+                star.innerHTML = '⭐';
+                star.className = 'star';
+                star.style.left = centerX + 'px';
+                star.style.top = centerY + 'px';
+                
+                // Random flight paths
+                const angle = Math.random() * Math.PI * 2;
+                const distance = 100 + Math.random() * 150;
+                const tx = Math.cos(angle) * distance + 'px';
+                const ty = Math.sin(angle) * distance + 'px';
+                
+                star.style.setProperty('--tx', tx);
+                star.style.setProperty('--ty', ty);
+                
+                document.body.appendChild(star);
+                
+                // Cleanup
+                setTimeout(() => star.remove(), 1000);
+            }
+        }
+
+        function endGame() {
+            questionScreen.classList.add('hidden');
+            ribbon.classList.add('hidden');
+            endScreen.classList.remove('hidden');
+            scoreText.innerHTML = `You got <strong>${scoreOnFirstTry}</strong> out of ${questionsData.length} on your very first try! <br> Great dedication to learning about the Holy Cross!`;
+        }
+
+        // --- Web Audio API Synth for Cheerful Background Music ---
+        let audioCtx;
+        let isPlaying = false;
+        let nextNoteTime = 0;
+        let currentNoteIndex = 0;
+        let timerID;
+
+        // Simple pentatonic cheerful loop (C major pentatonic: C, D, E, G, A)
+        const melody = [
+            { freq: 523.25, dur: 0.2 }, // C5
+            { freq: 659.25, dur: 0.2 }, // E5
+            { freq: 783.99, dur: 0.4 }, // G5
+            { freq: 659.25, dur: 0.2 }, // E5
+            { freq: 523.25, dur: 0.2 }, // C5
+            { freq: 587.33, dur: 0.2 }, // D5
+            { freq: 659.25, dur: 0.4 }, // E5
+            { freq: 0,      dur: 0.2 }, // Rest
+            { freq: 880.00, dur: 0.2 }, // A5
+            { freq: 783.99, dur: 0.4 }, // G5
+            { freq: 659.25, dur: 0.2 }, // E5
+            { freq: 587.33, dur: 0.4 }, // D5
+        ];
+
+        function initAudio() {
+            if(!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContext();
+            }
+        }
+
+        function playNote(freq, dur, time) {
+            if(freq === 0) return; // Rest
+            
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            
+            osc.type = 'sine';
+            osc.frequency.value = freq;
+            
+            // Envelope to sound soft and cheerful
+            gain.gain.setValueAtTime(0, time);
+            gain.gain.linearRampToValueAtTime(0.1, time + 0.05);
+            gain.gain.exponentialRampToValueAtTime(0.001, time + dur - 0.05);
+            
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            osc.start(time);
+            osc.stop(time + dur);
+        }
+
+        function scheduler() {
+            while (nextNoteTime < audioCtx.currentTime + 0.1) {
+                const note = melody[currentNoteIndex];
+                playNote(note.freq, note.dur, nextNoteTime);
+                nextNoteTime += note.dur;
+                currentNoteIndex = (currentNoteIndex + 1) % melody.length;
+            }
+            if(isPlaying) {
+                timerID = requestAnimationFrame(scheduler);
+            }
+        }
+
+        function toggleMusic() {
+            const btn = document.getElementById('music-btn');
+            
+            if(audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            if(isPlaying) {
+                isPlaying = false;
+                cancelAnimationFrame(timerID);
+                btn.innerText = "🎵 Play Music";
+                btn.style.color = "var(--secondary)";
+            } else {
+                initAudio();
+                isPlaying = true;
+                nextNoteTime = audioCtx.currentTime + 0.05;
+                scheduler();
+                btn.innerText = "🔇 Stop Music";
+                btn.style.color = "var(--danger)";
+            }
+        }
+    </script>
+</body>
+</html>
