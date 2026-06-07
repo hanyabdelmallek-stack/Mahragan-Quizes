@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Healthy Boundaries Game - Part 2</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap');
+
+        :root {
+            --primary: #00695C; /* Deep Teal */
+            --secondary: #F4511E; /* Vibrant Deep Orange */
+            --success: #2E7D32; /* Green */
+            --danger: #C62828; /* Red */
+            --bg: #E0F2F1; /* Light Teal Tint */
+            --text: #212121;
+            --card-bg: #FFFFFF;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-image: radial-gradient(circle at center, #ffffff 0%, #E0F2F1 100%);
+        }
+
+        /* Ribbon Tracker */
+        #ribbon {
+            background-color: var(--secondary);
+            color: #FFF;
+            width: 100%;
+            padding: 15px 0;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 900;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+
+        #music-btn {
+            background: #FFF;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: transform 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        #music-btn:hover {
+            transform: scale(1.05);
+        }
+
+        /* Main Game Box */
+        #game-container {
+            background: var(--card-bg);
+            max-width: 800px;
+            width: 90%;
+            margin: 40px auto;
+            border-radius: 20px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            padding: 40px;
+            text-align: center;
+            position: relative;
+            transition: box-shadow 0.3s ease;
+            border: 5px solid var(--primary);
+        }
+
+        /* Gentle Warning Light Effect */
+        @keyframes gentleWarning {
+            0% { box-shadow: 0 0 0px var(--danger); border-color: var(--primary); }
+            50% { box-shadow: 0 0 40px var(--danger); border-color: var(--danger); }
+            100% { box-shadow: 0 0 0px var(--danger); border-color: var(--primary); }
+        }
+
+        .warning-state {
+            animation: gentleWarning 1s ease;
+        }
+
+        .difficulty-badge {
+            display: inline-block;
+            padding: 6px 18px;
+            border-radius: 20px;
+            font-size: 1rem;
+            font-weight: 900;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .diff-easy { background: #E8F5E9; color: #2E7D32; }
+        .diff-medium { background: #E0F7FA; color: #00838F; }
+        .diff-hard { background: #FCE4EC; color: #C2185B; }
+
+        #question-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 30px;
+            line-height: 1.5;
+            color: var(--primary);
+        }
+
+        /* Options Grid Layout */
+        #options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .option-btn {
+            background-color: var(--bg);
+            border: 3px solid var(--primary);
+            color: var(--text);
+            padding: 20px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Nunito', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 80px;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            background-color: var(--primary);
+            color: #FFF;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 105, 92, 0.3);
+        }
+
+        .option-btn.correct {
+            background-color: var(--success) !important;
+            border-color: var(--success) !important;
+            color: #FFF !important;
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(46, 125, 50, 0.5);
+        }
+
+        .option-btn.wrong {
+            background-color: var(--danger) !important;
+            border-color: var(--danger) !important;
+            color: #FFF !important;
+            opacity: 0.7;
+            animation: shake 0.4s;
+        }
+
+        .option-btn:disabled {
+            cursor: not-allowed;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        /* Bright Star Effects */
+        .star {
+            position: fixed;
+            font-size: 2.5rem;
+            pointer-events: none;
+            z-index: 1000;
+            animation: flyOut 1s ease-out forwards;
+        }
+
+        @keyframes flyOut {
+            0% { transform: translate(0, 0) scale(0.5); opacity: 1; }
+            100% { transform: translate(var(--tx), var(--ty)) scale(1.5) rotate(360deg); opacity: 0; }
+        }
+
+        /* Screens */
+        #start-screen, #end-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .big-btn {
+            background-color: var(--secondary);
+            color: #FFF;
+            border: none;
+            padding: 20px 40px;
+            font-size: 1.5rem;
+            font-weight: 900;
+            border-radius: 30px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(244, 81, 30, 0.4);
+            font-family: 'Nunito', sans-serif;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+
+        .big-btn:hover {
+            transform: translateY(-5px) scale(1.05);
+            background-color: #D84315;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 600px) {
+            #options-grid {
+                grid-template-columns: 1fr;
+            }
+            #question-text {
+                font-size: 1.3rem;
+            }
+            #ribbon {
+                font-size: 1.2rem;
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="ribbon" class="hidden">
+        <span id="progress-text">⭐ Question 1 of 30 ⭐</span>
+        <button id="music-btn" onclick="toggleMusic()">🎵 Play Background Music</button>
+    </div>
+
+    <div id="game-container">
+        
+        <!-- Start Screen -->
+        <div id="start-screen">
+            <h1 style="color: var(--primary); font-size: 2.5rem; margin-bottom: 10px;">🛡️ Boundaries Mastery 🛡️</h1>
+            <h3 style="color: var(--secondary); margin-top: 0;">Level 2: Deep Scenarios</h3>
+            <p style="font-size: 1.2rem; color: #555; margin-bottom: 30px; line-height: 1.6;">
+                Welcome back! Let's explore real-life scenarios and deeper Biblical examples of setting healthy limits. <br><br>
+                <strong>The Rule:</strong> Find the correct answer to move forward. If you choose the wrong answer, the question stays on the screen until you get it right!
+            </p>
+            <button class="big-btn" onclick="startGame()">▶️ START THE QUEST</button>
+        </div>
+
+        <!-- Question Screen -->
+        <div id="question-screen" class="hidden">
+            <div id="difficulty-badge" class="difficulty-badge">EASY</div>
+            <div id="question-text">Question goes here?</div>
+            <div id="options-grid">
+                <!-- Buttons injected dynamically -->
+            </div>
+        </div>
+
+        <!-- End Screen -->
+        <div id="end-screen" class="hidden">
+            <h1 style="color: var(--success); font-size: 3rem; margin-bottom: 10px;">🎉 MASTER OF DISCERNMENT! 🎉</h1>
+            <p style="font-size: 1.5rem; color: var(--primary); font-weight: bold;">You have successfully mastered healthy boundaries!</p>
+            <p id="score-text" style="font-size: 1.3rem; margin: 20px 0; color: #555; line-height: 1.5;"></p>
+            <button class="big-btn" onclick="location.reload()">🔄 RETAKE QUIZ</button>
+        </div>
+
+    </div>
+
+    <script>
+        // 30 Brand New Questions focusing on the scenarios, Intrusion/Distancing table, and unseen verses.
+        const questionsData = [
+            { q: "According to the lesson, boundaries provide protection for my eternity.[cite: 14]", options: ["True", "False"], correct: 0, difficulty: "Easy" },
+            { q: "What specific types of harm do boundaries protect us from?[cite: 14]", options: ["Financial and material", "Psychological, physical, and emotional", "Educational and occupational", "Only physical"], correct: 1, difficulty: "Medium" },
+            { q: "From which tree did God command Adam not to eat, establishing a clear boundary?[cite: 14]", options: ["The tree of life", "The tree of the knowledge of good and evil", "The fig tree", "The olive tree"], correct: 1, difficulty: "Medium" },
+            { q: "What was the consequence God stated if Adam crossed the boundary and ate from the forbidden tree?[cite: 14]", options: ["'You will be banished from the garden'", "'You shall surely die'", "'You will have to work the ground'", "'You will lose your authority'"], correct: 1, difficulty: "Hard" },
+            { q: "'You shall not covet your neighbor's house' is a boundary in dealing with others found in which Old Testament book?[cite: 14]", options: ["Genesis", "Exodus", "Leviticus", "Deuteronomy"], correct: 1, difficulty: "Hard" },
+            { q: "'Do not cling to Me, for I have not yet ascended to My Father' (John 20:17) is an example of the Lord Jesus setting what kind of boundary?[cite: 14]", options: ["Boundaries regarding fasting", "Boundaries against violence", "Boundaries of touch", "Boundaries of communication"], correct: 2, difficulty: "Hard" },
+            { q: "When the Lord Jesus said, 'Put your sword in its place,' He was setting boundaries against what?[cite: 14]", options: ["Violence", "Stealing", "False witness", "Unbelievers"], correct: 0, difficulty: "Medium" },
+            { q: "St. Paul states that if he still pleased men, he would not be a bondservant of whom? (Galatians 1:10)[cite: 14]", options: ["The emperor", "Christ", "The Church", "The apostles"], correct: 1, difficulty: "Hard" },
+            { q: "We should seek to form boundaries that hit a 'sweet spot' called what?[cite: 15]", options: ["Intrusion boundaries", "Distancing boundaries", "Healthy boundaries", "Harsh boundaries"], correct: 2, difficulty: "Easy" },
+            { q: "For Chores & Household Tasks, what is considered an 'Intrusion' boundary?[cite: 15]", options: ["Never helping", "Having specific responsibilities", "Helping with everything, even tasks I am not old enough to understand", "Doing chores only when paid"], correct: 2, difficulty: "Hard" },
+            { q: "What is a 'Healthy' boundary regarding Chores & Household Tasks?[cite: 15]", options: ["I prioritize my own rest", "I help with tasks I don't understand", "I avoid chores entirely", "I have specific responsibilities that I do at certain times"], correct: 3, difficulty: "Medium" },
+            { q: "'I do not think about serving others. I already have enough to do' is what type of boundary for Helping Others?[cite: 15]", options: ["Intrusion", "Distancing", "Healthy", "Compassionate"], correct: 1, difficulty: "Medium" },
+            { q: "Keeping your feelings to yourself and telling no one when having a hard time is considered a Healthy boundary.[cite: 15]", options: ["True", "False"], correct: 1, difficulty: "Easy" },
+            { q: "Saying 'I do not allow myself to feel this emotion at all' is a Distancing boundary regarding what aspect?[cite: 15]", options: ["Love", "Chores", "Time", "Communication"], correct: 0, difficulty: "Hard" },
+            { q: "What is an 'Intrusion' boundary regarding Love?[cite: 15]", options: ["Seeking guidance", "Prioritizing purity", "Falling in love at first sight and engaging in romantic fantasies", "Not feeling any emotion"], correct: 2, difficulty: "Hard" },
+            { q: "Stating 'My time belongs only to me' represents what type of Time boundary?[cite: 16]", options: ["Intrusion", "Healthy", "Distancing", "Flexible"], correct: 2, difficulty: "Medium" },
+            { q: "Organizing your time according to your priorities is considered a Healthy boundary.[cite: 16]", options: ["True", "False"], correct: 0, difficulty: "Easy" },
+            { q: "Staying silent when experiencing a wrong touch because you are afraid to speak is what type of Physical boundary?[cite: 16]", options: ["Healthy", "Intrusion", "Distancing", "Protective"], correct: 2, difficulty: "Medium" },
+            { q: "How should you healthily handle physical boundaries according to the lesson?[cite: 16]", options: ["Stay silent", "Consider all touches harmless", "Politely object and set clear physical boundaries", "Attack the person immediately"], correct: 2, difficulty: "Medium" },
+            { q: "Accepting a friend request from someone you do not know is an Intrusion boundary in Communication.[cite: 16]", options: ["True", "False"], correct: 0, difficulty: "Easy" },
+            { q: "'My friends talk to me for hours whenever it is convenient for them' is an example of what type of boundary?[cite: 16]", options: ["Healthy", "Intrusion", "Distancing", "Respectful"], correct: 1, difficulty: "Medium" },
+            { q: "In Trends/Fashion, choosing what suits me and staying away from what does not suit me is a Distancing boundary.[cite: 16]", options: ["True", "False"], correct: 1, difficulty: "Medium" },
+            { q: "Refusing to entertain any new ideas that are unfamiliar is what type of Trends/Fashion boundary?[cite: 16]", options: ["Intrusion", "Distancing", "Healthy", "Open-minded"], correct: 1, difficulty: "Hard" },
+            { q: "Thinking 'I must be like everyone else or they will think I'm too closed off' is an Intrusion boundary.[cite: 16]", options: ["True", "False"], correct: 0, difficulty: "Easy" },
+            { q: "If you are afraid to make any decision and take responsibility, this is what kind of boundary concerning Decision Making?[cite: 16]", options: ["Healthy", "Intrusion", "Distancing", "Confident"], correct: 2, difficulty: "Hard" },
+            { q: "If your decisions depend entirely on people's opinions, this is an Intrusion boundary.[cite: 16]", options: ["True", "False"], correct: 0, difficulty: "Easy" },
+            { q: "What is the healthy way to handle obstacles to decision making?[cite: 16]", options: ["Refuse to make decisions", "Seek advice from trustworthy and experienced people", "Always do what the crowd says", "Let your friends decide for you"], correct: 1, difficulty: "Medium" },
+            { q: "For our lives to have meaning and distinction, we must draw boundaries for ourselves and others.[cite: 16]", options: ["True", "False"], correct: 0, difficulty: "Easy" },
+            { q: "When setting healthy boundaries, you should consider clarity, politeness, respectful manner, and what else?[cite: 16]", options: ["Expressing feelings", "Raising your voice", "Ignoring the person", "Using physical force"], correct: 0, difficulty: "Hard" },
+            { q: "God forces Himself upon people because He loves them and wants them to be saved.[cite: 16]", options: ["True", "False"], correct: 1, difficulty: "Easy" }
+        ];
+
+        let currentIndex = 0;
+        let scoreOnFirstTry = 0;
+        let isFirstTryForCurrent = true;
+
+        // Elements
+        const startScreen = document.getElementById('start-screen');
+        const questionScreen = document.getElementById('question-screen');
+        const endScreen = document.getElementById('end-screen');
+        const ribbon = document.getElementById('ribbon');
+        const progressText = document.getElementById('progress-text');
+        const questionText = document.getElementById('question-text');
+        const optionsGrid = document.getElementById('options-grid');
+        const gameContainer = document.getElementById('game-container');
+        const difficultyBadge = document.getElementById('difficulty-badge');
+        const scoreText = document.getElementById('score-text');
+
+        function startGame() {
+            startScreen.classList.add('hidden');
+            ribbon.classList.remove('hidden');
+            questionScreen.classList.remove('hidden');
+            currentIndex = 0;
+            scoreOnFirstTry = 0;
+            loadQuestion();
+            initAudio(); 
+        }
+
+        function loadQuestion() {
+            const qData = questionsData[currentIndex];
+            isFirstTryForCurrent = true;
+            
+            progressText.innerText = `⭐ Question ${currentIndex + 1} of ${questionsData.length} ⭐`;
+            
+            questionText.innerText = qData.q;
+            difficultyBadge.innerText = qData.difficulty;
+            difficultyBadge.className = `difficulty-badge diff-${qData.difficulty.toLowerCase()}`;
+            
+            optionsGrid.innerHTML = '';
+            
+            if(qData.options.length === 2) {
+                optionsGrid.style.gridTemplateColumns = '1fr';
+                optionsGrid.style.maxWidth = '400px';
+                optionsGrid.style.margin = '0 auto';
+            } else {
+                optionsGrid.style.gridTemplateColumns = '1fr 1fr';
+                optionsGrid.style.maxWidth = '100%';
+            }
+
+            qData.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerText = opt;
+                btn.onclick = () => handleAnswer(index, btn);
+                optionsGrid.appendChild(btn);
+            });
+        }
+
+        function handleAnswer(selectedIndex, btn) {
+            const qData = questionsData[currentIndex];
+            const isCorrect = (selectedIndex === qData.correct);
+            const allBtns = document.querySelectorAll('.option-btn');
+            
+            if (isCorrect) {
+                btn.classList.add('correct');
+                allBtns.forEach(b => b.disabled = true);
+                createStars(btn);
+                
+                if (isFirstTryForCurrent) {
+                    scoreOnFirstTry++;
+                }
+
+                setTimeout(() => {
+                    currentIndex++;
+                    if (currentIndex < questionsData.length) {
+                        loadQuestion();
+                    } else {
+                        endGame();
+                    }
+                }, 1500);
+
+            } else {
+                btn.classList.add('wrong');
+                btn.disabled = true;
+                isFirstTryForCurrent = false;
+                
+                gameContainer.classList.remove('warning-state');
+                void gameContainer.offsetWidth; // force reflow
+                gameContainer.classList.add('warning-state');
+            }
+        }
+
+        function createStars(targetBtn) {
+            const rect = targetBtn.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+
+            for (let i = 0; i < 20; i++) {
+                const star = document.createElement('div');
+                star.innerHTML = '✨';
+                star.className = 'star';
+                star.style.left = centerX + 'px';
+                star.style.top = centerY + 'px';
+                
+                const angle = Math.random() * Math.PI * 2;
+                const distance = 100 + Math.random() * 200;
+                const tx = Math.cos(angle) * distance + 'px';
+                const ty = Math.sin(angle) * distance + 'px';
+                
+                star.style.setProperty('--tx', tx);
+                star.style.setProperty('--ty', ty);
+                
+                document.body.appendChild(star);
+                setTimeout(() => star.remove(), 1000);
+            }
+        }
+
+        function endGame() {
+            questionScreen.classList.add('hidden');
+            ribbon.classList.add('hidden');
+            endScreen.classList.remove('hidden');
+            scoreText.innerHTML = `You answered <strong>${scoreOnFirstTry}</strong> out of ${questionsData.length} correctly on your very first try! <br><br> Your discernment and understanding of boundaries is growing brilliantly. Keep it up!`;
+        }
+
+        // --- Synthetic Audio Controller ---
+        let audioCtx;
+        let isPlaying = false;
+        let nextNoteTime = 0;
+        let currentNoteIndex = 0;
+        let timerID;
+
+        // Cheerful upbeat pentatonic melody loop
+        const melody = [
+            { freq: 523.25, dur: 0.2 }, // C5
+            { freq: 659.25, dur: 0.2 }, // E5
+            { freq: 783.99, dur: 0.4 }, // G5
+            { freq: 659.25, dur: 0.2 }, // E5
+            { freq: 523.25, dur: 0.2 }, // C5
+            { freq: 587.33, dur: 0.2 }, // D5
+            { freq: 659.25, dur: 0.4 }, // E5
+            { freq: 0,      dur: 0.2 }, // Rest
+            { freq: 880.00, dur: 0.2 }, // A5
+            { freq: 783.99, dur: 0.4 }, // G5
+            { freq: 659.25, dur: 0.2 }, // E5
+            { freq: 587.33, dur: 0.4 }, // D5
+        ];
+
+        function initAudio() {
+            if(!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContext();
+            }
+        }
+
+        function playNote(freq, dur, time) {
+            if(freq === 0) return; 
+            
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            
+            osc.type = 'sine';
+            osc.frequency.value = freq;
+            
+            gain.gain.setValueAtTime(0, time);
+            gain.gain.linearRampToValueAtTime(0.08, time + 0.05);
+            gain.gain.exponentialRampToValueAtTime(0.001, time + dur - 0.05);
+            
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            osc.start(time);
+            osc.stop(time + dur);
+        }
+
+        function scheduler() {
+            while (nextNoteTime < audioCtx.currentTime + 0.1) {
+                const note = melody[currentNoteIndex];
+                playNote(note.freq, note.dur, nextNoteTime);
+                nextNoteTime += note.dur;
+                currentNoteIndex = (currentNoteIndex + 1) % melody.length;
+            }
+            if(isPlaying) {
+                timerID = requestAnimationFrame(scheduler);
+            }
+        }
+
+        function toggleMusic() {
+            const btn = document.getElementById('music-btn');
+            
+            if(audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            if(isPlaying) {
+                isPlaying = false;
+                cancelAnimationFrame(timerID);
+                btn.innerText = "🎵 Play Background Music";
+                btn.style.color = "var(--primary)";
+            } else {
+                initAudio();
+                isPlaying = true;
+                nextNoteTime = audioCtx.currentTime + 0.05;
+                scheduler();
+                btn.innerText = "🔇 Stop Music";
+                btn.style.color = "var(--danger)";
+            }
+        }
+    </script>
+</body>
+</html>
