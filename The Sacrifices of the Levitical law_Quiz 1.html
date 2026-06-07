@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Levitical Sacrifices Game</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap');
+
+        :root {
+            --primary: #8E44AD;
+            --secondary: #F39C12;
+            --success: #2ECC71;
+            --danger: #E74C3C;
+            --bg: #F9F0FF;
+            --text: #2C3E50;
+            --card-bg: #FFFFFF;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-image: radial-gradient(circle at center, #ffffff 0%, #F9F0FF 100%);
+        }
+
+        /* Ribbon Tracker */
+        #ribbon {
+            background-color: var(--secondary);
+            color: #FFF;
+            width: 100%;
+            padding: 15px 0;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 900;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+        }
+
+        #music-btn {
+            background: #FFF;
+            color: var(--secondary);
+            border: none;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: transform 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        #music-btn:hover {
+            transform: scale(1.05);
+        }
+
+        /* Main Game Box */
+        #game-container {
+            background: var(--card-bg);
+            max-width: 800px;
+            width: 90%;
+            margin: 40px auto;
+            border-radius: 20px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            padding: 40px;
+            text-align: center;
+            position: relative;
+            transition: box-shadow 0.3s ease;
+            border: 4px solid var(--primary);
+        }
+
+        /* Gentle Warning Light Effect */
+        @keyframes gentleWarning {
+            0% { box-shadow: 0 0 0px var(--danger); border-color: var(--primary); }
+            50% { box-shadow: 0 0 40px var(--danger); border-color: var(--danger); }
+            100% { box-shadow: 0 0 0px var(--danger); border-color: var(--primary); }
+        }
+
+        .warning-state {
+            animation: gentleWarning 1s ease;
+        }
+
+        .difficulty-badge {
+            display: inline-block;
+            padding: 6px 18px;
+            border-radius: 20px;
+            font-size: 1rem;
+            font-weight: 900;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .diff-easy { background: #e0f7fa; color: #00838f; }
+        .diff-medium { background: #fff3e0; color: #ef6c00; }
+        .diff-hard { background: #ffebee; color: #c62828; }
+
+        #question-text {
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 30px;
+            line-height: 1.4;
+            color: var(--primary);
+        }
+
+        .citation {
+            font-size: 0.9rem;
+            color: #888;
+            font-style: italic;
+            display: block;
+            margin-top: 10px;
+        }
+
+        /* Options Grid Layout */
+        #options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .option-btn {
+            background-color: var(--bg);
+            border: 3px solid var(--primary);
+            color: var(--text);
+            padding: 20px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Nunito', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 80px;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            background-color: var(--primary);
+            color: #FFF;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(142, 68, 173, 0.3);
+        }
+
+        .option-btn.correct {
+            background-color: var(--success) !important;
+            border-color: var(--success) !important;
+            color: #FFF !important;
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(46, 204, 113, 0.5);
+        }
+
+        .option-btn.wrong {
+            background-color: var(--danger) !important;
+            border-color: var(--danger) !important;
+            color: #FFF !important;
+            opacity: 0.7;
+            animation: shake 0.4s;
+        }
+
+        .option-btn:disabled {
+            cursor: not-allowed;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        /* Bright Star Effects */
+        .star {
+            position: fixed;
+            font-size: 2.5rem;
+            pointer-events: none;
+            z-index: 1000;
+            animation: flyOut 1s ease-out forwards;
+        }
+
+        @keyframes flyOut {
+            0% { transform: translate(0, 0) scale(0.5); opacity: 1; }
+            100% { transform: translate(var(--tx), var(--ty)) scale(1.5) rotate(360deg); opacity: 0; }
+        }
+
+        /* Screens */
+        #start-screen, #end-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .big-btn {
+            background-color: var(--secondary);
+            color: #FFF;
+            border: none;
+            padding: 20px 40px;
+            font-size: 1.5rem;
+            font-weight: 900;
+            border-radius: 30px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(243, 156, 18, 0.4);
+            font-family: 'Nunito', sans-serif;
+        }
+
+        .big-btn:hover {
+            transform: translateY(-5px) scale(1.05);
+            background-color: #e67e22;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 600px) {
+            #options-grid {
+                grid-template-columns: 1fr;
+            }
+            #question-text {
+                font-size: 1.4rem;
+            }
+            #ribbon {
+                font-size: 1.2rem;
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="ribbon" class="hidden">
+        <span id="progress-text">⭐ Question 1 of 30 ⭐</span>
+        <button id="music-btn" onclick="toggleMusic()">🎵 Play Background Music</button>
+    </div>
+
+    <div id="game-container">
+        
+        <!-- Start Screen -->
+        <div id="start-screen">
+            <h1 style="color: var(--primary); font-size: 2.5rem; margin-bottom: 10px;">🐑 The Levitical Law Quest 🐂</h1>
+            <h3 style="color: var(--secondary); margin-top: 0;">Uncovering the Old Testament Sacrifices</h3>
+            <p style="font-size: 1.2rem; color: #555; margin-bottom: 30px; line-height: 1.6;">
+                Welcome! Let's test your knowledge on the Old Testament sacrifices and how they point to our Savior. <br><br>
+                <strong>The Rule:</strong> Find the correct answer to move forward. If you choose the wrong answer, the question stays on the screen until you get it right!
+            </p>
+            <button class="big-btn" onclick="startGame()">▶️ START THE QUEST</button>
+        </div>
+
+        <!-- Question Screen -->
+        <div id="question-screen" class="hidden">
+            <div id="difficulty-badge" class="difficulty-badge">EASY</div>
+            <div id="question-text">Question goes here?</div>
+            <div id="options-grid">
+                <!-- Buttons injected dynamically -->
+            </div>
+        </div>
+
+        <!-- End Screen -->
+        <div id="end-screen" class="hidden">
+            <h1 style="color: var(--success); font-size: 3rem; margin-bottom: 10px;">🎉 OUTSTANDING! 🎉</h1>
+            <p style="font-size: 1.5rem; color: var(--primary); font-weight: bold;">You have completed the entire quest!</p>
+            <p id="score-text" style="font-size: 1.3rem; margin: 20px 0; color: #555; line-height: 1.5;"></p>
+            <button class="big-btn" onclick="location.reload()">🔄 RETAKE QUIZ</button>
+        </div>
+
+    </div>
+
+    <script>
+        const questionsData = [
+            { q: "The Cross was merely a momentary concept that arose solely at the moment of the crucifixion.[cite: 2]", options: ["True", "False"], correct: 1, difficulty: "Easy" },
+            { q: "Throughout the ages dating back to the Old Testament, there existed numerous signs and symbols pointing to the Cross and the Redemption.[cite: 2]", options: ["True", "False"], correct: 0, difficulty: "Easy" },
+            { q: "Which book specifically addresses the sacrifices and expounds upon the laws pertaining to the priests and Levites?[cite: 2]", options: ["Genesis", "Exodus", "Leviticus", "Deuteronomy"], correct: 2, difficulty: "Medium" },
+            { q: "What do the Jewish people refer to the Book of Leviticus as?[cite: 2]", options: ["The Law of the Prophets", "The Law of the Priests", "The Book of Kings", "The Book of Wisdom"], correct: 1, difficulty: "Medium" },
+            { q: "The Book of Leviticus constitutes which book of the Torah (the Five Books of Moses)?[cite: 2]", options: ["First", "Second", "Third", "Fifth"], correct: 2, difficulty: "Medium" },
+            { q: "The Levites are the descendants of the Tribe of Levi, the son of whom?[cite: 2]", options: ["Moses", "Aaron", "Jacob", "Abraham"], correct: 2, difficulty: "Hard" },
+            { q: "Who is the author of the Book of Leviticus?[cite: 2]", options: ["Prophet Isaiah", "Prophet Moses", "King David", "Prophet Samuel"], correct: 1, difficulty: "Easy" },
+            { q: "Which chapters of the Book of Leviticus expand in detail the laws and rites of the sacrifices?[cite: 2]", options: ["The first three chapters", "The first seven chapters", "The last five chapters", "The entire book evenly"], correct: 1, difficulty: "Hard" },
+            { q: "Every sacrifice, offering, or ritual practice within the Book of Leviticus symbolizes whose propitiatory sacrifice?[cite: 2]", options: ["Moses'", "Aaron's", "Our Lord Jesus Christ's", "The High Priest's"], correct: 2, difficulty: "Easy" },
+            { q: "The concept of the sacrifice revolves around a guilty animal dying on behalf of an innocent human.[cite: 3]", options: ["True", "False"], correct: 1, difficulty: "Medium" },
+            { q: "Where does the guilty individual bring the sacrifice?[cite: 3]", options: ["To the mountain peak", "To the entrance of the Tabernacle of Meeting", "To his own home", "To the river"], correct: 1, difficulty: "Medium" },
+            { q: "When bringing the sacrifice, the individual acknowledges that because of his sin, he deserves what?[cite: 3]", options: ["A fine", "Banishment", "Death", "Hard labor"], correct: 2, difficulty: "Easy" },
+            { q: "According to Romans 6:23, 'For the wages of sin is ______'[cite: 3]", options: ["Suffering", "Pain", "Sorrow", "Death"], correct: 3, difficulty: "Medium" },
+            { q: "How are sins transferred onto the sacrifice?[cite: 3]", options: ["By washing the animal in water", "By the individual placing his hand upon its head and confessing his sins", "By feeding the animal special grain", "By walking the animal around the altar"], correct: 1, difficulty: "Hard" },
+            { q: "According to Hebrews 9:22, 'without the shedding of blood there is no ______'[cite: 3]", options: ["Remission", "Life", "Peace", "Hope"], correct: 0, difficulty: "Medium" },
+            { q: "Which of the following is NOT one of the three goals of offering the sacrifices?[cite: 3]", options: ["Atonement for sin", "Purification from all impurity", "Gaining wealth and prosperity", "Obtaining forgiveness"], correct: 2, difficulty: "Medium" },
+            { q: "The Burnt Sacrifice (Leviticus 1) symbolizes the Obedience of the Son.[cite: 3]", options: ["True", "False"], correct: 0, difficulty: "Hard" },
+            { q: "The Grain Offering (Leviticus 2) symbolizes what aspect of the Son?[cite: 3]", options: ["His Resurrection", "His Ascension", "The Incarnation of the Son", "His miracles"], correct: 2, difficulty: "Hard" },
+            { q: "Which sacrifice symbolizes a Thanksgiving offering (Leviticus 3)?[cite: 3]", options: ["Sin Sacrifice", "Peace Sacrifice", "Burnt Sacrifice", "Trespass Sacrifice"], correct: 1, difficulty: "Hard" },
+            { q: "The Trespass Offering (Leviticus 5 & 7) is specifically for what?[cite: 3]", options: ["Bearing our sins", "Thanksgiving", "Sins directed towards God", "Incarnation of the Son"], correct: 2, difficulty: "Hard" },
+            { q: "Which of the following is an example of a 'Herd animal' (large livestock) used for sacrifices?[cite: 4]", options: ["Sheep", "Goats", "Bulls (young bulls/oxen)", "Turtledoves"], correct: 2, difficulty: "Medium" },
+            { q: "Which bird could be offered by those who could not afford livestock?[cite: 4]", options: ["Eagles", "Ravens", "Turtledoves or young pigeons", "Sparrows"], correct: 2, difficulty: "Easy" },
+            { q: "All sacrifices are offered to the Lord at the entrance door of the Tabernacle of Meeting, signifying that without blood, there is no entry into the Holy Places.[cite: 4]", options: ["True", "False"], correct: 0, difficulty: "Medium" },
+            { q: "Where does the priest first sprinkle the blood of the sacrifice?[cite: 4]", options: ["Outside the Tabernacle gate", "On the people", "All around the Altar of Burnt Offering, upon its wall, and at its base", "In the Most Holy Place"], correct: 2, difficulty: "Hard" },
+            { q: "The blood and fat of sacrifices can be eaten by the priests.[cite: 4]", options: ["True", "False"], correct: 1, difficulty: "Medium" },
+            { q: "Why must the blood and fat of sacrifices not be eaten?[cite: 4]", options: ["Because they are unclean", "Because they belong to the Lord", "Because they cause illness", "Because they are for the poor"], correct: 1, difficulty: "Easy" },
+            { q: "According to Hebrews 10:4, what is it NOT possible for the blood of bulls and goats to do?[cite: 4]", options: ["Appease the people", "Cleanse the Tabernacle", "Take away sins", "Provide food"], correct: 2, difficulty: "Medium" },
+            { q: "The daily shedding of blood in the Old Testament demonstrates its futility and necessitates a Living Sacrifice offered once for all.[cite: 4]", options: ["True", "False"], correct: 0, difficulty: "Medium" },
+            { q: "With what did Christ enter the Most Holy Place once for all, having obtained eternal redemption (Hebrews 9:12)?[cite: 4]", options: ["The blood of goats and calves", "His own blood", "The ashes of a heifer", "The blood of bulls"], correct: 1, difficulty: "Easy" },
+            { q: "There is no entry to the bosom of the Father, nor eternal rest, except through the blood of our Lord Jesus Christ.[cite: 4]", options: ["True", "False"], correct: 0, difficulty: "Easy" }
+        ];
+
+        let currentIndex = 0;
+        let scoreOnFirstTry = 0;
+        let isFirstTryForCurrent = true;
+
+        // Elements
+        const startScreen = document.getElementById('start-screen');
+        const questionScreen = document.getElementById('question-screen');
+        const endScreen = document.getElementById('end-screen');
+        const ribbon = document.getElementById('ribbon');
+        const progressText = document.getElementById('progress-text');
+        const questionText = document.getElementById('question-text');
+        const optionsGrid = document.getElementById('options-grid');
+        const gameContainer = document.getElementById('game-container');
+        const difficultyBadge = document.getElementById('difficulty-badge');
+        const scoreText = document.getElementById('score-text');
+
+        function startGame() {
+            startScreen.classList.add('hidden');
+            ribbon.classList.remove('hidden');
+            questionScreen.classList.remove('hidden');
+            currentIndex = 0;
+            scoreOnFirstTry = 0;
+            loadQuestion();
+            initAudio(); 
+        }
+
+        function loadQuestion() {
+            const qData = questionsData[currentIndex];
+            isFirstTryForCurrent = true;
+            
+            progressText.innerText = `⭐ Question ${currentIndex + 1} of ${questionsData.length} ⭐`;
+            
+            questionText.innerHTML = qData.q;
+            difficultyBadge.innerText = qData.difficulty;
+            difficultyBadge.className = `difficulty-badge diff-${qData.difficulty.toLowerCase()}`;
+            
+            optionsGrid.innerHTML = '';
+            
+            if(qData.options.length === 2) {
+                optionsGrid.style.gridTemplateColumns = '1fr';
+                optionsGrid.style.maxWidth = '400px';
+                optionsGrid.style.margin = '0 auto';
+            } else {
+                optionsGrid.style.gridTemplateColumns = '1fr 1fr';
+                optionsGrid.style.maxWidth = '100%';
+            }
+
+            qData.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerText = opt;
+                btn.onclick = () => handleAnswer(index, btn);
+                optionsGrid.appendChild(btn);
+            });
+        }
+
+        function handleAnswer(selectedIndex, btn) {
+            const qData = questionsData[currentIndex];
+            const isCorrect = (selectedIndex === qData.correct);
+            const allBtns = document.querySelectorAll('.option-btn');
+            
+            if (isCorrect) {
+                btn.classList.add('correct');
+                allBtns.forEach(b => b.disabled = true);
+                createStars(btn);
+                
+                if (isFirstTryForCurrent) {
+                    scoreOnFirstTry++;
+                }
+
+                setTimeout(() => {
+                    currentIndex++;
+                    if (currentIndex < questionsData.length) {
+                        loadQuestion();
+                    } else {
+                        endGame();
+                    }
+                }, 1500);
+
+            } else {
+                btn.classList.add('wrong');
+                btn.disabled = true;
+                isFirstTryForCurrent = false;
+                
+                gameContainer.classList.remove('warning-state');
+                void gameContainer.offsetWidth; // force reflow
+                gameContainer.classList.add('warning-state');
+            }
+        }
+
+        function createStars(targetBtn) {
+            const rect = targetBtn.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+
+            for (let i = 0; i < 20; i++) {
+                const star = document.createElement('div');
+                star.innerHTML = '✨';
+                star.className = 'star';
+                star.style.left = centerX + 'px';
+                star.style.top = centerY + 'px';
+                
+                const angle = Math.random() * Math.PI * 2;
+                const distance = 100 + Math.random() * 200;
+                const tx = Math.cos(angle) * distance + 'px';
+                const ty = Math.sin(angle) * distance + 'px';
+                
+                star.style.setProperty('--tx', tx);
+                star.style.setProperty('--ty', ty);
+                
+                document.body.appendChild(star);
+                setTimeout(() => star.remove(), 1000);
+            }
+        }
+
+        function endGame() {
+            questionScreen.classList.add('hidden');
+            ribbon.classList.add('hidden');
+            endScreen.classList.remove('hidden');
+            scoreText.innerHTML = `You answered <strong>${scoreOnFirstTry}</strong> out of ${questionsData.length} correctly on your very first try! <br><br> Your hard work in Sunday School is paying off. Keep building that strong foundation!`;
+        }
+
+        // --- Synthetic Audio Controller ---
+        let audioCtx;
+        let isPlaying = false;
+        let nextNoteTime = 0;
+        let currentNoteIndex = 0;
+        let timerID;
+
+        // Cheerful upbeat pentatonic melody loop
+        const melody = [
+            { freq: 523.25, dur: 0.2 }, // C5
+            { freq: 659.25, dur: 0.2 }, // E5
+            { freq: 783.99, dur: 0.4 }, // G5
+            { freq: 659.25, dur: 0.2 }, // E5
+            { freq: 523.25, dur: 0.2 }, // C5
+            { freq: 587.33, dur: 0.2 }, // D5
+            { freq: 659.25, dur: 0.4 }, // E5
+            { freq: 0,      dur: 0.2 }, // Rest
+            { freq: 880.00, dur: 0.2 }, // A5
+            { freq: 783.99, dur: 0.4 }, // G5
+            { freq: 659.25, dur: 0.2 }, // E5
+            { freq: 587.33, dur: 0.4 }, // D5
+        ];
+
+        function initAudio() {
+            if(!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContext();
+            }
+        }
+
+        function playNote(freq, dur, time) {
+            if(freq === 0) return; 
+            
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            
+            osc.type = 'sine';
+            osc.frequency.value = freq;
+            
+            gain.gain.setValueAtTime(0, time);
+            gain.gain.linearRampToValueAtTime(0.08, time + 0.05);
+            gain.gain.exponentialRampToValueAtTime(0.001, time + dur - 0.05);
+            
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            osc.start(time);
+            osc.stop(time + dur);
+        }
+
+        function scheduler() {
+            while (nextNoteTime < audioCtx.currentTime + 0.1) {
+                const note = melody[currentNoteIndex];
+                playNote(note.freq, note.dur, nextNoteTime);
+                nextNoteTime += note.dur;
+                currentNoteIndex = (currentNoteIndex + 1) % melody.length;
+            }
+            if(isPlaying) {
+                timerID = requestAnimationFrame(scheduler);
+            }
+        }
+
+        function toggleMusic() {
+            const btn = document.getElementById('music-btn');
+            
+            if(audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            if(isPlaying) {
+                isPlaying = false;
+                cancelAnimationFrame(timerID);
+                btn.innerText = "🎵 Play Background Music";
+                btn.style.color = "var(--secondary)";
+            } else {
+                initAudio();
+                isPlaying = true;
+                nextNoteTime = audioCtx.currentTime + 0.05;
+                scheduler();
+                btn.innerText = "🔇 Stop Music";
+                btn.style.color = "var(--danger)";
+            }
+        }
+    </script>
+</body>
+</html>
