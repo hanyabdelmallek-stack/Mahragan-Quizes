@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>St. Shenouda the Archimandrite Game</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap');
+
+        :root {
+            --primary: #4A148C; /* Deep Monastic Purple */
+            --secondary: #FBC02D; /* Desert Gold */
+            --success: #43A047; /* Green */
+            --danger: #E53935; /* Red */
+            --bg: #FFF8E1; /* Light Sand */
+            --text: #212121;
+            --card-bg: #FFFFFF;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-image: radial-gradient(circle at center, #ffffff 0%, #FFF8E1 100%);
+        }
+
+        /* Ribbon Tracker */
+        #ribbon {
+            background-color: var(--secondary);
+            color: var(--primary);
+            width: 100%;
+            padding: 15px 0;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 900;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            text-shadow: 1px 1px 2px rgba(255,255,255,0.4);
+        }
+
+        #music-btn {
+            background: #FFF;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: transform 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        #music-btn:hover {
+            transform: scale(1.05);
+        }
+
+        /* Main Game Box */
+        #game-container {
+            background: var(--card-bg);
+            max-width: 800px;
+            width: 90%;
+            margin: 40px auto;
+            border-radius: 20px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+            padding: 40px;
+            text-align: center;
+            position: relative;
+            transition: box-shadow 0.3s ease;
+            border: 5px solid var(--primary);
+        }
+
+        /* Gentle Warning Light Effect */
+        @keyframes gentleWarning {
+            0% { box-shadow: 0 0 0px var(--danger); border-color: var(--primary); }
+            50% { box-shadow: 0 0 40px var(--danger); border-color: var(--danger); }
+            100% { box-shadow: 0 0 0px var(--danger); border-color: var(--primary); }
+        }
+
+        .warning-state {
+            animation: gentleWarning 1s ease;
+        }
+
+        .difficulty-badge {
+            display: inline-block;
+            padding: 6px 18px;
+            border-radius: 20px;
+            font-size: 1rem;
+            font-weight: 900;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .diff-easy { background: #E8F5E9; color: #2E7D32; }
+        .diff-medium { background: #FFF3E0; color: #E65100; }
+        .diff-hard { background: #FCE4EC; color: #C2185B; }
+
+        #question-text {
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 30px;
+            line-height: 1.4;
+            color: var(--primary);
+        }
+
+        /* Options Grid Layout */
+        #options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .option-btn {
+            background-color: var(--bg);
+            border: 3px solid var(--primary);
+            color: var(--text);
+            padding: 20px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Nunito', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 80px;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            background-color: var(--primary);
+            color: #FFF;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(74, 20, 140, 0.3);
+        }
+
+        .option-btn.correct {
+            background-color: var(--success) !important;
+            border-color: var(--success) !important;
+            color: #FFF !important;
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(67, 160, 71, 0.5);
+        }
+
+        .option-btn.wrong {
+            background-color: var(--danger) !important;
+            border-color: var(--danger) !important;
+            color: #FFF !important;
+            opacity: 0.7;
+            animation: shake 0.4s;
+        }
+
+        .option-btn:disabled {
+            cursor: not-allowed;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        /* Bright Star Effects */
+        .star {
+            position: fixed;
+            font-size: 2.5rem;
+            pointer-events: none;
+            z-index: 1000;
+            animation: flyOut 1s ease-out forwards;
+        }
+
+        @keyframes flyOut {
+            0% { transform: translate(0, 0) scale(0.5); opacity: 1; }
+            100% { transform: translate(var(--tx), var(--ty)) scale(1.5) rotate(360deg); opacity: 0; }
+        }
+
+        /* Screens */
+        #start-screen, #end-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .big-btn {
+            background-color: var(--secondary);
+            color: var(--primary);
+            border: none;
+            padding: 20px 40px;
+            font-size: 1.5rem;
+            font-weight: 900;
+            border-radius: 30px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(251, 192, 45, 0.5);
+            font-family: 'Nunito', sans-serif;
+        }
+
+        .big-btn:hover {
+            transform: translateY(-5px) scale(1.05);
+            background-color: #F9A825;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 600px) {
+            #options-grid {
+                grid-template-columns: 1fr;
+            }
+            #question-text {
+                font-size: 1.4rem;
+            }
+            #ribbon {
+                font-size: 1.2rem;
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="ribbon" class="hidden">
+        <span id="progress-text">⭐ Question 1 of 30 ⭐</span>
+        <button id="music-btn" onclick="toggleMusic()">🎵 Play Background Music</button>
+    </div>
+
+    <div id="game-container">
+        
+        <div id="start-screen">
+            <h1 style="color: var(--primary); font-size: 2.5rem; margin-bottom: 10px;">🐪 The Archimandrite Quest 📜</h1>
+            <h3 style="color: var(--primary); margin-top: 0; opacity: 0.8;">The Journey of St. Shenouda</h3>
+            <p style="font-size: 1.2rem; color: #555; margin-bottom: 30px; line-height: 1.6;">
+                Welcome to the Sunday School Challenge! Let's explore the powerful life of St. Shenouda the Archimandrite. <br><br>
+                <strong>The Rule:</strong> Find the correct answer to move forward. If you choose the wrong answer, the question stays on the screen until you get it right!
+            </p>
+            <button class="big-btn" onclick="startGame()">▶️ START THE QUEST</button>
+        </div>
+
+        <div id="question-screen" class="hidden">
+            <div id="difficulty-badge" class="difficulty-badge">EASY</div>
+            <div id="question-text">Question goes here?</div>
+            <div id="options-grid">
+                </div>
+        </div>
+
+        <div id="end-screen" class="hidden">
+            <h1 style="color: var(--success); font-size: 3rem; margin-bottom: 10px;">🎉 HALLELUJAH! 🎉</h1>
+            <p style="font-size: 1.5rem; color: var(--primary); font-weight: bold;">You have completed the entire quest!</p>
+            <p id="score-text" style="font-size: 1.3rem; margin: 20px 0; color: #555; line-height: 1.5;"></p>
+            <button class="big-btn" onclick="location.reload()">🔄 RETAKE QUIZ</button>
+        </div>
+
+    </div>
+
+    <script>
+        // 30 Questions strictly derived from the provided text about St. Shenouda
+        const questionsData = [
+            { q: "St. Shenouda was born in the year 333 A.D.", options: ["True", "False"], correct: 0, difficulty: "Easy" },
+            { q: "In which city or village was St. Shenouda born?", options: ["Akhmeem", "Alexandria", "Cairo", "Antioch"], correct: 0, difficulty: "Medium" },
+            { q: "When St. Shenouda grew up, his father entrusted him with the care of what?", options: ["The church building", "The sheep", "The family business", "The temple"], correct: 1, difficulty: "Easy" },
+            { q: "What did St. Shenouda do with his food while tending the sheep?", options: ["Ate it quickly", "Fed it to the sheep", "Gave it to the shepherds and fasted", "Saved it for dinner"], correct: 2, difficulty: "Medium" },
+            { q: "Who was the abbot of the monastery that St. Shenouda visited with his father?", options: ["St. Pachomius", "St. Pigol", "St. Anthony", "St. Macarius"], correct: 1, difficulty: "Hard" },
+            { q: "When St. Pigol saw St. Shenouda, what did he do?", options: ["Placed Shenouda's hands on his own head", "Gave him a golden cross", "Sent him back to the sheep", "Taught him a new hymn"], correct: 0, difficulty: "Medium" },
+            { q: "St. Pigol prophesied, 'You bless me, my child, for you will be a father for...'", options: ["The emperor", "Many people", "The city of Alexandria", "The whole world"], correct: 1, difficulty: "Easy" },
+            { q: "What miracle did many fathers see regarding young St. Shenouda?", options: ["His face shining like the sun", "His hands illuminating while he was praying", "Him walking on water", "Him speaking in tongues"], correct: 1, difficulty: "Hard" },
+            { q: "What is the Holy Eskeem that St. Shenouda was dressed in?", options: ["A golden crown", "A string of plaited leather with crosses", "A white linen robe", "A wooden staff"], correct: 1, difficulty: "Medium" },
+            { q: "St. Shenouda was chosen to succeed his uncle as abbot around what year?", options: ["333 A.D.", "383 A.D.", "431 A.D.", "451 A.D."], correct: 1, difficulty: "Hard" },
+            { q: "One day, the monks heard a voice from heaven
