@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The 7 Words on the Cross Game - Part 2</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap');
+
+        :root {
+            --primary: #B71C1C; /* Deep Crimson */
+            --secondary: #F57F17; /* Golden Amber */
+            --success: #2E7D32; /* Deep Green */
+            --danger: #D32F2F; /* Red */
+            --bg: #FFEBEE; /* Light Crimson Tint */
+            --text: #212121;
+            --card-bg: #FFFFFF;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-image: radial-gradient(circle at center, #ffffff 0%, #FFEBEE 100%);
+        }
+
+        /* Ribbon Tracker */
+        #ribbon {
+            background-color: var(--secondary);
+            color: #FFF;
+            width: 100%;
+            padding: 15px 0;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 900;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+
+        #music-btn {
+            background: #FFF;
+            color: var(--primary);
+            border: none;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: transform 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        #music-btn:hover {
+            transform: scale(1.05);
+        }
+
+        /* Main Game Box */
+        #game-container {
+            background: var(--card-bg);
+            max-width: 800px;
+            width: 90%;
+            margin: 40px auto;
+            border-radius: 20px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            padding: 40px;
+            text-align: center;
+            position: relative;
+            transition: box-shadow 0.3s ease;
+            border: 5px solid var(--primary);
+        }
+
+        /* Gentle Warning Light Effect */
+        @keyframes gentleWarning {
+            0% { box-shadow: 0 0 0px var(--danger); border-color: var(--primary); }
+            50% { box-shadow: 0 0 40px var(--danger); border-color: var(--danger); }
+            100% { box-shadow: 0 0 0px var(--danger); border-color: var(--primary); }
+        }
+
+        .warning-state {
+            animation: gentleWarning 1s ease;
+        }
+
+        .difficulty-badge {
+            display: inline-block;
+            padding: 6px 18px;
+            border-radius: 20px;
+            font-size: 1rem;
+            font-weight: 900;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .diff-easy { background: #E8F5E9; color: #2E7D32; }
+        .diff-medium { background: #FFF8E1; color: #F57F17; }
+        .diff-hard { background: #FFEBEE; color: #B71C1C; }
+
+        #question-text {
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 30px;
+            line-height: 1.4;
+            color: var(--primary);
+        }
+
+        /* Options Grid Layout */
+        #options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .option-btn {
+            background-color: var(--bg);
+            border: 3px solid var(--primary);
+            color: var(--text);
+            padding: 20px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Nunito', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 80px;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            background-color: var(--primary);
+            color: #FFF;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(183, 28, 28, 0.3);
+        }
+
+        .option-btn.correct {
+            background-color: var(--success) !important;
+            border-color: var(--success) !important;
+            color: #FFF !important;
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(46, 125, 50, 0.5);
+        }
+
+        .option-btn.wrong {
+            background-color: var(--danger) !important;
+            border-color: var(--danger) !important;
+            color: #FFF !important;
+            opacity: 0.7;
+            animation: shake 0.4s;
+        }
+
+        .option-btn:disabled {
+            cursor: not-allowed;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        /* Bright Star Effects */
+        .star {
+            position: fixed;
+            font-size: 2.5rem;
+            pointer-events: none;
+            z-index: 1000;
+            animation: flyOut 1s ease-out forwards;
+        }
+
+        @keyframes flyOut {
+            0% { transform: translate(0, 0) scale(0.5); opacity: 1; }
+            100% { transform: translate(var(--tx), var(--ty)) scale(1.5) rotate(360deg); opacity: 0; }
+        }
+
+        /* Screens */
+        #start-screen, #end-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .big-btn {
+            background-color: var(--secondary);
+            color: #FFF;
+            border: none;
+            padding: 20px 40px;
+            font-size: 1.5rem;
+            font-weight: 900;
+            border-radius: 30px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(245, 127, 23, 0.5);
+            font-family: 'Nunito', sans-serif;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+
+        .big-btn:hover {
+            transform: translateY(-5px) scale(1.05);
+            background-color: #F9A825;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 600px) {
+            #options-grid {
+                grid-template-columns: 1fr;
+            }
+            #question-text {
+                font-size: 1.4rem;
+            }
+            #ribbon {
+                font-size: 1.2rem;
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="ribbon" class="hidden">
+        <span id="progress-text">⭐ Question 1 of 30 ⭐</span>
+        <button id="music-btn" onclick="toggleMusic()">🎵 Play Background Music</button>
+    </div>
+
+    <div id="game-container">
+        
+        <!-- Start Screen -->
+        <div id="start-screen">
+            <h1 style="color: var(--primary); font-size: 2.5rem; margin-bottom: 10px;">👑 Golden Words: Deep Dive 👑</h1>
+            <h3 style="color: var(--secondary); margin-top: 0;">Unveiling the Mysteries of the Cross</h3>
+            <p style="font-size: 1.2rem; color: #555; margin-bottom: 30px; line-height: 1.6;">
+                Welcome back! Let's delve deeper into the profound meanings behind the 7 Words spoken on the Cross. <br><br>
+                <strong>The Rule:</strong> Find the correct answer to move forward. If you choose the wrong answer, the question stays on the screen until you get it right!
+            </p>
+            <button class="big-btn" onclick="startGame()">▶️ START THE QUEST</button>
+        </div>
+
+        <!-- Question Screen -->
+        <div id="question-screen" class="hidden">
+            <div id="difficulty-badge" class="difficulty-badge">EASY</div>
+            <div id="question-text">Question goes here?</div>
+            <div id="options-grid">
+                <!-- Buttons injected dynamically -->
+            </div>
+        </div>
+
+        <!-- End Screen -->
+        <div id="end-screen" class="hidden">
+            <h1 style="color: var(--success); font-size: 3rem; margin-bottom: 10px;">🎉 MASTERPIECE! 🎉</h1>
+            <p style="font-size: 1.5rem; color: var(--primary); font-weight: bold;">You have conquered the final challenge!</p>
+            <p id="score-text" style="font-size: 1.3rem; margin: 20px 0; color: #555; line-height: 1.5;"></p>
+            <button class="big-btn" onclick="location.reload()">🔄 RETAKE QUIZ</button>
+        </div>
+
+    </div>
+
+    <script>
+        // 30 Brand New Questions based strictly on the text, covering unseen details.
+        const questionsData = [
+            { q: "What did the Lord Jesus Christ give to the Father while on the Cross?[cite: 5]", options: ["Wealth and honor", "The fulfillment of redemption and reconciliation", "The right-hand thief", "A new temple"], correct: 1, difficulty: "Medium" },
+            { q: "To humanity, the Lord Jesus gave atonement and redemption on the Cross.[cite: 5]", options: ["True", "False"], correct: 0, difficulty: "Easy" },
+            { q: "To us, the Lord Jesus gave assurance that He had accomplished the work of salvation.[cite: 5]", options: ["True", "False"], correct: 0, difficulty: "Medium" },
+            { q: "Who had given no one anything except goodness but was offered nothing but bitterness and vinegar?[cite: 5]", options: ["St. John the Beloved", "St. Peter", "Our Lord Jesus Christ", "St. Paul"], correct: 2, difficulty: "Easy" },
+            { q: "The seven words indicate that He is a King by doing what?[cite: 5]", options: ["Wearing a golden crown", "Granting the right-hand thief a share in His kingdom", "Commanding the Roman soldiers", "Sitting on an earthly throne"], correct: 1, difficulty: "Medium" },
+            { q: "The seven words indicate that He is a Teacher by proving what?[cite: 5]", options: ["That He knew the Law perfectly", "That He is the awaited Messiah foretold by the prophets", "That He was a powerful rabbi", "That He could speak many languages"], correct: 1, difficulty: "Hard" },
+            { q: "The Lord Jesus Christ offered forgiveness to His crucifiers even though He was innocent and endured cruelty.[cite: 6]", options: ["True", "False"], correct: 0, difficulty: "Easy" },
+            { q: "Christ's death was meant to reconcile sinful humanity with the Holy God.[cite: 6]", options: ["True", "False"], correct: 0, difficulty: "Medium" },
+            { q: "According to Luke 6:27-28, Jesus commanded us to do what to our enemies?[cite: 6]", options: ["Ignore them", "Fight them", "Love them", "Judge them"], correct: 2, difficulty: "Easy" },
+            { q: "The prayer of forgiveness on the Cross ONLY applies to those who were present during the crucifixion.[cite: 6]", options: ["True", "False"], correct: 1, difficulty: "Medium" },
+            { q: "Why did the Lord Jesus Christ forgive us, as mentioned in the lesson?[cite: 6]", options: ["To show off His power", "So that we may forgive others and enjoy the blessing of forgiveness", "Because we earned it", "To prove the Romans wrong"], correct: 1, difficulty: "Medium" },
+            { q: "Who benefits from the gift of grace and salvation?[cite: 6]", options: ["Everyone, regardless of faith", "Those who accept it, offer repentance, and receive the Sacraments", "Only the apostles", "Only those who are completely perfect"], correct: 1, difficulty: "Hard" },
+            { q: "Who is mentioned as an example of someone who persecuted the church until Christ appeared to him?[cite: 6]", options: ["St. Longinus", "St. Peter", "St. Paul", "St. John"], correct: 2, difficulty: "Easy" },
+            { q: "What did the Lord Jesus say to the thief who confessed his faith?[cite: 6]", options: ["'Today you will be with Me in Paradise.'", "'I thirst.'", "'It is finished.'", "'You are forgiven of some sins.'"], correct: 0, difficulty: "Easy" },
+            { q: "Trust that God hears your cry in the hour of distress and gives you more than you ask.[cite: 6]", options: ["True", "False"], correct: 0, difficulty: "Medium" },
+            { q: "According to Matthew 25:33, the repentant thief was placed among the sheep on which hand?[cite: 6]", options: ["The left hand", "The right hand", "Behind the throne", "In the back"], correct: 1, difficulty: "Medium" },
+            { q: "The right-hand thief was the only one who defended the Lord Jesus Christ while the disciples fled.[cite: 6]", options: ["True", "False"], correct: 0, difficulty: "Hard" },
+            { q: "Because the thief may enter Paradise before us, we should never do what to anyone?[cite: 6]", options: ["Speak to them", "Despise them", "Pray for them", "Forgive them"], correct: 1, difficulty: "Medium" },
+            { q: "What short prayer of the thief does the whole Church repeat?[cite: 6]", options: ["'Have mercy on me.'", "'Remember me, O Lord, when You come into Your kingdom.'", "'Forgive them.'", "'I am a sinner.'"], correct: 1, difficulty: "Medium" },
+            { q: "In His care for the Holy Virgin Mary, Christ taught us to properly comfort the sorrowful and those in mourning.[cite: 7]", options: ["True", "False"], correct: 0, difficulty: "Easy" },
+            { q: "Making St. Mary a mother to St. John also made her a mother to whom?[cite: 7]", options: ["Only the remaining disciples", "To the apostles, to all believers, and everyone who believes in Christ", "Only the martyrs", "The angels"], correct: 1, difficulty: "Hard" },
+            { q: "In which Psalm is the prayer 'My God, My God, why have You forsaken Me?' written?[cite: 7]", options: ["Psalm 22", "Psalm 50", "Psalm 23", "Psalm 91"], correct: 0, difficulty: "Hard" },
+            { q: "From where does the phrase 'Truly, I believe that His divinity parted not from His humanity...' originate?[cite: 7]", options: ["The Book of Revelation", "Confession in the Divine Liturgy", "The Old Testament", "A hymn by St. Ephrem"], correct: 1, difficulty: "Hard" },
+            { q: "When Jesus said 'I thirst,' He spiritually thirsted for the salvation of humanity, just as He did with whom?[cite: 8]", options: ["The Samaritan woman", "The Pharisees", "Pilate", "Herod"], correct: 0, difficulty: "Medium" },
+            { q: "Which prophecy in the Psalms states, 'And for My thirst they gave Me vinegar to drink'?[cite: 8]", options: ["Psalm 22:1", "Psalm 69:21", "Psalm 50:15", "Psalm 119:105"], correct: 1, difficulty: "Hard" },
+            { q: "In the sixth word, 'It is finished,' what was fulfilled?[cite: 8]", options: ["The Roman law", "Divine justice", "The construction of the temple", "The disciples' training"], correct: 1, difficulty: "Medium" },
+            { q: "Who was called 'the ruler of this world' according to John 12:31?[cite: 8]", options: ["Caesar", "Pilate", "Satan", "Herod"], correct: 2, difficulty: "Medium" },
+            { q: "The verse 'Father, into Your hands I commit My spirit' is recorded in which Gospel?[cite: 8]", options: ["Matthew 27:46", "Mark 15:34", "Luke 23:46", "John 19:30"], correct: 2, difficulty: "Hard" },
+            { q: "On what day did the Lord Jesus rise victorious over death?[cite: 8]", options: ["The second day", "The third day", "The fourth day", "The seventh day"], correct: 1, difficulty: "Easy" },
+            { q: "The Cross was transformed from an instrument of shame and suffering into what?[cite: 8]", options: ["A piece of history", "The throne of redemption and the source of eternal life", "A symbol of defeat", "A worldly monument"], correct: 1, difficulty: "Easy" }
+        ];
+
+        let currentIndex = 0;
+        let scoreOnFirstTry = 0;
+        let isFirstTryForCurrent = true;
+
+        // Elements
+        const startScreen = document.getElementById('start-screen');
+        const questionScreen = document.getElementById('question-screen');
+        const endScreen = document.getElementById('end-screen');
+        const ribbon = document.getElementById('ribbon');
+        const progressText = document.getElementById('progress-text');
+        const questionText = document.getElementById('question-text');
+        const optionsGrid = document.getElementById('options-grid');
+        const gameContainer = document.getElementById('game-container');
+        const difficultyBadge = document.getElementById('difficulty-badge');
+        const scoreText = document.getElementById('score-text');
+
+        function startGame() {
+            startScreen.classList.add('hidden');
+            ribbon.classList.remove('hidden');
+            questionScreen.classList.remove('hidden');
+            currentIndex = 0;
+            scoreOnFirstTry = 0;
+            loadQuestion();
+            initAudio(); 
+        }
+
+        function loadQuestion() {
+            const qData = questionsData[currentIndex];
+            isFirstTryForCurrent = true;
+            
+            progressText.innerText = `⭐ Question ${currentIndex + 1} of ${questionsData.length} ⭐`;
+            
+            questionText.innerHTML = qData.q;
+            difficultyBadge.innerText = qData.difficulty;
+            difficultyBadge.className = `difficulty-badge diff-${qData.difficulty.toLowerCase()}`;
+            
+            optionsGrid.innerHTML = '';
+            
+            if(qData.options.length === 2) {
+                optionsGrid.style.gridTemplateColumns = '1fr';
+                optionsGrid.style.maxWidth = '400px';
+                optionsGrid.style.margin = '0 auto';
+            } else {
+                optionsGrid.style.gridTemplateColumns = '1fr 1fr';
+                optionsGrid.style.maxWidth = '100%';
+            }
+
+            qData.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerText = opt;
+                btn.onclick = () => handleAnswer(index, btn);
+                optionsGrid.appendChild(btn);
+            });
+        }
+
+        function handleAnswer(selectedIndex, btn) {
+            const qData = questionsData[currentIndex];
+            const isCorrect = (selectedIndex === qData.correct);
+            const allBtns = document.querySelectorAll('.option-btn');
+            
+            if (isCorrect) {
+                btn.classList.add('correct');
+                allBtns.forEach(b => b.disabled = true);
+                createStars(btn);
+                
+                if (isFirstTryForCurrent) {
+                    scoreOnFirstTry++;
+                }
+
+                setTimeout(() => {
+                    currentIndex++;
+                    if (currentIndex < questionsData.length) {
+                        loadQuestion();
+                    } else {
+                        endGame();
+                    }
+                }, 1500);
+
+            } else {
+                btn.classList.add('wrong');
+                btn.disabled = true;
+                isFirstTryForCurrent = false;
+                
+                gameContainer.classList.remove('warning-state');
+                void gameContainer.offsetWidth; // force reflow
+                gameContainer.classList.add('warning-state');
+            }
+        }
+
+        function createStars(targetBtn) {
+            const rect = targetBtn.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+
+            for (let i = 0; i < 20; i++) {
+                const star = document.createElement('div');
+                star.innerHTML = '✨';
+                star.className = 'star';
+                star.style.left = centerX + 'px';
+                star.style.top = centerY + 'px';
+                
+                const angle = Math.random() * Math.PI * 2;
+                const distance = 100 + Math.random() * 200;
+                const tx = Math.cos(angle) * distance + 'px';
+                const ty = Math.sin(angle) * distance + 'px';
+                
+                star.style.setProperty('--tx', tx);
+                star.style.setProperty('--ty', ty);
+                
+                document.body.appendChild(star);
+                setTimeout(() => star.remove(), 1000);
+            }
+        }
+
+        function endGame() {
+            questionScreen.classList.add('hidden');
+            ribbon.classList.add('hidden');
+            endScreen.classList.remove('hidden');
+            scoreText.innerHTML = `You answered <strong>${scoreOnFirstTry}</strong> out of ${questionsData.length} correctly on your very first try! <br><br> Your knowledge of the Seven Words is truly excellent. Let these words guide you every day!`;
+        }
+
+        // --- Synthetic Audio Controller ---
+        let audioCtx;
+        let isPlaying = false;
+        let nextNoteTime = 0;
+        let currentNoteIndex = 0;
+        let timerID;
+
+        // Cheerful upbeat pentatonic melody loop
+        const melody = [
+            { freq: 523.25, dur: 0.2 }, // C5
+            { freq: 659.25, dur: 0.2 }, // E5
+            { freq: 783.99, dur: 0.4 }, // G5
+            { freq: 659.25, dur: 0.2 }, // E5
+            { freq: 523.25, dur: 0.2 }, // C5
+            { freq: 587.33, dur: 0.2 }, // D5
+            { freq: 659.25, dur: 0.4 }, // E5
+            { freq: 0,      dur: 0.2 }, // Rest
+            { freq: 880.00, dur: 0.2 }, // A5
+            { freq: 783.99, dur: 0.4 }, // G5
+            { freq: 659.25, dur: 0.2 }, // E5
+            { freq: 587.33, dur: 0.4 }, // D5
+        ];
+
+        function initAudio() {
+            if(!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContext();
+            }
+        }
+
+        function playNote(freq, dur, time) {
+            if(freq === 0) return; 
+            
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            
+            osc.type = 'sine';
+            osc.frequency.value = freq;
+            
+            gain.gain.setValueAtTime(0, time);
+            gain.gain.linearRampToValueAtTime(0.08, time + 0.05);
+            gain.gain.exponentialRampToValueAtTime(0.001, time + dur - 0.05);
+            
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            osc.start(time);
+            osc.stop(time + dur);
+        }
+
+        function scheduler() {
+            while (nextNoteTime < audioCtx.currentTime + 0.1) {
+                const note = melody[currentNoteIndex];
+                playNote(note.freq, note.dur, nextNoteTime);
+                nextNoteTime += note.dur;
+                currentNoteIndex = (currentNoteIndex + 1) % melody.length;
+            }
+            if(isPlaying) {
+                timerID = requestAnimationFrame(scheduler);
+            }
+        }
+
+        function toggleMusic() {
+            const btn = document.getElementById('music-btn');
+            
+            if(audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            if(isPlaying) {
+                isPlaying = false;
+                cancelAnimationFrame(timerID);
+                btn.innerText = "🎵 Play Background Music";
+                btn.style.color = "var(--primary)";
+            } else {
+                initAudio();
+                isPlaying = true;
+                nextNoteTime = audioCtx.currentTime + 0.05;
+                scheduler();
+                btn.innerText = "🔇 Stop Music";
+                btn.style.color = "var(--danger)";
+            }
+        }
+    </script>
+</body>
+</html>
