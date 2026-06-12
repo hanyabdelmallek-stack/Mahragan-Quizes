@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Cross Adventure Game - Part 2</title>
+<style>
+    :root {
+        --primary: #9C27B0; /* Changed primary color for a fresh look in Part 2 */
+        --secondary: #FFEB3B;
+        --bg: #F3E5F5;
+        --correct: #4CAF50;
+        --wrong: #F44336;
+        --text: #333333;
+    }
+
+    body {
+        font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+        background-color: var(--bg);
+        color: var(--text);
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+        overflow-x: hidden;
+    }
+
+    #ribbon {
+        width: 100%;
+        background-color: var(--primary);
+        color: white;
+        padding: 15px 30px;
+        font-size: 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-sizing: border-box;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        font-weight: bold;
+    }
+
+    #music-controls {
+        cursor: pointer;
+        background: var(--secondary);
+        border: none;
+        border-radius: 12px;
+        padding: 10px 20px;
+        font-size: 18px;
+        font-weight: bold;
+        color: var(--text);
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        transition: transform 0.2s;
+    }
+
+    #music-controls:hover {
+        transform: scale(1.05);
+    }
+
+    #game-container, #result-screen {
+        background: white;
+        border-radius: 25px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        padding: 40px;
+        margin: 40px 20px;
+        max-width: 800px;
+        width: 90%;
+        text-align: center;
+        position: relative;
+    }
+
+    .warning {
+        animation: flashRed 0.6s ease-in-out 2;
+    }
+
+    @keyframes flashRed {
+        0% { box-shadow: 0 0 0px var(--wrong); }
+        50% { box-shadow: 0 0 30px var(--wrong); }
+        100% { box-shadow: 0 0 0px var(--wrong); }
+    }
+
+    #illustration {
+        font-size: 90px;
+        margin: 10px 0 20px 0;
+        text-shadow: 2px 2px 10px rgba(0,0,0,0.1);
+    }
+
+    #question-text {
+        font-size: 28px;
+        margin-bottom: 40px;
+        color: var(--primary);
+        font-weight: bold;
+        line-height: 1.4;
+    }
+
+    .options-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .option-btn {
+        background-color: #F5F5F5;
+        border: 4px solid var(--primary);
+        border-radius: 15px;
+        padding: 20px;
+        font-size: 22px;
+        cursor: pointer;
+        transition: transform 0.2s, background-color 0.3s, border-color 0.3s;
+        font-family: inherit;
+        color: var(--text);
+        font-weight: bold;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .option-btn:hover {
+        transform: translateY(-5px);
+        background-color: #F3E5F5;
+    }
+
+    .option-btn.correct {
+        background-color: var(--correct) !important;
+        color: white;
+        border-color: var(--correct);
+        box-shadow: 0 0 15px var(--correct);
+    }
+
+    .option-btn.wrong {
+        background-color: var(--wrong) !important;
+        color: white;
+        border-color: var(--wrong);
+        animation: shake 0.4s;
+    }
+
+    @keyframes shake {
+        0% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        50% { transform: translateX(5px); }
+        75% { transform: translateX(-5px); }
+        100% { transform: translateX(0); }
+    }
+
+    .star {
+        position: fixed;
+        font-size: 40px;
+        animation: flyUp 1s ease-out forwards;
+        pointer-events: none;
+        z-index: 1000;
+    }
+
+    @keyframes flyUp {
+        0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
+        100% { transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(1.5) rotate(180deg); opacity: 0; }
+    }
+
+    #result-screen {
+        display: none;
+    }
+
+    #result-title {
+        font-size: 48px;
+        color: var(--primary);
+        margin-bottom: 20px;
+    }
+
+    #result-text {
+        font-size: 32px;
+        color: var(--correct);
+        margin-bottom: 40px;
+    }
+
+    #retake-btn {
+        background-color: var(--secondary);
+        border: none;
+        padding: 20px 50px;
+        font-size: 26px;
+        border-radius: 20px;
+        cursor: pointer;
+        font-weight: bold;
+        box-shadow: 0 6px 10px rgba(0,0,0,0.2);
+        transition: transform 0.2s;
+    }
+
+    #retake-btn:hover {
+        transform: scale(1.1);
+    }
+
+    @media(max-width: 768px) {
+        .options-grid {
+            grid-template-columns: 1fr;
+        }
+        #ribbon {
+            flex-direction: column;
+            gap: 10px;
+            font-size: 20px;
+        }
+        #question-text {
+            font-size: 24px;
+        }
+    }
+</style>
+</head>
+<body>
+
+<div id="ribbon">
+    <div>⚓ The Cross Adventure Game - Level 2</div>
+    <div id="progress-text">Question 1 of 30</div>
+    <button id="music-controls" onclick="toggleMusic()">🎵 Play Music</button>
+</div>
+
+<div id="game-container">
+    <div id="illustration"></div>
+    <div id="question-text"></div>
+    <div class="options-grid" id="options-grid"></div>
+</div>
+
+<div id="result-screen">
+    <div id="result-title">🎉 Master Explorer! 🎉</div>
+    <div id="result-text"></div>
+    <button id="retake-btn" onclick="retake()">Play Again! 🔄</button>
+</div>
+
+<script>
+    // --- Audio Synthesizer ---
+    let audioCtx;
+    let isPlaying = false;
+    let loopId;
+
+    function playTone(freq, time, duration) {
+        if (!audioCtx) return;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.value = freq;
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        gain.gain.setValueAtTime(0, time);
+        gain.gain.linearRampToValueAtTime(0.08, time + 0.05);
+        gain.gain.linearRampToValueAtTime(0, time + duration);
+        osc.start(time);
+        osc.stop(time + duration);
+    }
+
+    function playMelody() {
+        if (!isPlaying) return;
+        const now = audioCtx.currentTime;
+        const melody = [
+            { f: 523.25, t: 0.0, d: 0.2 }, 
+            { f: 659.25, t: 0.2, d: 0.2 }, 
+            { f: 783.99, t: 0.4, d: 0.2 }, 
+            { f: 1046.50, t: 0.6, d: 0.4 }, 
+            { f: 783.99, t: 1.2, d: 0.2 }, 
+            { f: 1046.50, t: 1.4, d: 0.6 }  
+        ];
+        
+        melody.forEach(note => playTone(note.f, now + note.t, note.d));
+        loopId = setTimeout(playMelody, 3000); 
+    }
+
+    function toggleMusic() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        const btn = document.getElementById('music-controls');
+        if (isPlaying) {
+            isPlaying = false;
+            clearTimeout(loopId);
+            btn.innerHTML = '🎵 Play Music';
+        } else {
+            isPlaying = true;
+            audioCtx.resume();
+            playMelody();
+            btn.innerHTML = '⏸️ Stop Music';
+        }
+    }
+
+    // --- Game Logic & Data ---
+    const questions = [
+        { q: "What is the main sign the team must reach first to win the adventure?", o: ["The Golden Crown", "The sign of Pistavros", "The Bronze Serpent", "The Mountain Top"], a: 1, ill: "🪧" },
+        { q: "What are the names of the two fourth graders on the team?", o: ["Tony and John", "Mark and Moses", "Lauren and Marina", "Peter and Paul"], a: 0, ill: "👦👦" },
+        { q: "What are the names of the two third graders on the team?", o: ["Sarah and Mary", "Tony and John", "Lauren and Marina", "Martha and Eve"], a: 2, ill: "👧👧" },
+        { q: "According to Romans 8:37, we are \"more than conquerors through Him who...\"", o: ["Created us", "Loved us", "Guided us", "Healed us"], a: 1, ill: "❤️" },
+        { q: "What is the first anchor we learn from the story of the Bronze Serpent?", o: ["The Cross is an Eternal Plan", "Through the Cross, all Humanity was Saved", "The Cross in the Church", "The Cross Leads me to Eternity"], a: 0, ill: "⚓" },
+        { q: "What is the second anchor we learn in the lesson \"Why the Cross\"?", o: ["My Spiritual Fathers Lived by the Cross", "The Cross is an Eternal Plan", "Through the Cross, all Humanity was Saved", "The Cross in the Church"], a: 2, ill: "🌍" },
+        { q: "The third anchor, \"The Cross in the Church,\" is learned from which lesson?", o: ["The Bronze Serpent", "Saint Anthony", "Saint John the Beloved", "The procession of the Feast of the Cross"], a: 3, ill: "⛪" },
+        { q: "Which Saint teaches us the fourth anchor, \"My Spiritual Fathers Lived by the Cross\"?", o: ["Saint Peter", "Saint Anthony the Father of the Monks", "Saint Mark", "Saint John the Beloved"], a: 1, ill: "🧔‍♂️" },
+        { q: "The fifth anchor, \"The Cross Leads me to Eternity,\" is learned from the life of which Saint?", o: ["Saint Paul", "Saint Anthony", "Saint John the Beloved", "Saint Moses"], a: 2, ill: "✨" },
+        { q: "True or False: To enter the game, the friends had to put on special glasses.", o: ["True", "False"], a: 0, ill: "👓" },
+        { q: "What appeared on the screen of their glasses to help them on their journey?", o: ["A Toolbox", "A Map of Egypt", "A Compass", "A Magic Wand"], a: 0, ill: "🧰" },
+        { q: "Where did the friends find themselves immediately after entering the game?", o: ["In a desert", "Inside an airplane", "On a boat", "In a church"], a: 1, ill: "✈️" },
+        { q: "According to Tony, how many kilometers were left to reach the mission site?", o: ["2 kilometers", "4 kilometers", "6 kilometers", "10 kilometers"], a: 2, ill: "📏" },
+        { q: "Why did the airplane's alarm suddenly go off?", o: ["They were flying too high", "The fuel tank was running low", "They went the wrong way", "An engine broke"], a: 1, ill: "⛽" },
+        { q: "True or False: Iron parts from the plane would work great to build a boat.", o: ["True", "False, iron does not float"], a: 1, ill: "⚙️" },
+        { q: "Uncle Mark compared being separated from God to what?", o: ["A dry river", "A lamp when the electricity is cut off", "A broken compass", "A lost sheep"], a: 1, ill: "💡" },
+        { q: "What did God do before creating man?", o: ["Prepared everything he needed", "Built a boat", "Created the angels", "Planted the willow tree"], a: 0, ill: "🎁" },
+        { q: "True or False: God gave man free will when He placed him in the garden.", o: ["True", "False"], a: 0, ill: "🕊️" },
+        { q: "According to Saint Paul in Romans 5:12, through one man what entered the world?", o: ["Joy", "Sin", "Peace", "Knowledge"], a: 1, ill: "😔" },
+        { q: "Moses was commanded to raise the bronze serpent on what?", o: ["A golden altar", "A mountain", "A pole", "A tree branch"], a: 2, ill: "🐍" },
+        { q: "What did the Manna that God sent from heaven taste like?", o: ["Salty crackers", "Honey wafers", "Fresh bread", "Sweet fruit"], a: 1, ill: "🍯" },
+        { q: "When the Israelites were thirsty and grumbled, God brought water out of a...", o: ["Cloud", "River", "Rock", "Well"], a: 2, ill: "🪨" },
+        { q: "What disrespectful name did the Israelites call the Manna when they grumbled?", o: ["Worthless food", "Bad bread", "Tasteless grain", "Dry meal"], a: 0, ill: "😠" },
+        { q: "True or False: Grumbling against God showed that the people trusted completely in His providence.", o: ["True", "False"], a: 1, ill: "🚫" },
+        { q: "What Sacrament is required along with Baptism to benefit from salvation?", o: ["Matrimony", "Myron (Chrismation)", "Unction of the Sick", "Priesthood"], a: 1, ill: "🕊️" },
+        { q: "Hebrews 9:22 says \"without shedding of blood there is no...\"", o: ["Remission", "Life", "Hope", "Love"], a: 0, ill: "🩸" },
+        { q: "The Lord Jesus chose the Cross as a public sign so everyone could witness...", o: ["The nails in His hands and feet", "His beautiful clothes", "The angels singing", "The sky turning dark"], a: 0, ill: "👀" },
+        { q: "Because God is Just and Holy, He promised: \"the seed of the woman shall bruise the head of the...\"", o: ["Lion", "Bear", "Serpent", "Dragon"], a: 2, ill: "🐍" },
+        { q: "Why did Christ want His Body to stay whole on the cross without broken bones?", o: ["To fulfill a dare", "Because it represents the Church being complete and united", "To make it easier to carry", "Because the soldiers were tired"], a: 1, ill: "🤝" },
+        { q: "What verse do we say to take pride in the cross? \"God forbid that I should boast except in...\"", o: ["John 3:16", "Genesis 1:1", "Galatians 6:14", "Romans 8:28"], a: 2, ill: "📖" }
+    ];
+
+    let currentQ = 0;
+    let score = 0;
+    let firstTry = true;
+
+    function shootStars(btn) {
+        const rect = btn.getBoundingClientRect();
+        const emojis = ['⭐', '✨', '🌟', '🎉'];
+        for(let i=0; i<15; i++) {
+            let star = document.createElement('div');
+            star.className = 'star';
+            star.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+            star.style.left = (rect.left + rect.width/2) + 'px';
+            star.style.top = (rect.top + rect.height/2) + 'px';
+            
+            let angle = Math.random() * Math.PI * 2;
+            let distance = Math.random() * 120 + 60;
+            let tx = Math.cos(angle) * distance;
+            let ty = Math.sin(angle) * distance - 100; 
+            
+            star.style.setProperty('--tx', `${tx}px`);
+            star.style.setProperty('--ty', `${ty}px`);
+            
+            document.body.appendChild(star);
+            setTimeout(() => star.remove(), 1000);
+        }
+    }
+
+    function loadQuestion() {
+        firstTry = true;
+        const q = questions[currentQ];
+        document.getElementById('progress-text').innerText = `Question ${currentQ + 1} of ${questions.length}`;
+        document.getElementById('illustration').innerText = q.ill;
+        document.getElementById('question-text').innerText = q.q;
+        
+        const optionsGrid = document.getElementById('options-grid');
+        optionsGrid.innerHTML = '';
+        
+        q.o.forEach((opt, index) => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerText = opt;
+            btn.onclick = () => checkAnswer(index, btn);
+            optionsGrid.appendChild(btn);
+        });
+    }
+
+    function checkAnswer(index, btn) {
+        if(btn.classList.contains('wrong') || btn.classList.contains('correct')) return;
+
+        const q = questions[currentQ];
+        const buttons = document.querySelectorAll('.option-btn');
+        const container = document.getElementById('game-container');
+        
+        if (index === q.a) {
+            btn.classList.add('correct');
+            shootStars(btn);
+            if (firstTry) score++;
+            
+            buttons.forEach(b => b.style.pointerEvents = 'none');
+            
+            setTimeout(() => {
+                currentQ++;
+                if (currentQ < questions.length) {
+                    loadQuestion();
+                } else {
+                    showResult();
+                }
+            }, 1500);
+        } else {
+            btn.classList.add('wrong');
+            firstTry = false;
+            
+            container.classList.remove('warning');
+            void container.offsetWidth; 
+            container.classList.add('warning');
+        }
+    }
+
+    function showResult() {
+        document.getElementById('game-container').style.display = 'none';
+        document.getElementById('result-screen').style.display = 'block';
+        
+        const percent = Math.round((score / questions.length) * 100);
+        document.getElementById('result-text').innerText = `Amazing effort!\nYou scored ${score} out of ${questions.length} on your first try!\n\nThat's ${percent}%! Keep learning and growing!`;
+    }
+
+    function retake() {
+        currentQ = 0;
+        score = 0;
+        document.getElementById('game-container').style.display = 'block';
+        document.getElementById('result-screen').style.display = 'none';
+        loadQuestion();
+    }
+
+    // Initialize Game
+    loadQuestion();
+</script>
+</body>
+</html>
