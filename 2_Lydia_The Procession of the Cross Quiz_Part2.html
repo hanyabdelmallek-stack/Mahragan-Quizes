@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Processon of the Cross Quiz_Part 2</title>
+<style>
+    :root {
+        --primary: #00BCD4; /* Cheerful Cyan */
+        --secondary: #FF9800; /* Bright Orange */
+        --bg: #E0F7FA;
+        --correct: #4CAF50;
+        --wrong: #F44336;
+        --text: #333333;
+    }
+
+    body {
+        font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+        background-color: var(--bg);
+        color: var(--text);
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+        overflow-x: hidden;
+    }
+
+    #ribbon {
+        width: 100%;
+        background-color: var(--primary);
+        color: white;
+        padding: 15px 30px;
+        font-size: 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-sizing: border-box;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        font-weight: bold;
+    }
+
+    #music-controls {
+        cursor: pointer;
+        background: var(--secondary);
+        border: none;
+        border-radius: 12px;
+        padding: 10px 20px;
+        font-size: 18px;
+        font-weight: bold;
+        color: white;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        transition: transform 0.2s;
+    }
+
+    #music-controls:hover {
+        transform: scale(1.05);
+    }
+
+    #game-container, #result-screen {
+        background: white;
+        border-radius: 25px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        padding: 40px;
+        margin: 40px 20px;
+        max-width: 800px;
+        width: 90%;
+        text-align: center;
+        position: relative;
+    }
+
+    .warning {
+        animation: flashRed 0.6s ease-in-out 2;
+    }
+
+    @keyframes flashRed {
+        0% { box-shadow: 0 0 0px var(--wrong); }
+        50% { box-shadow: 0 0 30px var(--wrong); }
+        100% { box-shadow: 0 0 0px var(--wrong); }
+    }
+
+    #illustration {
+        font-size: 90px;
+        margin: 10px 0 20px 0;
+        text-shadow: 2px 2px 10px rgba(0,0,0,0.1);
+    }
+
+    #question-text {
+        font-size: 28px;
+        margin-bottom: 40px;
+        color: #00838F;
+        font-weight: bold;
+        line-height: 1.4;
+    }
+
+    .options-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .option-btn {
+        background-color: #F5F5F5;
+        border: 4px solid var(--primary);
+        border-radius: 15px;
+        padding: 20px;
+        font-size: 22px;
+        cursor: pointer;
+        transition: transform 0.2s, background-color 0.3s, border-color 0.3s;
+        font-family: inherit;
+        color: var(--text);
+        font-weight: bold;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .option-btn:hover {
+        transform: translateY(-5px);
+        background-color: #E0F7FA;
+    }
+
+    .option-btn.correct {
+        background-color: var(--correct) !important;
+        color: white;
+        border-color: var(--correct);
+        box-shadow: 0 0 15px var(--correct);
+    }
+
+    .option-btn.wrong {
+        background-color: var(--wrong) !important;
+        color: white;
+        border-color: var(--wrong);
+        animation: shake 0.4s;
+    }
+
+    @keyframes shake {
+        0% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        50% { transform: translateX(5px); }
+        75% { transform: translateX(-5px); }
+        100% { transform: translateX(0); }
+    }
+
+    .star {
+        position: fixed;
+        font-size: 40px;
+        animation: flyUp 1s ease-out forwards;
+        pointer-events: none;
+        z-index: 1000;
+    }
+
+    @keyframes flyUp {
+        0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
+        100% { transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(1.5) rotate(180deg); opacity: 0; }
+    }
+
+    #result-screen {
+        display: none;
+    }
+
+    #result-title {
+        font-size: 48px;
+        color: var(--primary);
+        margin-bottom: 20px;
+    }
+
+    #result-text {
+        font-size: 32px;
+        color: var(--correct);
+        margin-bottom: 40px;
+    }
+
+    #retake-btn {
+        background-color: var(--secondary);
+        color: white;
+        border: none;
+        padding: 20px 50px;
+        font-size: 26px;
+        border-radius: 20px;
+        cursor: pointer;
+        font-weight: bold;
+        box-shadow: 0 6px 10px rgba(0,0,0,0.2);
+        transition: transform 0.2s;
+    }
+
+    #retake-btn:hover {
+        transform: scale(1.1);
+    }
+
+    @media(max-width: 768px) {
+        .options-grid {
+            grid-template-columns: 1fr;
+        }
+        #ribbon {
+            flex-direction: column;
+            gap: 10px;
+            font-size: 20px;
+            text-align: center;
+        }
+        #question-text {
+            font-size: 24px;
+        }
+    }
+</style>
+</head>
+<body>
+
+<div id="ribbon">
+    <div>⛪ The Processon of the Cross Quiz_Part 2</div>
+    <div id="progress-text">Question 1 of 30</div>
+    <button id="music-controls" onclick="toggleMusic()">🎵 Play Music</button>
+</div>
+
+<div id="game-container">
+    <div id="illustration"></div>
+    <div id="question-text"></div>
+    <div class="options-grid" id="options-grid"></div>
+</div>
+
+<div id="result-screen">
+    <div id="result-title">🌟 You Did It! 🌟</div>
+    <div id="result-text"></div>
+    <button id="retake-btn" onclick="retake()">Play Again! 🔄</button>
+</div>
+
+<script>
+    // --- Audio Synthesizer ---
+    let audioCtx;
+    let isPlaying = false;
+    let loopId;
+
+    function playTone(freq, time, duration) {
+        if (!audioCtx) return;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        gain.gain.setValueAtTime(0, time);
+        gain.gain.linearRampToValueAtTime(0.1, time + 0.05);
+        gain.gain.linearRampToValueAtTime(0, time + duration);
+        osc.start(time);
+        osc.stop(time + duration);
+    }
+
+    function playMelody() {
+        if (!isPlaying) return;
+        const now = audioCtx.currentTime;
+        // A new cheerful melody for Part 2
+        const melody = [
+            { f: 659.25, t: 0.0, d: 0.2 }, // E5
+            { f: 523.25, t: 0.2, d: 0.2 }, // C5
+            { f: 659.25, t: 0.4, d: 0.2 }, // E5
+            { f: 783.99, t: 0.6, d: 0.4 }, // G5
+            { f: 523.25, t: 1.2, d: 0.4 }  // C5
+        ];
+        
+        melody.forEach(note => playTone(note.f, now + note.t, note.d));
+        loopId = setTimeout(playMelody, 2500); 
+    }
+
+    function toggleMusic() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        const btn = document.getElementById('music-controls');
+        if (isPlaying) {
+            isPlaying = false;
+            clearTimeout(loopId);
+            btn.innerHTML = '🎵 Play Music';
+        } else {
+            isPlaying = true;
+            audioCtx.resume();
+            playMelody();
+            btn.innerHTML = '⏸️ Stop Music';
+        }
+    }
+
+    // --- Game Logic & Data ---
+    const questions = [
+        { q: "What is the title of the lesson that teaches us about the procession?", o: ["The Cross is the Basis of the Liturgy", "The Bronze Serpent", "The Floating Raft", "The Hidden Treasure"], a: 0, ill: "📖" },
+        { q: "Who taught John and his friends about the Church's rites in the Deacons' School class?", o: ["Uncle Mark", "Uncle Mina", "Abouna", "Tony"], a: 1, ill: "👨‍🏫" },
+        { q: "The 1st Station of the procession is located where in the church?", o: ["The Western Door", "The Northern Door", "In Front of the Main Sanctuary", "The Baptismal Font"], a: 2, ill: "🏛️" },
+        { q: "Through His death, Resurrection, and Ascension, the Lord Jesus opened what for us?", o: ["The Red Sea", "The door of Heaven", "The church doors", "The tomb"], a: 1, ill: "☁️" },
+        { q: "The Gospel Response at the 1st Station speaks about four living creatures carrying what?", o: ["The throne of God", "The Cross", "The altar", "The Bible"], a: 0, ill: "👑" },
+        { q: "True or False: Station 2 is in front of the Icon of Archangel Michael.", o: ["True", "False, it is the Virgin Mary"], a: 1, ill: "🖼️" },
+        { q: "What does the Psalm at the 2nd Station call our Mother the Virgin Mary?", o: ["The Queen of Angels", "The City of God", "The Morning Star", "The Golden Censer"], a: 1, ill: "🌆" },
+        { q: "In the Gospel at the 2nd Station, what did Saint Mary say?", o: ["Let it be to me according to your word", "My spirit has rejoiced in God my Savior", "Do whatever He tells you", "Hosanna in the highest"], a: 1, ill: "😊" },
+        { q: "The Gospel Response at the 2nd Station says: 'We exalt you worthily with...' whom?", o: ["Saint Anne", "Elizabeth your cousin", "Saint Mary Magdalene", "Martha"], a: 1, ill: "👭" },
+        { q: "Station 3 is in front of the Icon of Archangel Gabriel. What prophet saw him standing by the riverbank?", o: ["Moses", "Isaiah", "Daniel", "Ezekiel"], a: 2, ill: "🌊" },
+        { q: "Station 4 is in front of the Icon of Archangel Michael. What title does the Church give him because of the empty tomb?", o: ["The Angel of the Resurrection", "The Angel of Peace", "The Commander", "The Messenger"], a: 0, ill: "🪨" },
+        { q: "True or False: Archangel Michael is the first among the angelic ranks serving before the Lord.", o: ["True", "False"], a: 0, ill: "👼" },
+        { q: "Station 5 is in front of the Icon of Saint Mark. What special cross did he carry?", o: ["A wooden cross", "The cross of the Gospel, ministry, and preaching", "A golden cross", "An iron cross"], a: 1, ill: "🦁" },
+        { q: "Station 6 is in front of the Icon of the Twelve Disciples. What did Jesus send them to do?", o: ["Build a raft", "Preach in the nations and make them Christians", "Hide in the desert", "Sing hymns"], a: 1, ill: "🌍" },
+        { q: "Station 7 is in front of the Icon of a Martyr. Who did the martyrs witness the power of the Cross to?", o: ["Only the angels", "Kings and rulers", "Only their families", "No one"], a: 1, ill: "👑" },
+        { q: "If the church is named after Saint George, his Gospel is read at which station?", o: ["Station 1", "Station 5", "Station 7", "Station 12"], a: 2, ill: "🐎" },
+        { q: "Station 8 is in front of the Icon of Saint Anthony. Was he martyred by blood?", o: ["Yes, by a king", "No, he carried the cross of ascetic life instead"], a: 1, ill: "⛰️" },
+        { q: "The Gospel response at Station 8 tells us to 'Purge from your hearts thoughts of...' what?", o: ["Vice and deceiving ideas", "Sadness and crying", "Food and drink", "Sleep and rest"], a: 0, ill: "🧹" },
+        { q: "Which station is located at the Northern Door of the church?", o: ["The 1st Station", "The 5th Station", "The 9th Station", "The 12th Station"], a: 2, ill: "🚪" },
+        { q: "The Psalm at the Northern Door shows our joy when we enter what place?", o: ["The House of God", "Our own house", "A boat", "A garden"], a: 0, ill: "⛪" },
+        { q: "The Gospel at the Northern Door teaches us to endure trials with patience so we can share in what?", o: ["A big feast", "Christ's sufferings and rejoice in His Resurrection", "A golden crown", "Earthly riches"], a: 1, ill: "🌅" },
+        { q: "Station 10 is at the Western Door. What important item is located there?", o: ["The main altar", "The Lagan Basin", "The Bishop's chair", "The offering table"], a: 1, ill: "💧" },
+        { q: "The Gospel at the Western Door tells the story of what major event?", o: ["The birth of Jesus", "The Lord Jesus' Baptism", "The feeding of the 5000", "The Ascension"], a: 1, ill: "🕊️" },
+        { q: "How many times does Abouna immerse a person in the water of Baptism?", o: ["One time", "Two times", "Three times", "Seven times"], a: 2, ill: "💦" },
+        { q: "In Baptism, we move from darkness to light. This is represented by moving from which direction to which?", o: ["West to East", "East to West", "North to South", "South to North"], a: 0, ill: "🧭" },
+        { q: "Station 11 is at the Southern Door. The Gospel reading here is about Jesus entering what city as a King?", o: ["Bethlehem", "Jerusalem", "Nazareth", "Jericho"], a: 1, ill: "🌿" },
+        { q: "The Gospel Response at the Southern Door asks: 'What is this great...?'", o: ["Power", "Humility", "Wealth", "Anger"], a: 1, ill: "🙏" },
+        { q: "Station 12 is in front of the Icon of Saint John the Baptist. What did he say when he saw Jesus?", o: ["Behold! The King of Kings!", "Behold! The Lamb of God who takes away the sin of the world!", "Here is my cousin!", "The Prophet has come!"], a: 1, ill: "🐑" },
+        { q: "True or False: Saint John the Baptist received the crown of martyrdom at the hands of the evil King Herod.", o: ["True", "False"], a: 0, ill: "🛡️" },
+        { q: "After completing the task of fixing the raft and learning the rite, what did the friends receive?", o: ["A gold coin", "The third piece of the puzzle", "A new boat", "A map of the whole world"], a: 1, ill: "🧩" }
+    ];
+
+    let currentQ = 0;
+    let score = 0;
+    let firstTry = true;
+
+    function shootStars(btn) {
+        const rect = btn.getBoundingClientRect();
+        const emojis = ['⭐', '✨', '🌟', '🎉'];
+        for(let i=0; i<15; i++) {
+            let star = document.createElement('div');
+            star.className = 'star';
+            star.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+            star.style.left = (rect.left + rect.width/2) + 'px';
+            star.style.top = (rect.top + rect.height/2) + 'px';
+            
+            let angle = Math.random() * Math.PI * 2;
+            let distance = Math.random() * 120 + 60;
+            let tx = Math.cos(angle) * distance;
+            let ty = Math.sin(angle) * distance - 100; 
+            
+            star.style.setProperty('--tx', `${tx}px`);
+            star.style.setProperty('--ty', `${ty}px`);
+            
+            document.body.appendChild(star);
+            setTimeout(() => star.remove(), 1000);
+        }
+    }
+
+    function loadQuestion() {
+        firstTry = true;
+        const q = questions[currentQ];
+        document.getElementById('progress-text').innerText = `Question ${currentQ + 1} of ${questions.length}`;
+        document.getElementById('illustration').innerText = q.ill;
+        document.getElementById('question-text').innerText = q.q;
+        
+        const optionsGrid = document.getElementById('options-grid');
+        optionsGrid.innerHTML = '';
+        
+        q.o.forEach((opt, index) => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerText = opt;
+            btn.onclick = () => checkAnswer(index, btn);
+            optionsGrid.appendChild(btn);
+        });
+    }
+
+    function checkAnswer(index, btn) {
+        if(btn.classList.contains('wrong') || btn.classList.contains('correct')) return;
+
+        const q = questions[currentQ];
+        const buttons = document.querySelectorAll('.option-btn');
+        const container = document.getElementById('game-container');
+        
+        if (index === q.a) {
+            btn.classList.add('correct');
+            shootStars(btn);
+            if (firstTry) score++;
+            
+            buttons.forEach(b => b.style.pointerEvents = 'none');
+            
+            setTimeout(() => {
+                currentQ++;
+                if (currentQ < questions.length) {
+                    loadQuestion();
+                } else {
+                    showResult();
+                }
+            }, 1500);
+        } else {
+            btn.classList.add('wrong');
+            firstTry = false;
+            
+            container.classList.remove('warning');
+            void container.offsetWidth; 
+            container.classList.add('warning');
+        }
+    }
+
+    function showResult() {
+        document.getElementById('game-container').style.display = 'none';
+        document.getElementById('result-screen').style.display = 'block';
+        
+        const percent = Math.round((score / questions.length) * 100);
+        document.getElementById('result-text').innerText = `Fantastic effort!\nYou scored ${score} out of ${questions.length} on your first try!\n\nThat's ${percent}%!`;
+    }
+
+    function retake() {
+        currentQ = 0;
+        score = 0;
+        document.getElementById('game-container').style.display = 'block';
+        document.getElementById('result-screen').style.display = 'none';
+        loadQuestion();
+    }
+
+    // Initialize Game
+    loadQuestion();
+</script>
+</body>
+</html>
