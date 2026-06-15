@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spiritual Fathers & The Cross Game</title>
+<style>
+    :root {
+        --primary: #4CAF50; /* Nature Green */
+        --secondary: #FF9800; /* Warm Orange */
+        --bg: #E8F5E9; /* Light Green Background */
+        --correct: #2E7D32;
+        --wrong: #D32F2F;
+        --text: #212121;
+    }
+
+    body {
+        font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+        background-color: var(--bg);
+        color: var(--text);
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+        overflow-x: hidden;
+    }
+
+    #ribbon {
+        width: 100%;
+        background-color: var(--primary);
+        color: white;
+        padding: 15px 30px;
+        font-size: 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-sizing: border-box;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        font-weight: bold;
+    }
+
+    #music-controls {
+        cursor: pointer;
+        background: var(--secondary);
+        border: none;
+        border-radius: 12px;
+        padding: 10px 20px;
+        font-size: 18px;
+        font-weight: bold;
+        color: white;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        transition: transform 0.2s;
+    }
+
+    #music-controls:hover {
+        transform: scale(1.05);
+    }
+
+    #game-container, #result-screen {
+        background: white;
+        border-radius: 25px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        padding: 40px;
+        margin: 40px 20px;
+        max-width: 800px;
+        width: 90%;
+        text-align: center;
+        position: relative;
+    }
+
+    .warning {
+        animation: flashRed 0.6s ease-in-out 2;
+    }
+
+    @keyframes flashRed {
+        0% { box-shadow: 0 0 0px var(--wrong); }
+        50% { box-shadow: 0 0 30px var(--wrong); }
+        100% { box-shadow: 0 0 0px var(--wrong); }
+    }
+
+    #illustration {
+        font-size: 90px;
+        margin: 10px 0 20px 0;
+        text-shadow: 2px 2px 10px rgba(0,0,0,0.1);
+    }
+
+    #question-text {
+        font-size: 28px;
+        margin-bottom: 40px;
+        color: #2E7D32;
+        font-weight: bold;
+        line-height: 1.4;
+    }
+
+    .options-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .option-btn {
+        background-color: #F1F8E9;
+        border: 4px solid var(--primary);
+        border-radius: 15px;
+        padding: 20px;
+        font-size: 22px;
+        cursor: pointer;
+        transition: transform 0.2s, background-color 0.3s, border-color 0.3s;
+        font-family: inherit;
+        color: var(--text);
+        font-weight: bold;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .option-btn:hover {
+        transform: translateY(-5px);
+        background-color: #DCEDC8;
+    }
+
+    .option-btn.correct {
+        background-color: var(--correct) !important;
+        color: white;
+        border-color: var(--correct);
+        box-shadow: 0 0 15px var(--correct);
+    }
+
+    .option-btn.wrong {
+        background-color: var(--wrong) !important;
+        color: white;
+        border-color: var(--wrong);
+        animation: shake 0.4s;
+    }
+
+    @keyframes shake {
+        0% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        50% { transform: translateX(5px); }
+        75% { transform: translateX(-5px); }
+        100% { transform: translateX(0); }
+    }
+
+    .star {
+        position: fixed;
+        font-size: 40px;
+        animation: flyUp 1s ease-out forwards;
+        pointer-events: none;
+        z-index: 1000;
+    }
+
+    @keyframes flyUp {
+        0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
+        100% { transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(1.5) rotate(180deg); opacity: 0; }
+    }
+
+    #result-screen {
+        display: none;
+    }
+
+    #result-title {
+        font-size: 48px;
+        color: var(--primary);
+        margin-bottom: 20px;
+    }
+
+    #result-text {
+        font-size: 32px;
+        color: var(--correct);
+        margin-bottom: 40px;
+    }
+
+    #retake-btn {
+        background-color: var(--secondary);
+        color: white;
+        border: none;
+        padding: 20px 50px;
+        font-size: 26px;
+        border-radius: 20px;
+        cursor: pointer;
+        font-weight: bold;
+        box-shadow: 0 6px 10px rgba(0,0,0,0.2);
+        transition: transform 0.2s;
+    }
+
+    #retake-btn:hover {
+        transform: scale(1.1);
+    }
+
+    @media(max-width: 768px) {
+        .options-grid {
+            grid-template-columns: 1fr;
+        }
+        #ribbon {
+            flex-direction: column;
+            gap: 10px;
+            font-size: 20px;
+            text-align: center;
+        }
+        #question-text {
+            font-size: 24px;
+        }
+    }
+</style>
+</head>
+<body>
+
+<div id="ribbon">
+    <div>🕊️ Spiritual Fathers Game</div>
+    <div id="progress-text">Question 1 of 30</div>
+    <button id="music-controls" onclick="toggleMusic()">🎵 Play Music</button>
+</div>
+
+<div id="game-container">
+    <div id="illustration"></div>
+    <div id="question-text"></div>
+    <div class="options-grid" id="options-grid"></div>
+</div>
+
+<div id="result-screen">
+    <div id="result-title">🌟 You Did It! 🌟</div>
+    <div id="result-text"></div>
+    <button id="retake-btn" onclick="retake()">Play Again! 🔄</button>
+</div>
+
+<script>
+    // --- Audio Synthesizer ---
+    let audioCtx;
+    let isPlaying = false;
+    let loopId;
+
+    function playTone(freq, time, duration) {
+        if (!audioCtx) return;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.value = freq;
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        gain.gain.setValueAtTime(0, time);
+        gain.gain.linearRampToValueAtTime(0.1, time + 0.05);
+        gain.gain.linearRampToValueAtTime(0, time + duration);
+        osc.start(time);
+        osc.stop(time + duration);
+    }
+
+    function playMelody() {
+        if (!isPlaying) return;
+        const now = audioCtx.currentTime;
+        // Peaceful, steady melody
+        const melody = [
+            { f: 392.00, t: 0.0, d: 0.4 }, // G4
+            { f: 440.00, t: 0.4, d: 0.4 }, // A4
+            { f: 493.88, t: 0.8, d: 0.4 }, // B4
+            { f: 523.25, t: 1.2, d: 0.6 }  // C5
+        ];
+        
+        melody.forEach(note => playTone(note.f, now + note.t, note.d));
+        loopId = setTimeout(playMelody, 2500); 
+    }
+
+    function toggleMusic() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        const btn = document.getElementById('music-controls');
+        if (isPlaying) {
+            isPlaying = false;
+            clearTimeout(loopId);
+            btn.innerHTML = '🎵 Play Music';
+        } else {
+            isPlaying = true;
+            audioCtx.resume();
+            playMelody();
+            btn.innerHTML = '⏸️ Stop Music';
+        }
+    }
+
+    // --- Game Logic & Data ---
+    const questions = [
+        { q: "What big mistake did John make on the raft?", o: ["He lost the map", "He broke his paddle", "The communication device fell from his hand into the water", "He fell asleep"], a: 2, ill: "📱💧" },
+        { q: "Who went to find the communication device?", o: ["Tony", "Uncle Mark", "John", "Marina"], a: 1, ill: "👨‍🏫" },
+        { q: "How was Uncle Mark able to find the device in the water?", o: ["He followed the LED lights on it", "He used a fishing rod", "He asked a dolphin", "He used a magnet"], a: 0, ill: "💡" },
+        { q: "Why did Uncle Mark forget to eat and drink much while searching?", o: ["He wasn't hungry", "He was too focused on his goal", "He lost his food", "He was sleepy"], a: 1, ill: "🎯" },
+        { q: "Who is called the Father of all Monks?", o: ["Pope Athanasius", "Abba Paul", "Abba Anthony", "Saint Mark"], a: 2, ill: "🧔" },
+        { q: "Where was Abba Anthony born?", o: ["Alexandria", "Jerusalem", "Qiman El-Arous in Beni Suef", "Rome"], a: 2, ill: "🏡" },
+        { q: "In what year was Abba Anthony born?", o: ["251 AD", "300 AD", "100 AD", "356 AD"], a: 0, ill: "📅" },
+        { q: "What message did Abba Anthony feel he received when his parents died?", o: ["To travel the world", "To buy more land", "To always be prepared to go to heaven at any time", "To become a king"], a: 2, ill: "☁️" },
+        { q: "In the Divine Liturgy, Abba Anthony heard the verse: \"If you want to be perfect, go, sell what you have and give to...\"", o: ["Your family", "The poor", "The church", "The government"], a: 1, ill: "💰" },
+        { q: "True or False: Abba Anthony kept all his money and land to himself.", o: ["True", "False"], a: 1, ill: "🚫" },
+        { q: "Where did Abba Anthony take his sister to make sure she was safe?", o: ["A big castle", "A house of virgins", "A school", "Another country"], a: 1, ill: "⛪" },
+        { q: "After leaving his village, where did Abba Anthony first go to live?", o: ["In a large cave", "In a small hut near the Nile", "In the inner desert", "In a city"], a: 1, ill: "🛖" },
+        { q: "What did a woman at the river tell Abba Anthony to do?", o: ["Go back home", "Build a bigger hut", "If he was truly a monk, he would live in the inner desert", "Stop praying"], a: 2, ill: "🗣️" },
+        { q: "True or False: Abba Anthony used the sign of the Cross as a strong weapon to defeat the wars of Satan.", o: ["True", "False"], a: 0, ill: "✝️" },
+        { q: "What specific war did Satan fight Abba Anthony with, making him feel tired of his routine?", o: ["The war of anger", "The war of fear", "The war of boredom", "The war of pride"], a: 2, ill: "🥱" },
+        { q: "God sent an angel to help Abba Anthony with his boredom. What was the angel doing?", o: ["Sleeping", "Weaving palm leaves into baskets, then standing to pray", "Singing loud songs", "Painting"], a: 1, ill: "🧺" },
+        { q: "What did the angel tell Abba Anthony after weaving the baskets and praying?", o: ["Take a nap", "Do this, and you will be saved", "Go back to the city", "Find more palm leaves"], a: 1, ill: "👼" },
+        { q: "What are monks sometimes called because they take the Cross as a source of strength and victory?", o: ["Cross Bearers", "Desert Fighters", "Mountain Climbers", "Silent Walkers"], a: 0, ill: "✝️" },
+        { q: "When people found out where he lived, where did God guide Abba Anthony to go next?", o: ["To the furthest part of the inner desert, living in a cave", "To Alexandria", "To his old village", "To a big mountain top"], a: 0, ill: "🏜️" },
+        { q: "How many times did Abba Anthony leave his cave to go down to Alexandria?", o: ["Four times", "Three times", "Two times", "One time"], a: 2, ill: "🚶‍♂️" },
+        { q: "During his FIRST trip to Alexandria, what did Abba Anthony do?", o: ["He went shopping", "He visited the prisons to support believers suffering persecution", "He built a new church", "He argued with the mayor"], a: 1, ill: "⛓️" },
+        { q: "Who was the man trying to change the true Faith of the Church by saying Christ was created?", o: ["Maximian", "Arius", "Nero", "Diocletian"], a: 1, ill: "😠" },
+        { q: "During his SECOND trip to Alexandria, whom did Abba Anthony go to support against Arius?", o: ["Pope Athanasius", "Emperor Maximian", "Abba Paul", "His sister"], a: 0, ill: "🤝" },
+        { q: "Who was the great and holy saint in the desert that Abba Anthony visited and later buried?", o: ["Saint Mark", "Saint George", "Saint Abba Paul, the first hermit", "Saint Mina"], a: 2, ill: "👴" },
+        { q: "Abba Anthony founded the first organized system for what in the whole world?", o: ["Schools", "Hospitals", "Monasticism", "Libraries"], a: 2, ill: "⛪" },
+        { q: "True or False: Abba Anthony was a monk for less than 10 years.", o: ["True", "False, he was a monk for more than 80 years"], a: 1, ill: "⏳" },
+        { q: "About how old was Abba Anthony when he departed to heaven around 356 AD?", o: ["50 years", "80 years", "105 years", "120 years"], a: 2, ill: "🕊️" },
+        { q: "What appeared on the screen at the end of this part of the story?", o: ["A map", "A treasure chest", "A fourth new puzzle piece", "A message saying 'Game Over'"], a: 2, ill: "🧩" },
+        { q: "True or False: The Orthodox Church believes that the Son is equal to the Father in essence and eternity.", o: ["True", "False"], a: 0, ill: "🕊️" },
+        { q: "According to Romans 8:37, we are \"more than conquerors through Him who...\"", o: ["Taught us", "Loved us", "Guided us", "Protected us"], a: 1, ill: "❤️" }
+    ];
+
+    let currentQ = 0;
+    let score = 0;
+    let firstTry = true;
+
+    function shootStars(btn) {
+        const rect = btn.getBoundingClientRect();
+        const emojis = ['⭐', '✨', '🌟', '🎉'];
+        for(let i=0; i<15; i++) {
+            let star = document.createElement('div');
+            star.className = 'star';
+            star.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+            star.style.left = (rect.left + rect.width/2) + 'px';
+            star.style.top = (rect.top + rect.height/2) + 'px';
+            
+            let angle = Math.random() * Math.PI * 2;
+            let distance = Math.random() * 120 + 60;
+            let tx = Math.cos(angle) * distance;
+            let ty = Math.sin(angle) * distance - 100; 
+            
+            star.style.setProperty('--tx', `${tx}px`);
+            star.style.setProperty('--ty', `${ty}px`);
+            
+            document.body.appendChild(star);
+            setTimeout(() => star.remove(), 1000);
+        }
+    }
+
+    function loadQuestion() {
+        firstTry = true;
+        const q = questions[currentQ];
+        document.getElementById('progress-text').innerText = `Question ${currentQ + 1} of ${questions.length}`;
+        document.getElementById('illustration').innerText = q.ill;
+        document.getElementById('question-text').innerText = q.q;
+        
+        const optionsGrid = document.getElementById('options-grid');
+        optionsGrid.innerHTML = '';
+        
+        q.o.forEach((opt, index) => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerText = opt;
+            btn.onclick = () => checkAnswer(index, btn);
+            optionsGrid.appendChild(btn);
+        });
+    }
+
+    function checkAnswer(index, btn) {
+        if(btn.classList.contains('wrong') || btn.classList.contains('correct')) return;
+
+        const q = questions[currentQ];
+        const buttons = document.querySelectorAll('.option-btn');
+        const container = document.getElementById('game-container');
+        
+        if (index === q.a) {
+            btn.classList.add('correct');
+            shootStars(btn);
+            if (firstTry) score++;
+            
+            buttons.forEach(b => b.style.pointerEvents = 'none');
+            
+            setTimeout(() => {
+                currentQ++;
+                if (currentQ < questions.length) {
+                    loadQuestion();
+                } else {
+                    showResult();
+                }
+            }, 1500);
+        } else {
+            btn.classList.add('wrong');
+            firstTry = false;
+            
+            container.classList.remove('warning');
+            void container.offsetWidth; 
+            container.classList.add('warning');
+        }
+    }
+
+    function showResult() {
+        document.getElementById('game-container').style.display = 'none';
+        document.getElementById('result-screen').style.display = 'block';
+        
+        const percent = Math.round((score / questions.length) * 100);
+        document.getElementById('result-text').innerText = `Amazing effort!\nYou scored ${score} out of ${questions.length} on your first try!\n\nThat's ${percent}%! Keep learning about our Saints!`;
+    }
+
+    function retake() {
+        currentQ = 0;
+        score = 0;
+        document.getElementById('game-container').style.display = 'block';
+        document.getElementById('result-screen').style.display = 'none';
+        loadQuestion();
+    }
+
+    // Initialize Game
+    loadQuestion();
+</script>
+</body>
+</html>
