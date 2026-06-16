@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>St. John The Beloved _ Quiz_Part 2</title>
+<style>
+    :root {
+        --primary: #3F51B5; /* Indigo */
+        --secondary: #E91E63; /* Pink */
+        --bg: #E8EAF6; /* Light Indigo Background */
+        --correct: #4CAF50;
+        --wrong: #F44336;
+        --text: #1A237E;
+    }
+
+    body {
+        font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+        background-color: var(--bg);
+        color: var(--text);
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+        overflow-x: hidden;
+    }
+
+    #ribbon {
+        width: 100%;
+        background-color: var(--primary);
+        color: white;
+        padding: 15px 30px;
+        font-size: 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-sizing: border-box;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        font-weight: bold;
+    }
+
+    #music-controls {
+        cursor: pointer;
+        background: var(--secondary);
+        border: none;
+        border-radius: 12px;
+        padding: 10px 20px;
+        font-size: 18px;
+        font-weight: bold;
+        color: white;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        transition: transform 0.2s;
+    }
+
+    #music-controls:hover {
+        transform: scale(1.05);
+    }
+
+    #game-container, #result-screen {
+        background: white;
+        border-radius: 25px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        padding: 40px;
+        margin: 40px 20px;
+        max-width: 800px;
+        width: 90%;
+        text-align: center;
+        position: relative;
+    }
+
+    .warning {
+        animation: flashRed 0.6s ease-in-out 2;
+    }
+
+    @keyframes flashRed {
+        0% { box-shadow: 0 0 0px var(--wrong); }
+        50% { box-shadow: 0 0 30px var(--wrong); }
+        100% { box-shadow: 0 0 0px var(--wrong); }
+    }
+
+    #illustration {
+        font-size: 90px;
+        margin: 10px 0 20px 0;
+        text-shadow: 2px 2px 10px rgba(0,0,0,0.1);
+    }
+
+    #question-text {
+        font-size: 24px;
+        margin-bottom: 40px;
+        color: var(--primary);
+        font-weight: bold;
+        line-height: 1.5;
+    }
+
+    .options-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .option-btn {
+        background-color: #F5F5F5;
+        border: 4px solid var(--primary);
+        border-radius: 15px;
+        padding: 20px;
+        font-size: 22px;
+        cursor: pointer;
+        transition: transform 0.2s, background-color 0.3s, border-color 0.3s;
+        font-family: inherit;
+        color: var(--text);
+        font-weight: bold;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .option-btn:hover {
+        transform: translateY(-5px);
+        background-color: #E8EAF6;
+    }
+
+    .option-btn.correct {
+        background-color: var(--correct) !important;
+        color: white;
+        border-color: var(--correct);
+        box-shadow: 0 0 15px var(--correct);
+    }
+
+    .option-btn.wrong {
+        background-color: var(--wrong) !important;
+        color: white;
+        border-color: var(--wrong);
+        animation: shake 0.4s;
+    }
+
+    @keyframes shake {
+        0% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        50% { transform: translateX(5px); }
+        75% { transform: translateX(-5px); }
+        100% { transform: translateX(0); }
+    }
+
+    .star {
+        position: fixed;
+        font-size: 40px;
+        animation: flyUp 1s ease-out forwards;
+        pointer-events: none;
+        z-index: 1000;
+    }
+
+    @keyframes flyUp {
+        0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
+        100% { transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(1.5) rotate(180deg); opacity: 0; }
+    }
+
+    #result-screen {
+        display: none;
+    }
+
+    #result-title {
+        font-size: 48px;
+        color: var(--primary);
+        margin-bottom: 20px;
+    }
+
+    #result-text {
+        font-size: 32px;
+        color: var(--correct);
+        margin-bottom: 40px;
+    }
+
+    #retake-btn {
+        background-color: var(--secondary);
+        color: white;
+        border: none;
+        padding: 20px 50px;
+        font-size: 26px;
+        border-radius: 20px;
+        cursor: pointer;
+        font-weight: bold;
+        box-shadow: 0 6px 10px rgba(0,0,0,0.2);
+        transition: transform 0.2s;
+    }
+
+    #retake-btn:hover {
+        transform: scale(1.1);
+    }
+
+    @media(max-width: 768px) {
+        .options-grid {
+            grid-template-columns: 1fr;
+        }
+        #ribbon {
+            flex-direction: column;
+            gap: 10px;
+            font-size: 20px;
+            text-align: center;
+        }
+        #question-text {
+            font-size: 20px;
+        }
+        .option-btn {
+            font-size: 18px;
+        }
+    }
+</style>
+</head>
+<body>
+
+<div id="ribbon">
+    <div>✨ St. John The Beloved _ Quiz_Part 2</div>
+    <div id="progress-text">Question 1 of 30</div>
+    <button id="music-controls" onclick="toggleMusic()">🎵 Play Music</button>
+</div>
+
+<div id="game-container">
+    <div id="illustration"></div>
+    <div id="question-text"></div>
+    <div class="options-grid" id="options-grid"></div>
+</div>
+
+<div id="result-screen">
+    <div id="result-title">🌟 Excellent Work! 🌟</div>
+    <div id="result-text"></div>
+    <button id="retake-btn" onclick="retake()">Play Again! 🔄</button>
+</div>
+
+<script>
+    // --- Audio Synthesizer ---
+    let audioCtx;
+    let isPlaying = false;
+    let loopId;
+
+    function playTone(freq, time, duration) {
+        if (!audioCtx) return;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.value = freq;
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        gain.gain.setValueAtTime(0, time);
+        gain.gain.linearRampToValueAtTime(0.08, time + 0.05);
+        gain.gain.linearRampToValueAtTime(0, time + duration);
+        osc.start(time);
+        osc.stop(time + duration);
+    }
+
+    function playMelody() {
+        if (!isPlaying) return;
+        const now = audioCtx.currentTime;
+        // Joyful learning melody
+        const melody = [
+            { f: 523.25, t: 0.0, d: 0.3 }, 
+            { f: 659.25, t: 0.3, d: 0.3 }, 
+            { f: 783.99, t: 0.6, d: 0.3 }, 
+            { f: 659.25, t: 0.9, d: 0.3 },
+            { f: 1046.50, t: 1.2, d: 0.6 }
+        ];
+        
+        melody.forEach(note => playTone(note.f, now + note.t, note.d));
+        loopId = setTimeout(playMelody, 3500); 
+    }
+
+    function toggleMusic() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        const btn = document.getElementById('music-controls');
+        if (isPlaying) {
+            isPlaying = false;
+            clearTimeout(loopId);
+            btn.innerHTML = '🎵 Play Music';
+        } else {
+            isPlaying = true;
+            audioCtx.resume();
+            playMelody();
+            btn.innerHTML = '⏸️ Stop Music';
+        }
+    }
+
+    // --- Game Logic & Data ---
+    const questions = [
+        { q: "According to the instructions, which direction must the team continue moving?[cite: 4]", o: ["North", "South", "East", "West"], a: 2, ill: "🧭" },
+        { q: "How much time was left until the mission ended?[cite: 4]", o: ["Less than 10 minutes", "Less than 30 minutes", "Less than 45 minutes", "1 hour"], a: 2, ill: "⏳" },
+        { q: "What happens if the team does not win?[cite: 4]", o: ["They stay in the game and won't be able to get out", "They lose their points", "They start over", "They get a warning"], a: 0, ill: "🎮" },
+        { q: "Who asked, \"Would anyone leave their teacher in a time of trouble?\"[cite: 4]", o: ["Tony", "Marina", "Lauren", "John"], a: 3, ill: "👦" },
+        { q: "What was the name of Saint John's father?[cite: 4]", o: ["Peter", "Zebedee", "James", "Joseph"], a: 1, ill: "👨" },
+        { q: "True or False: The mother of John and James was one of the women who followed and served the Lord Jesus.[cite: 4]", o: ["True", "False"], a: 0, ill: "👩" },
+        { q: "Who was Saint John a disciple of before following Jesus?[cite: 4]", o: ["Saint Paul", "Saint Peter", "Saint John the Baptist", "Saint Mark"], a: 2, ill: "🐪" },
+        { q: "True or False: John and James were among the very first of the Twelve Disciples to follow the Lord Jesus.[cite: 4]", o: ["True", "False"], a: 0, ill: "👣" },
+        { q: "Saint John, James, and Peter witnessed the raising of whose daughter from the dead?[cite: 4]", o: ["Jairus'", "Lazarus'", "Martha's", "Mary's"], a: 0, ill: "🛏️" },
+        { q: "The Lord Jesus prayed in Gethsemane on the night of His what?[cite: 4]", o: ["Transfiguration", "Resurrection", "Suffering", "Baptism"], a: 2, ill: "🙏" },
+        { q: "True or False: Saint John left the Lord Jesus during His trial.[cite: 4]", o: ["True", "False"], a: 1, ill: "⚖️" },
+        { q: "While on the Cross, Jesus said to Saint John, \"Behold your...\"[cite: 4]", o: ["Brother", "Mother", "Friend", "Teacher"], a: 1, ill: "✝️" },
+        { q: "Who arrived at the tomb first on Resurrection Sunday?[cite: 4]", o: ["Saint Peter", "Saint John", "Saint James", "Saint Thomas"], a: 1, ill: "🏃" },
+        { q: "True or False: Saint John went inside the tomb as soon as he arrived.[cite: 4]", o: ["True", "False, he bent down but did not enter"], a: 1, ill: "👀" },
+        { q: "True or False: Saint John was the only disciple who recognized the Lord Jesus at the Sea of Tiberias.[cite: 4]", o: ["True", "False"], a: 0, ill: "🌊" },
+        { q: "Where did Saint John begin his preaching after the Ascension?[cite: 4]", o: ["Rome", "Alexandria", "Jerusalem and nearby regions", "Ephesus"], a: 2, ill: "🏙️" },
+        { q: "Saint John and Saint Peter healed a lame man at which gate of the temple?[cite: 4]", o: ["The Golden Gate", "The Beautiful Gate", "The Sheep Gate", "The Water Gate"], a: 1, ill: "🏛️" },
+        { q: "Saint John testified about Jesus before the highest court among the Jews, known as the what?[cite: 4]", o: ["Sanhedrin", "Roman Senate", "Synagogue", "Council"], a: 0, ill: "📜" },
+        { q: "True or False: In Samaria, Saint John and Saint Peter laid their hands on people so they could receive the Holy Spirit.[cite: 4]", o: ["True", "False"], a: 0, ill: "🙌" },
+        { q: "Who did Saint John ordain to pass on the teachings of the Lord Jesus?[cite: 4]", o: ["Kings and Queens", "Bishops and priests", "Soldiers", "Merchants"], a: 1, ill: "⛪" },
+        { q: "Emperor Domitian reigned during which years?[cite: 4]", o: ["50-60 AD", "81-96 AD", "100-110 AD", "30-40 AD"], a: 1, ill: "👑" },
+        { q: "To which city was Saint John sent in chains by Emperor Domitian?[cite: 4]", o: ["Jerusalem", "Antioch", "Rome", "Alexandria"], a: 2, ill: "⛓️" },
+        { q: "Which emperor released Saint John from exile?[cite: 4]", o: ["Emperor Nerva", "Emperor Nero", "Emperor Diocletian", "Emperor Maximian"], a: 0, ill: "🔓" },
+        { q: "After leaving the way of the Lord, the young man Saint John preached to became what?[cite: 4]", o: ["A rich merchant", "A gang leader", "A politician", "A priest"], a: 1, ill: "😠" },
+        { q: "What did Saint John ride when searching for the gang leader in the mountains?[cite: 4]", o: ["A chariot", "A boat", "His animal", "A wagon"], a: 2, ill: "🐴" },
+        { q: "Who caught Saint John and brought him to their leader in the mountains?[cite: 4]", o: ["Some soldiers", "Some robbers", "Some wild animals", "Some villagers"], a: 1, ill: "🗡️" },
+        { q: "True or False: The young gang leader offered true repentance and returned to life with God.[cite: 4]", o: ["True", "False"], a: 0, ill: "❤️" },
+        { q: "What was the most important commandment Saint John spoke about in his writings?[cite: 4]", o: ["Fasting", "Love", "Singing", "Working"], a: 1, ill: "💕" },
+        { q: "Around what year did Saint John depart in peace?[cite: 4]", o: ["50 AD", "70 AD", "100 AD", "150 AD"], a: 2, ill: "🕊️" },
+        { q: "What did the team receive that allowed them to enter the City of the Conquerors?[cite: 4]", o: ["A gold key", "The Flag of the Conquerors", "A shiny medal", "A treasure map"], a: 1, ill: "🚩" }
+    ];
+
+    let currentQ = 0;
+    let score = 0;
+    let firstTry = true;
+
+    function shootStars(btn) {
+        const rect = btn.getBoundingClientRect();
+        const emojis = ['⭐', '✨', '🌟', '🎉'];
+        for(let i=0; i<15; i++) {
+            let star = document.createElement('div');
+            star.className = 'star';
+            star.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+            star.style.left = (rect.left + rect.width/2) + 'px';
+            star.style.top = (rect.top + rect.height/2) + 'px';
+            
+            let angle = Math.random() * Math.PI * 2;
+            let distance = Math.random() * 120 + 60;
+            let tx = Math.cos(angle) * distance;
+            let ty = Math.sin(angle) * distance - 100; 
+            
+            star.style.setProperty('--tx', `${tx}px`);
+            star.style.setProperty('--ty', `${ty}px`);
+            
+            document.body.appendChild(star);
+            setTimeout(() => star.remove(), 1000);
+        }
+    }
+
+    function loadQuestion() {
+        firstTry = true;
+        const q = questions[currentQ];
+        document.getElementById('progress-text').innerText = `Question ${currentQ + 1} of ${questions.length}`;
+        document.getElementById('illustration').innerText = q.ill;
+        document.getElementById('question-text').innerText = q.q;
+        
+        const optionsGrid = document.getElementById('options-grid');
+        optionsGrid.innerHTML = '';
+        
+        q.o.forEach((opt, index) => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerText = opt;
+            btn.onclick = () => checkAnswer(index, btn);
+            optionsGrid.appendChild(btn);
+        });
+    }
+
+    function checkAnswer(index, btn) {
+        if(btn.classList.contains('wrong') || btn.classList.contains('correct')) return;
+
+        const q = questions[currentQ];
+        const buttons = document.querySelectorAll('.option-btn');
+        const container = document.getElementById('game-container');
+        
+        if (index === q.a) {
+            btn.classList.add('correct');
+            shootStars(btn);
+            if (firstTry) score++;
+            
+            buttons.forEach(b => b.style.pointerEvents = 'none');
+            
+            setTimeout(() => {
+                currentQ++;
+                if (currentQ < questions.length) {
+                    loadQuestion();
+                } else {
+                    showResult();
+                }
+            }, 1500);
+        } else {
+            btn.classList.add('wrong');
+            firstTry = false;
+            
+            container.classList.remove('warning');
+            void container.offsetWidth; 
+            container.classList.add('warning');
+        }
+    }
+
+    function showResult() {
+        document.getElementById('game-container').style.display = 'none';
+        document.getElementById('result-screen').style.display = 'block';
+        
+        const percent = Math.round((score / questions.length) * 100);
+        document.getElementById('result-text').innerText = `Amazing effort!\nYou scored ${score} out of ${questions.length} on your first try!\n\nThat's ${percent}%!`;
+    }
+
+    function retake() {
+        currentQ = 0;
+        score = 0;
+        document.getElementById('game-container').style.display = 'block';
+        document.getElementById('result-screen').style.display = 'none';
+        loadQuestion();
+    }
+
+    // Initialize Game
+    loadQuestion();
+</script>
+</body>
+</html>
