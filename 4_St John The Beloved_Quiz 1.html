@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Cross Leads Me to Eternity Quiz</title>
+<style>
+    :root {
+        --primary: #1976D2; /* Deep Blue for Eternity/Light */
+        --secondary: #FFD54F; /* Golden yellow */
+        --bg: #E3F2FD; /* Light Blue */
+        --correct: #4CAF50;
+        --wrong: #F44336;
+        --text: #212121;
+    }
+
+    body {
+        font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+        background-color: var(--bg);
+        color: var(--text);
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+        overflow-x: hidden;
+    }
+
+    #ribbon {
+        width: 100%;
+        background-color: var(--primary);
+        color: white;
+        padding: 15px 30px;
+        font-size: 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-sizing: border-box;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        font-weight: bold;
+    }
+
+    #music-controls {
+        cursor: pointer;
+        background: var(--secondary);
+        border: none;
+        border-radius: 12px;
+        padding: 10px 20px;
+        font-size: 18px;
+        font-weight: bold;
+        color: #333;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        transition: transform 0.2s;
+    }
+
+    #music-controls:hover {
+        transform: scale(1.05);
+    }
+
+    #game-container, #result-screen {
+        background: white;
+        border-radius: 25px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        padding: 40px;
+        margin: 40px 20px;
+        max-width: 800px;
+        width: 90%;
+        text-align: center;
+        position: relative;
+    }
+
+    .warning {
+        animation: flashRed 0.6s ease-in-out 2;
+    }
+
+    @keyframes flashRed {
+        0% { box-shadow: 0 0 0px var(--wrong); }
+        50% { box-shadow: 0 0 30px var(--wrong); }
+        100% { box-shadow: 0 0 0px var(--wrong); }
+    }
+
+    #illustration {
+        font-size: 90px;
+        margin: 10px 0 20px 0;
+        text-shadow: 2px 2px 10px rgba(0,0,0,0.1);
+    }
+
+    #question-text {
+        font-size: 26px;
+        margin-bottom: 40px;
+        color: var(--primary);
+        font-weight: bold;
+        line-height: 1.5;
+    }
+
+    .options-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .option-btn {
+        background-color: #F5F5F5;
+        border: 4px solid var(--primary);
+        border-radius: 15px;
+        padding: 20px;
+        font-size: 22px;
+        cursor: pointer;
+        transition: transform 0.2s, background-color 0.3s, border-color 0.3s;
+        font-family: inherit;
+        color: var(--text);
+        font-weight: bold;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .option-btn:hover {
+        transform: translateY(-5px);
+        background-color: #E3F2FD;
+    }
+
+    .option-btn.correct {
+        background-color: var(--correct) !important;
+        color: white;
+        border-color: var(--correct);
+        box-shadow: 0 0 15px var(--correct);
+    }
+
+    .option-btn.wrong {
+        background-color: var(--wrong) !important;
+        color: white;
+        border-color: var(--wrong);
+        animation: shake 0.4s;
+    }
+
+    @keyframes shake {
+        0% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        50% { transform: translateX(5px); }
+        75% { transform: translateX(-5px); }
+        100% { transform: translateX(0); }
+    }
+
+    .star {
+        position: fixed;
+        font-size: 40px;
+        animation: flyUp 1s ease-out forwards;
+        pointer-events: none;
+        z-index: 1000;
+    }
+
+    @keyframes flyUp {
+        0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
+        100% { transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(1.5) rotate(180deg); opacity: 0; }
+    }
+
+    #result-screen {
+        display: none;
+    }
+
+    #result-title {
+        font-size: 48px;
+        color: var(--primary);
+        margin-bottom: 20px;
+    }
+
+    #result-text {
+        font-size: 32px;
+        color: var(--correct);
+        margin-bottom: 40px;
+    }
+
+    #retake-btn {
+        background-color: var(--secondary);
+        color: #333;
+        border: none;
+        padding: 20px 50px;
+        font-size: 26px;
+        border-radius: 20px;
+        cursor: pointer;
+        font-weight: bold;
+        box-shadow: 0 6px 10px rgba(0,0,0,0.2);
+        transition: transform 0.2s;
+    }
+
+    #retake-btn:hover {
+        transform: scale(1.1);
+    }
+
+    @media(max-width: 768px) {
+        .options-grid {
+            grid-template-columns: 1fr;
+        }
+        #ribbon {
+            flex-direction: column;
+            gap: 10px;
+            font-size: 20px;
+            text-align: center;
+        }
+        #question-text {
+            font-size: 20px;
+        }
+        .option-btn {
+            font-size: 18px;
+        }
+    }
+</style>
+</head>
+<body>
+
+<div id="ribbon">
+    <div>✨ The Cross Leads Me to Eternity Quiz</div>
+    <div id="progress-text">Question 1 of 30</div>
+    <button id="music-controls" onclick="toggleMusic()">🎵 Play Music</button>
+</div>
+
+<div id="game-container">
+    <div id="illustration"></div>
+    <div id="question-text"></div>
+    <div class="options-grid" id="options-grid"></div>
+</div>
+
+<div id="result-screen">
+    <div id="result-title">🌟 You Reached the City! 🌟</div>
+    <div id="result-text"></div>
+    <button id="retake-btn" onclick="retake()">Play Again! 🔄</button>
+</div>
+
+<script>
+    // --- Audio Synthesizer ---
+    let audioCtx;
+    let isPlaying = false;
+    let loopId;
+
+    function playTone(freq, time, duration) {
+        if (!audioCtx) return;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        gain.gain.setValueAtTime(0, time);
+        gain.gain.linearRampToValueAtTime(0.08, time + 0.05);
+        gain.gain.linearRampToValueAtTime(0, time + duration);
+        osc.start(time);
+        osc.stop(time + duration);
+    }
+
+    function playMelody() {
+        if (!isPlaying) return;
+        const now = audioCtx.currentTime;
+        // Triumphant, bright melody
+        const melody = [
+            { f: 523.25, t: 0.0, d: 0.3 }, // C5
+            { f: 659.25, t: 0.4, d: 0.3 }, // E5
+            { f: 783.99, t: 0.8, d: 0.3 }, // G5
+            { f: 1046.50, t: 1.2, d: 0.6 } // C6
+        ];
+        
+        melody.forEach(note => playTone(note.f, now + note.t, note.d));
+        loopId = setTimeout(playMelody, 3000); 
+    }
+
+    function toggleMusic() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        const btn = document.getElementById('music-controls');
+        if (isPlaying) {
+            isPlaying = false;
+            clearTimeout(loopId);
+            btn.innerHTML = '🎵 Play Music';
+        } else {
+            isPlaying = true;
+            audioCtx.resume();
+            playMelody();
+            btn.innerHTML = '⏸️ Stop Music';
+        }
+    }
+
+    // --- Game Logic & Data ---
+    const questions = [
+        { q: "What obstacle did Tony warn the team about while they were climbing the hill?[cite: 4]", o: ["A wild animal", "Falling rocks", "A deep hole", "A strong wind"], a: 1, ill: "🪨" },
+        { q: "What did Lauren suggest they hide behind until the falling rocks passed?[cite: 4]", o: ["A big tree", "A big rock", "A wall", "A shield"], a: 1, ill: "🛡️" },
+        { q: "What did the team find at the end of the hill?[cite: 4]", o: ["A river and a boat", "A wall and a door", "A bridge", "A treasure chest"], a: 1, ill: "🚪" },
+        { q: "What was the name of Saint John the Beloved's father?[cite: 4]", o: ["Zebedee", "Joseph", "Abraham", "James"], a: 0, ill: "👨‍👦" },
+        { q: "What job did Saint John and his brother James have before following the Lord Jesus?[cite: 4]", o: ["Carpenters", "Fishermen", "Shepherds", "Farmers"], a: 1, ill: "🎣" },
+        { q: "Who was Saint John a disciple of before he followed the Lord Jesus?[cite: 4]", o: ["Saint Peter", "Saint Mark", "Saint John the Baptist", "Saint Anthony"], a: 2, ill: "🐪" },
+        { q: "What did Saint John the Baptist say about the Lord Jesus that Saint John heard?[cite: 4]", o: ["Behold the King!", "Behold the Lamb of God!", "Here is the Prophet!", "Follow Him!"], a: 1, ill: "🐑" },
+        { q: "True or False: Saint John and James left everything and followed the Lord Jesus immediately when He called them.[cite: 4]", o: ["True", "False"], a: 0, ill: "🏃" },
+        { q: "Saint John, James, and Peter were the only disciples to witness which miracle?[cite: 4]", o: ["Turning water into wine", "Raising Jairus' daughter from the dead", "Feeding the 5000", "Walking on water"], a: 1, ill: "✨" },
+        { q: "True or False: Saint John ran away and left the Lord Jesus during His trial.[cite: 4]", o: ["True", "False"], a: 1, ill: "⚖️" },
+        { q: "While on the Cross, who did the Lord Jesus entrust to Saint John's care?[cite: 4]", o: ["Saint Peter", "The Virgin Mary", "Saint Mary Magdalene", "His brother James"], a: 1, ill: "✝️" },
+        { q: "Who did Saint John run with to the tomb early on Resurrection Sunday?[cite: 4]", o: ["Saint Mark", "Saint Matthew", "Saint Peter", "Saint Thomas"], a: 2, ill: "🌅" },
+        { q: "When Saint John arrived at the tomb first, what did he do?[cite: 4]", o: ["He went inside right away", "He bent down and saw the linen cloth lying there", "He rolled the stone away", "He went back home"], a: 1, ill: "👀" },
+        { q: "What did Saint John say to Saint Peter when he recognized the Lord Jesus at the Sea of Tiberias?[cite: 4]", o: ["It is the Lord!", "Who is that?", "Look at the fish!", "Let's row faster!"], a: 0, ill: "🌊" },
+        { q: "In the city of Samaria, what did Saint John and Saint Peter do so the people could receive the Holy Spirit?[cite: 4]", o: ["They sang hymns", "They laid their hands on the people", "They built a church", "They gave them water"], a: 1, ill: "🙌" },
+        { q: "After traveling from Jerusalem to Asia Minor, which city did Saint John live in?[cite: 4]", o: ["Rome", "Alexandria", "Ephesus", "Antioch"], a: 2, ill: "🏛️" },
+        { q: "Which emperor ordered Saint John to be sent to Rome in chains and later exiled him?[cite: 4]", o: ["Emperor Nerva", "Emperor Domitian", "Emperor Nero", "Emperor Maximian"], a: 1, ill: "⛓️" },
+        { q: "To which island was Saint John exiled?[cite: 4]", o: ["Malta", "Cyprus", "Patmos", "Crete"], a: 2, ill: "🏝️" },
+        { q: "What book did Saint John write while he was exiled on the island of Patmos?[cite: 4]", o: ["The Book of Revelation", "The Gospel of Luke", "The Book of Acts", "Romans"], a: 0, ill: "📖" },
+        { q: "Who was the emperor that released Saint John from exile, allowing him to return to Ephesus?[cite: 4]", o: ["Emperor Nerva", "Emperor Arius", "Emperor Diocletian", "Emperor Domitian"], a: 0, ill: "👑" },
+        { q: "What did the young man that Saint John preached to become after leaving the way of the Lord?[cite: 4]", o: ["A rich merchant", "The leader of a gang", "A fisherman", "A soldier"], a: 1, ill: "😠" },
+        { q: "What did Saint John do when he heard the young man became a gang leader?[cite: 4]", o: ["He rode his animal and went searching for him in the mountains", "He stayed in Ephesus and cried", "He sent a letter to the king", "He forgot about him"], a: 0, ill: "🐴" },
+        { q: "When the gang leader saw Saint John coming to the mountains, what did he do?[cite: 4]", o: ["He hugged him", "He fought him", "He recognized him and immediately ran away", "He hid in a cave"], a: 2, ill: "🏃‍♂️" },
+        { q: "What did Saint John do when the young man ran away?[cite: 4]", o: ["He went home", "He ran after him, asking him to have mercy on his old age", "He sent soldiers to catch him", "He yelled at him"], a: 1, ill: "👴" },
+        { q: "What was the commandment Saint John spoke about most in his sermons and writings?[cite: 4]", o: ["Fasting", "Love", "Singing", "Working"], a: 1, ill: "❤️" },
+        { q: "Because he talked about love so much, what is Saint John often called?[cite: 4]", o: ["John the Great", "John the Beloved", "John the Fighter", "John the Strong"], a: 1, ill: "💕" },
+        { q: "How many books did Saint John write in the New Testament?[cite: 4]", o: ["One", "Three", "Five", "Seven"], a: 2, ill: "📚" },
+        { q: "True or False: Saint John departed in peace and was the only disciple who was not martyred.[cite: 4]", o: ["True", "False"], a: 0, ill: "🕊️" },
+        { q: "Why is Saint John called 'John the Theologian'?[cite: 4]", o: ["Because he was a fisherman", "Because he wrote the Book of Revelation", "Because he ran fast", "Because he lived in Ephesus"], a: 1, ill: "✍️" },
+        { q: "What grand prize did the team receive for overcoming difficulties and reaching the City?[cite: 4]", o: ["A gold coin", "A new map", "The Flag of the Conquerors", "A shiny sword"], a: 2, ill: "🚩" }
+    ];
+
+    let currentQ = 0;
+    let score = 0;
+    let firstTry = true;
+
+    function shootStars(btn) {
+        const rect = btn.getBoundingClientRect();
+        const emojis = ['⭐', '✨', '🌟', '🎉'];
+        for(let i=0; i<15; i++) {
+            let star = document.createElement('div');
+            star.className = 'star';
+            star.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+            star.style.left = (rect.left + rect.width/2) + 'px';
+            star.style.top = (rect.top + rect.height/2) + 'px';
+            
+            let angle = Math.random() * Math.PI * 2;
+            let distance = Math.random() * 120 + 60;
+            let tx = Math.cos(angle) * distance;
+            let ty = Math.sin(angle) * distance - 100; 
+            
+            star.style.setProperty('--tx', `${tx}px`);
+            star.style.setProperty('--ty', `${ty}px`);
+            
+            document.body.appendChild(star);
+            setTimeout(() => star.remove(), 1000);
+        }
+    }
+
+    function loadQuestion() {
+        firstTry = true;
+        const q = questions[currentQ];
+        document.getElementById('progress-text').innerText = `Question ${currentQ + 1} of ${questions.length}`;
+        document.getElementById('illustration').innerText = q.ill;
+        document.getElementById('question-text').innerText = q.q;
+        
+        const optionsGrid = document.getElementById('options-grid');
+        optionsGrid.innerHTML = '';
+        
+        q.o.forEach((opt, index) => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerText = opt;
+            btn.onclick = () => checkAnswer(index, btn);
+            optionsGrid.appendChild(btn);
+        });
+    }
+
+    function checkAnswer(index, btn) {
+        if(btn.classList.contains('wrong') || btn.classList.contains('correct')) return;
+
+        const q = questions[currentQ];
+        const buttons = document.querySelectorAll('.option-btn');
+        const container = document.getElementById('game-container');
+        
+        if (index === q.a) {
+            btn.classList.add('correct');
+            shootStars(btn);
+            if (firstTry) score++;
+            
+            buttons.forEach(b => b.style.pointerEvents = 'none');
+            
+            setTimeout(() => {
+                currentQ++;
+                if (currentQ < questions.length) {
+                    loadQuestion();
+                } else {
+                    showResult();
+                }
+            }, 1500);
+        } else {
+            btn.classList.add('wrong');
+            firstTry = false;
+            
+            container.classList.remove('warning');
+            void container.offsetWidth; 
+            container.classList.add('warning');
+        }
+    }
+
+    function showResult() {
+        document.getElementById('game-container').style.display = 'none';
+        document.getElementById('result-screen').style.display = 'block';
+        
+        const percent = Math.round((score / questions.length) * 100);
+        document.getElementById('result-text').innerText = `Wonderful job, Conqueror!\nYou scored ${score} out of ${questions.length} on your first try!\n\nThat's ${percent}%!`;
+    }
+
+    function retake() {
+        currentQ = 0;
+        score = 0;
+        document.getElementById('game-container').style.display = 'block';
+        document.getElementById('result-screen').style.display = 'none';
+        loadQuestion();
+    }
+
+    // Initialize Game
+    loadQuestion();
+</script>
+</body>
+</html>
