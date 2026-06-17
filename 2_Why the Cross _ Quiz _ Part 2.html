@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2_Why the Cross _ Quiz _ Part 2</title>
+<style>
+    :root {
+        --primary: #00ACC1; /* Cheerful Cyan */
+        --secondary: #FF7043; /* Bright Coral */
+        --bg: #E0F7FA; /* Light Cyan Background */
+        --correct: #4CAF50;
+        --wrong: #F44336;
+        --text: #263238;
+    }
+
+    body {
+        font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+        background-color: var(--bg);
+        color: var(--text);
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+        overflow-x: hidden;
+    }
+
+    #ribbon {
+        width: 100%;
+        background-color: var(--primary);
+        color: white;
+        padding: 15px 30px;
+        font-size: 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-sizing: border-box;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        font-weight: bold;
+    }
+
+    #music-controls {
+        cursor: pointer;
+        background: var(--secondary);
+        border: none;
+        border-radius: 12px;
+        padding: 10px 20px;
+        font-size: 18px;
+        font-weight: bold;
+        color: white;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        transition: transform 0.2s;
+    }
+
+    #music-controls:hover {
+        transform: scale(1.05);
+    }
+
+    #game-container, #result-screen {
+        background: white;
+        border-radius: 25px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        padding: 40px;
+        margin: 40px 20px;
+        max-width: 800px;
+        width: 90%;
+        text-align: center;
+        position: relative;
+    }
+
+    .warning {
+        animation: flashRed 0.6s ease-in-out 2;
+    }
+
+    @keyframes flashRed {
+        0% { box-shadow: 0 0 0px var(--wrong); }
+        50% { box-shadow: 0 0 30px var(--wrong); }
+        100% { box-shadow: 0 0 0px var(--wrong); }
+    }
+
+    #illustration {
+        font-size: 90px;
+        margin: 10px 0 20px 0;
+        text-shadow: 2px 2px 10px rgba(0,0,0,0.1);
+    }
+
+    #question-text {
+        font-size: 24px;
+        margin-bottom: 40px;
+        color: var(--primary);
+        font-weight: bold;
+        line-height: 1.5;
+    }
+
+    .options-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .option-btn {
+        background-color: #F5F5F5;
+        border: 4px solid var(--primary);
+        border-radius: 15px;
+        padding: 20px;
+        font-size: 20px;
+        cursor: pointer;
+        transition: transform 0.2s, background-color 0.3s, border-color 0.3s;
+        font-family: inherit;
+        color: var(--text);
+        font-weight: bold;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .option-btn:hover {
+        transform: translateY(-5px);
+        background-color: #E0F7FA;
+    }
+
+    .option-btn.correct {
+        background-color: var(--correct) !important;
+        color: white;
+        border-color: var(--correct);
+        box-shadow: 0 0 15px var(--correct);
+    }
+
+    .option-btn.wrong {
+        background-color: var(--wrong) !important;
+        color: white;
+        border-color: var(--wrong);
+        animation: shake 0.4s;
+    }
+
+    @keyframes shake {
+        0% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        50% { transform: translateX(5px); }
+        75% { transform: translateX(-5px); }
+        100% { transform: translateX(0); }
+    }
+
+    .star {
+        position: fixed;
+        font-size: 40px;
+        animation: flyUp 1s ease-out forwards;
+        pointer-events: none;
+        z-index: 1000;
+    }
+
+    @keyframes flyUp {
+        0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
+        100% { transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(1.5) rotate(180deg); opacity: 0; }
+    }
+
+    #result-screen {
+        display: none;
+    }
+
+    #result-title {
+        font-size: 48px;
+        color: var(--primary);
+        margin-bottom: 20px;
+    }
+
+    #result-text {
+        font-size: 32px;
+        color: var(--correct);
+        margin-bottom: 40px;
+    }
+
+    #retake-btn {
+        background-color: var(--secondary);
+        color: white;
+        border: none;
+        padding: 20px 50px;
+        font-size: 26px;
+        border-radius: 20px;
+        cursor: pointer;
+        font-weight: bold;
+        box-shadow: 0 6px 10px rgba(0,0,0,0.2);
+        transition: transform 0.2s;
+    }
+
+    #retake-btn:hover {
+        transform: scale(1.1);
+    }
+
+    @media(max-width: 768px) {
+        .options-grid {
+            grid-template-columns: 1fr;
+        }
+        #ribbon {
+            flex-direction: column;
+            gap: 10px;
+            font-size: 20px;
+            text-align: center;
+        }
+        #question-text {
+            font-size: 20px;
+        }
+        .option-btn {
+            font-size: 18px;
+        }
+    }
+</style>
+</head>
+<body>
+
+<div id="ribbon">
+    <div>⚓ 2_Why the Cross _ Quiz _ Part 2</div>
+    <div id="progress-text">Question 1 of 30</div>
+    <button id="music-controls" onclick="toggleMusic()">🎵 Play Music</button>
+</div>
+
+<div id="game-container">
+    <div id="illustration"></div>
+    <div id="question-text"></div>
+    <div class="options-grid" id="options-grid"></div>
+</div>
+
+<div id="result-screen">
+    <div id="result-title">🌟 You Are A Conqueror! 🌟</div>
+    <div id="result-text"></div>
+    <button id="retake-btn" onclick="retake()">Play Again! 🔄</button>
+</div>
+
+<script>
+    // --- Audio Synthesizer ---
+    let audioCtx;
+    let isPlaying = false;
+    let loopId;
+
+    function playTone(freq, time, duration) {
+        if (!audioCtx) return;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        gain.gain.setValueAtTime(0, time);
+        gain.gain.linearRampToValueAtTime(0.08, time + 0.05);
+        gain.gain.linearRampToValueAtTime(0, time + duration);
+        osc.start(time);
+        osc.stop(time + duration);
+    }
+
+    function playMelody() {
+        if (!isPlaying) return;
+        const now = audioCtx.currentTime;
+        // Upbeat, engaging melody
+        const melody = [
+            { f: 523.25, t: 0.0, d: 0.3 }, 
+            { f: 659.25, t: 0.3, d: 0.3 }, 
+            { f: 783.99, t: 0.6, d: 0.3 }, 
+            { f: 1046.50, t: 0.9, d: 0.6 }
+        ];
+        
+        melody.forEach(note => playTone(note.f, now + note.t, note.d));
+        loopId = setTimeout(playMelody, 3000); 
+    }
+
+    function toggleMusic() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        const btn = document.getElementById('music-controls');
+        if (isPlaying) {
+            isPlaying = false;
+            clearTimeout(loopId);
+            btn.innerHTML = '🎵 Play Music';
+        } else {
+            isPlaying = true;
+            audioCtx.resume();
+            playMelody();
+            btn.innerHTML = '⏸️ Stop Music';
+        }
+    }
+
+    // --- Game Logic & Data ---
+    const questions = [
+        { q: "Who asked: 'are there other alternatives?' to the Cross?[cite: 6]", o: ["Pavlos[cite: 6]", "Bishoy[cite: 6]", "Sherry[cite: 6]", "Verina[cite: 6]"], a: 0, ill: "👦" },
+        { q: "According to Verina, if Jesus died of old age, how would He have died?[cite: 6]", o: ["Like a king[cite: 6]", "Like most people do[cite: 6]", "Like a sacrifice[cite: 6]", "Peacefully[cite: 6]"], a: 1, ill: "👴" },
+        { q: "Who brought up the example of a person wanting to offer a lamb as a sacrifice?[cite: 6]", o: ["Sherry[cite: 6]", "Uncle Matthew[cite: 6]", "Pavlos[cite: 6]", "Verina[cite: 6]"], a: 2, ill: "🐑" },
+        { q: "According to the lesson, the sign of the Cross is described as what two things?[cite: 6]", o: ["Long and hard[cite: 6]", "Simple yet powerful[cite: 6]", "Bright and shiny[cite: 6]", "Old and new[cite: 6]"], a: 1, ill: "✨" },
+        { q: "Moving our fingers in all four directions when doing the sign of the cross symbolizes what?[cite: 6]", o: ["The cross was made of wood[cite: 6]", "The salvation was for the entire world[cite: 6]", "The soldiers were all around[cite: 6]", "The tomb had four corners[cite: 6]"], a: 1, ill: "🌍" },
+        { q: "According to the text, what did those who witnessed the Crucifixion see placed on His head?[cite: 6]", o: ["A crown of thorns[cite: 6]", "A golden crown[cite: 6]", "A helmet[cite: 6]", "A white cloth[cite: 6]"], a: 0, ill: "👑" },
+        { q: "The text states that the witnesses made sure the Man who was crucified was who?[cite: 6]", o: ["A Roman soldier[cite: 6]", "Christ Himself and not someone pretending[cite: 6]", "A regular criminal[cite: 6]", "An angel[cite: 6]"], a: 1, ill: "👀" },
+        { q: "Through His death and Resurrection, what did Christ conquer while retaining the wounds in His body?[cite: 6]", o: ["The Roman Empire[cite: 6]", "The soldiers[cite: 6]", "Death[cite: 6]", "Sickness[cite: 6]"], a: 2, ill: "🏆" },
+        { q: "The Cross opened a way to connect Heaven and Earth, like a what?[cite: 6]", o: ["Ladder[cite: 6]", "Bridge[cite: 6]", "Rope[cite: 6]", "Tower[cite: 6]"], a: 1, ill: "🌉" },
+        { q: "Which Old Testament book is quoted saying 'nor shall you break one of its bones'?[cite: 6]", o: ["Genesis[cite: 6]", "Exodus[cite: 6]", "Leviticus[cite: 6]", "Psalms[cite: 6]"], a: 1, ill: "📖" },
+        { q: "Which Apostle's letter says 'For we are members of His body, of His flesh and of His bones'?[cite: 6]", o: ["Romans[cite: 6]", "Galatians[cite: 6]", "Ephesians[cite: 6]", "Colossians[cite: 6]"], a: 2, ill: "📜" },
+        { q: "If Christ's head had been cut off, what would it mean for the Church?[cite: 6]", o: ["Separation from the Church[cite: 6]", "A new beginning[cite: 6]", "The Church would be stronger[cite: 6]", "Nothing at all[cite: 6]"], a: 0, ill: "⛪" },
+        { q: "The lesson notes that we are 'Buried with Him in baptism.' Which book is this from?[cite: 6]", o: ["Colossians[cite: 6]", "Isaiah[cite: 6]", "Genesis[cite: 6]", "Proverbs[cite: 6]"], a: 0, ill: "💧" },
+        { q: "Who is quoted saying, 'I have trodden the winepress alone'?[cite: 6]", o: ["David[cite: 6]", "Isaiah[cite: 6]", "Moses[cite: 6]", "Paul[cite: 6]"], a: 1, ill: "🍇" },
+        { q: "Proverbs 14:34 says 'Righteousness exalts a nation, but sin is a...' what?[cite: 6]", o: ["reproach to any people[cite: 6]", "heavy burden[cite: 6]", "deep hole[cite: 6]", "bad choice[cite: 6]"], a: 0, ill: "😔" },
+        { q: "Who says 'That sin through the commandment might become exceedingly sinful'?[cite: 6]", o: ["Romans 7:13[cite: 6]", "Genesis 3:15[cite: 6]", "Proverbs 14:34[cite: 6]", "Galatians 6:14[cite: 6]"], a: 0, ill: "📖" },
+        { q: "Because God gave a promise to mankind, He said 'He shall bruise your head, and you shall bruise His...' what?[cite: 6]", o: ["hand[cite: 6]", "side[cite: 6]", "heel[cite: 6]", "back[cite: 6]"], a: 2, ill: "🦶" },
+        { q: "What is the reference for the verse 'Cursed is everyone who hangs on a tree'?[cite: 6]", o: ["Genesis 1:1[cite: 6]", "Galatians 3:13 & Deuteronomy 21:23[cite: 6]", "Romans 6:23[cite: 6]", "Isaiah 53:5[cite: 6]"], a: 1, ill: "🌳" },
+        { q: "The verse 'But God forbid that I should boast except in the cross of our Lord Jesus Christ' is found where?[cite: 6]", o: ["Galatians 6:14[cite: 6]", "Colossians 2:12[cite: 6]", "Romans 7:13[cite: 6]", "Proverbs 14:34[cite: 6]"], a: 0, ill: "✝️" },
+        { q: "Uncle Matthew states that understanding his question will help us better understand the concept of what?[cite: 6]", o: ["Redemption[cite: 6]", "Baptism[cite: 6]", "Communion[cite: 6]", "Fasting[cite: 6]"], a: 0, ill: "💡" },
+        { q: "Christ is a single person in whom the Divinity and humanity are what?[cite: 6]", o: ["Separated completely[cite: 6]", "Perfectly united[cite: 6]", "Mixed into a new nature[cite: 6]", "Confused together[cite: 6]"], a: 1, ill: "👤" },
+        { q: "'Without mingling' means the attributes of human nature did not mix with what?[cite: 6]", o: ["The attributes of the Divine Nature[cite: 6]", "The natural world[cite: 6]", "The spirit[cite: 6]", "The angels[cite: 6]"], a: 0, ill: "🚫" },
+        { q: "The lesson compares mingling to what happens between liquids to produce what?[cite: 6]", o: ["Steam[cite: 6]", "Ice[cite: 6]", "A new liquid[cite: 6]", "Bubbles[cite: 6]"], a: 2, ill: "🧪" },
+        { q: "'Without alteration' means the attributes of the Divine Nature did not do what?[cite: 6]", o: ["Change[cite: 6]", "Stay the same[cite: 6]", "Appear[cite: 6]", "Hide[cite: 6]"], a: 0, ill: "🛑" },
+        { q: "In His humanity, what does the Lord Jesus do?[cite: 6]", o: ["He never sleeps[cite: 6]", "He hungers, sleeps, suffers, and dies[cite: 6]", "He flies[cite: 6]", "He is invisible[cite: 6]"], a: 1, ill: "🧍" },
+        { q: "In His divinity, does the Lord Jesus hunger, sleep, suffer, or die?[cite: 6]", o: ["Yes[cite: 6]", "No[cite: 6]", "Sometimes[cite: 6]", "Only in the evening[cite: 6]"], a: 1, ill: "✨" },
+        { q: "What happened on the Cross to the Lord Jesus was the separation of the human Spirit from what?[cite: 6]", o: ["The human Body[cite: 6]", "The Divine Nature[cite: 6]", "The angels[cite: 6]", "The Father[cite: 6]"], a: 0, ill: "💔" },
+        { q: "In the analogy of the paper and water, what does the soaked paper represent?[cite: 6]", o: ["The Church[cite: 6]", "Our Lord Jesus[cite: 6]", "The Apostles[cite: 6]", "The Cross[cite: 6]"], a: 1, ill: "📄" },
+        { q: "In the analogy of the paper and water, when the paper is cut, does the water leave either half?[cite: 6]", o: ["Yes[cite: 6]", "No[cite: 6]", "Only one half[cite: 6]", "The water evaporates[cite: 6]"], a: 1, ill: "🌊" },
+        { q: "The death that the Lord Jesus went through was death according to the what?[cite: 6]", o: ["Spirit[cite: 6]", "Divinity[cite: 6]", "Body[cite: 6]", "Angels[cite: 6]"], a: 2, ill: "🛌" }
+    ];
+
+    let currentQ = 0;
+    let score = 0;
+    let firstTry = true;
+
+    function shootStars(btn) {
+        const rect = btn.getBoundingClientRect();
+        const emojis = ['⭐', '✨', '🌟', '🎉'];
+        for(let i=0; i<15; i++) {
+            let star = document.createElement('div');
+            star.className = 'star';
+            star.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+            star.style.left = (rect.left + rect.width/2) + 'px';
+            star.style.top = (rect.top + rect.height/2) + 'px';
+            
+            let angle = Math.random() * Math.PI * 2;
+            let distance = Math.random() * 120 + 60;
+            let tx = Math.cos(angle) * distance;
+            let ty = Math.sin(angle) * distance - 100; 
+            
+            star.style.setProperty('--tx', `${tx}px`);
+            star.style.setProperty('--ty', `${ty}px`);
+            
+            document.body.appendChild(star);
+            setTimeout(() => star.remove(), 1000);
+        }
+    }
+
+    function loadQuestion() {
+        firstTry = true;
+        const q = questions[currentQ];
+        document.getElementById('progress-text').innerText = `Question ${currentQ + 1} of ${questions.length}`;
+        document.getElementById('illustration').innerText = q.ill;
+        document.getElementById('question-text').innerText = q.q;
+        
+        const optionsGrid = document.getElementById('options-grid');
+        optionsGrid.innerHTML = '';
+        
+        q.o.forEach((opt, index) => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerHTML = opt; // Using innerHTML to render any citations nicely if needed
+            btn.onclick = () => checkAnswer(index, btn);
+            optionsGrid.appendChild(btn);
+        });
+    }
+
+    function checkAnswer(index, btn) {
+        if(btn.classList.contains('wrong') || btn.classList.contains('correct')) return;
+
+        const q = questions[currentQ];
+        const buttons = document.querySelectorAll('.option-btn');
+        const container = document.getElementById('game-container');
+        
+        if (index === q.a) {
+            btn.classList.add('correct');
+            shootStars(btn);
+            if (firstTry) score++;
+            
+            buttons.forEach(b => b.style.pointerEvents = 'none');
+            
+            setTimeout(() => {
+                currentQ++;
+                if (currentQ < questions.length) {
+                    loadQuestion();
+                } else {
+                    showResult();
+                }
+            }, 1500);
+        } else {
+            btn.classList.add('wrong');
+            firstTry = false;
+            
+            container.classList.remove('warning');
+            void container.offsetWidth; 
+            container.classList.add('warning');
+        }
+    }
+
+    function showResult() {
+        document.getElementById('game-container').style.display = 'none';
+        document.getElementById('result-screen').style.display = 'block';
+        
+        const percent = Math.round((score / questions.length) * 100);
+        document.getElementById('result-text').innerText = `Wonderful effort!\nYou scored ${score} out of ${questions.length} on your first try!\n\nThat's ${percent}%!`;
+    }
+
+    function retake() {
+        currentQ = 0;
+        score = 0;
+        document.getElementById('game-container').style.display = 'block';
+        document.getElementById('result-screen').style.display = 'none';
+        loadQuestion();
+    }
+
+    // Initialize Game
+    loadQuestion();
+</script>
+</body>
+</html>
