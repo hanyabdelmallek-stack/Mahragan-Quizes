@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>1_The Story of Salvation & The Cross _ Quiz _Part 2</title>
+<style>
+    :root {
+        --primary: #1565C0; /* Royal Blue */
+        --secondary: #FFB300; /* Golden Yellow */
+        --bg: #E3F2FD; /* Light Blue Background */
+        --correct: #4CAF50;
+        --wrong: #F44336;
+        --text: #1E1E1E;
+    }
+
+    body {
+        font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+        background-color: var(--bg);
+        color: var(--text);
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+        overflow-x: hidden;
+    }
+
+    #ribbon {
+        width: 100%;
+        background-color: var(--primary);
+        color: white;
+        padding: 15px 30px;
+        font-size: 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-sizing: border-box;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        font-weight: bold;
+    }
+
+    #music-controls {
+        cursor: pointer;
+        background: var(--secondary);
+        border: none;
+        border-radius: 12px;
+        padding: 10px 20px;
+        font-size: 18px;
+        font-weight: bold;
+        color: #333;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        transition: transform 0.2s;
+    }
+
+    #music-controls:hover {
+        transform: scale(1.05);
+    }
+
+    #game-container, #result-screen {
+        background: white;
+        border-radius: 25px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        padding: 40px;
+        margin: 40px 20px;
+        max-width: 800px;
+        width: 90%;
+        text-align: center;
+        position: relative;
+    }
+
+    .warning {
+        animation: flashRed 0.6s ease-in-out 2;
+    }
+
+    @keyframes flashRed {
+        0% { box-shadow: 0 0 0px var(--wrong); }
+        50% { box-shadow: 0 0 30px var(--wrong); }
+        100% { box-shadow: 0 0 0px var(--wrong); }
+    }
+
+    #illustration {
+        font-size: 90px;
+        margin: 10px 0 20px 0;
+        text-shadow: 2px 2px 10px rgba(0,0,0,0.1);
+    }
+
+    #question-text {
+        font-size: 24px;
+        margin-bottom: 40px;
+        color: var(--primary);
+        font-weight: bold;
+        line-height: 1.5;
+    }
+
+    .options-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .option-btn {
+        background-color: #F5F5F5;
+        border: 4px solid var(--primary);
+        border-radius: 15px;
+        padding: 20px;
+        font-size: 20px;
+        cursor: pointer;
+        transition: transform 0.2s, background-color 0.3s, border-color 0.3s;
+        font-family: inherit;
+        color: var(--text);
+        font-weight: bold;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .option-btn:hover {
+        transform: translateY(-5px);
+        background-color: #E3F2FD;
+    }
+
+    .option-btn.correct {
+        background-color: var(--correct) !important;
+        color: white;
+        border-color: var(--correct);
+        box-shadow: 0 0 15px var(--correct);
+    }
+
+    .option-btn.wrong {
+        background-color: var(--wrong) !important;
+        color: white;
+        border-color: var(--wrong);
+        animation: shake 0.4s;
+    }
+
+    @keyframes shake {
+        0% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        50% { transform: translateX(5px); }
+        75% { transform: translateX(-5px); }
+        100% { transform: translateX(0); }
+    }
+
+    .star {
+        position: fixed;
+        font-size: 40px;
+        animation: flyUp 1s ease-out forwards;
+        pointer-events: none;
+        z-index: 1000;
+    }
+
+    @keyframes flyUp {
+        0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
+        100% { transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(1.5) rotate(180deg); opacity: 0; }
+    }
+
+    #result-screen {
+        display: none;
+    }
+
+    #result-title {
+        font-size: 48px;
+        color: var(--primary);
+        margin-bottom: 20px;
+    }
+
+    #result-text {
+        font-size: 32px;
+        color: var(--correct);
+        margin-bottom: 40px;
+    }
+
+    #retake-btn {
+        background-color: var(--secondary);
+        color: #333;
+        border: none;
+        padding: 20px 50px;
+        font-size: 26px;
+        border-radius: 20px;
+        cursor: pointer;
+        font-weight: bold;
+        box-shadow: 0 6px 10px rgba(0,0,0,0.2);
+        transition: transform 0.2s;
+    }
+
+    #retake-btn:hover {
+        transform: scale(1.1);
+    }
+
+    @media(max-width: 768px) {
+        .options-grid {
+            grid-template-columns: 1fr;
+        }
+        #ribbon {
+            flex-direction: column;
+            gap: 10px;
+            font-size: 20px;
+            text-align: center;
+        }
+        #question-text {
+            font-size: 20px;
+        }
+        .option-btn {
+            font-size: 18px;
+        }
+    }
+</style>
+</head>
+<body>
+
+<div id="ribbon">
+    <div>✝️ 1_The Story of Salvation & The Cross _ Quiz _Part 2</div>
+    <div id="progress-text">Question 1 of 30</div>
+    <button id="music-controls" onclick="toggleMusic()">🎵 Play Music</button>
+</div>
+
+<div id="game-container">
+    <div id="illustration"></div>
+    <div id="question-text"></div>
+    <div class="options-grid" id="options-grid"></div>
+</div>
+
+<div id="result-screen">
+    <div id="result-title">🌟 Excellent Journey! 🌟</div>
+    <div id="result-text"></div>
+    <button id="retake-btn" onclick="retake()">Play Again! 🔄</button>
+</div>
+
+<script>
+    // --- Audio Synthesizer ---
+    let audioCtx;
+    let isPlaying = false;
+    let loopId;
+
+    function playTone(freq, time, duration) {
+        if (!audioCtx) return;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        gain.gain.setValueAtTime(0, time);
+        gain.gain.linearRampToValueAtTime(0.08, time + 0.05);
+        gain.gain.linearRampToValueAtTime(0, time + duration);
+        osc.start(time);
+        osc.stop(time + duration);
+    }
+
+    function playMelody() {
+        if (!isPlaying) return;
+        const now = audioCtx.currentTime;
+        // Uplifting major melody
+        const melody = [
+            { f: 523.25, t: 0.0, d: 0.4 }, 
+            { f: 659.25, t: 0.4, d: 0.4 }, 
+            { f: 783.99, t: 0.8, d: 0.4 }, 
+            { f: 1046.50, t: 1.2, d: 0.8 }
+        ];
+        
+        melody.forEach(note => playTone(note.f, now + note.t, note.d));
+        loopId = setTimeout(playMelody, 3500); 
+    }
+
+    function toggleMusic() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        const btn = document.getElementById('music-controls');
+        if (isPlaying) {
+            isPlaying = false;
+            clearTimeout(loopId);
+            btn.innerHTML = '🎵 Play Music';
+        } else {
+            isPlaying = true;
+            audioCtx.resume();
+            playMelody();
+            btn.innerHTML = '⏸️ Stop Music';
+        }
+    }
+
+    // --- Game Logic & Data ---
+    const questions = [
+        { q: "What chapter in Genesis records God commanding Adam not to eat of the tree of knowledge?[cite: 5]", o: ["Genesis 1", "Genesis 2", "Genesis 3", "Genesis 4"], a: 1, ill: "📖" },
+        { q: "According to Romans 6:23, what are the \"wages of sin\"?[cite: 5]", o: ["Sadness", "Hard work", "Death", "Hunger"], a: 2, ill: "⚖️" },
+        { q: "Death in the context of Adam's sin means separation from whom?[cite: 5]", o: ["The angels", "The Garden of Eden", "The Source of Life, which is God", "Eve"], a: 2, ill: "💔" },
+        { q: "True or False: Because of Adam's sin, he and Eve were allowed to stay in the Garden of Eden forever.[cite: 5]", o: ["True", "False"], a: 1, ill: "🚫" },
+        { q: "What illustration is used to describe how our nature became corrupt because of sin?[cite: 5]", o: ["A broken toy", "Eating rotten food", "A ripped shirt", "A lost map"], a: 1, ill: "🤢" },
+        { q: "Who was the head and crown of creation from whom we inherited the fallen nature?[cite: 5]", o: ["Noah", "Moses", "Adam", "Abraham"], a: 2, ill: "👑" },
+        { q: "Because God is Holy, He cannot coexist with or accept what?[cite: 5]", o: ["Sin", "Animals", "The earth", "Stars"], a: 0, ill: "✨" },
+        { q: "Which attribute of God means He must judge mankind for their sin?[cite: 5]", o: ["His Mercy", "His Patience", "His Justice", "His Joy"], a: 2, ill: "⚖️" },
+        { q: "To satisfy the conditions of a Savior, who became Man and redeemed us?[cite: 5]", o: ["An Archangel", "God, the Word", "A prophet", "A perfect human"], a: 1, ill: "✝️" },
+        { q: "Why did the Savior have to be \"Capable of Dying\"?[cite: 5]", o: ["To show He was brave", "To fulfill divine justice and lift the sentence of death", "To sleep for a while", "To become a spirit"], a: 1, ill: "🕊️" },
+        { q: "Why did the Savior have to be \"Unlimited\"?[cite: 5]", o: ["So He could fly anywhere", "So His blood is enough to redeem all humanity", "To build a huge temple", "To live forever without dying"], a: 1, ill: "🌍" },
+        { q: "What did the Savior do after three days to prove He was stronger than death?[cite: 5]", o: ["He raised Himself from the dead", "He went to sleep", "He painted a cross", "He hid in a cave"], a: 0, ill: "🌅" },
+        { q: "According to 1 Peter 1:18-19, we were redeemed with what?[cite: 5]", o: ["Silver", "Gold", "Good deeds", "The precious blood of Christ"], a: 3, ill: "🩸" },
+        { q: "True or False: To benefit from salvation, we should regularly partake of the Body and Blood of the Lord.[cite: 5]", o: ["True", "False"], a: 0, ill: "🍞" },
+        { q: "Who did God send to deliver the Israelites from slavery in Egypt?[cite: 5]", o: ["David", "Moses", "Joseph", "Abraham"], a: 1, ill: "🚶‍♂️" },
+        { q: "Who was the King of Egypt that refused to let God's people go?[cite: 5]", o: ["Herod", "Caesar", "Pharaoh", "Pilate"], a: 2, ill: "👑" },
+        { q: "In the 10th plague, who would die in the land of Egypt?[cite: 5]", o: ["Every firstborn", "Every king", "Every soldier", "Every servant"], a: 0, ill: "🌙" },
+        { q: "True or False: The Passover lamb could be male or female.[cite: 5]", o: ["True", "False, it had to be male"], a: 1, ill: "🐑" },
+        { q: "How old did the Passover lamb have to be to show it was full of energy?[cite: 5]", o: ["One month old", "One year old", "Two years old", "Three years old"], a: 1, ill: "⚡" },
+        { q: "What kind of bread were the Israelites instructed to eat with the roasted lamb?[cite: 5]", o: ["Sweet bread", "Garlic bread", "Unleavened bread (without yeast)", "Wheat bread"], a: 2, ill: "🍞" },
+        { q: "When God said, \"And when I see the blood, I will _____ you\", what words go in the blank?[cite: 5]", o: ["stay with", "pass over", "run from", "fight for"], a: 1, ill: "🚪" },
+        { q: "The Jewish people kept the Passover as a feast to remember what?[cite: 5]", o: ["The building of the pyramids", "Everything God had done to deliver them from Egypt", "The creation of the world", "The birth of Moses"], a: 1, ill: "🎉" },
+        { q: "What does the Hebrew word \"Passover\" mean?[cite: 5]", o: ["Eating bread", "Singing songs", "Passing over or crossing", "Staying safe"], a: 2, ill: "🚶‍♂️" },
+        { q: "In the sketch board drawing, what color should the doorposts be painted to illustrate the lamb's blood?[cite: 5]", o: ["White", "Blue", "Gold", "Red"], a: 3, ill: "🖌️" },
+        { q: "Isaiah 55:7 prophesied about Christ saying, \"He was led as a lamb to the...\" what?[cite: 5]", o: ["forest", "slaughter", "mountain", "river"], a: 1, ill: "📜" },
+        { q: "John 1:29 says, \"Behold! The Lamb of God who takes away the ____ of the world!\"[cite: 5]", o: ["sadness", "sin", "hunger", "sickness"], a: 1, ill: "🐑" },
+        { q: "True or False: According to John 19:32-33, the soldiers broke Jesus' legs to make sure He was dead.[cite: 5]", o: ["True", "False"], a: 1, ill: "🦵" },
+        { q: "The rule that \"none of it was to remain until morning\" symbolizes what about Christ?[cite: 5]", o: ["He was taken down from the cross on the same day", "He ate quickly", "He healed many people", "He rose on Sunday"], a: 0, ill: "☀️" },
+        { q: "What does everyone in the household eating the Passover lamb symbolize for us today?[cite: 5]", o: ["Having a big dinner party", "Partaking of Holy Communion (The Eucharist)", "Fasting together", "Singing together"], a: 1, ill: "⛪" },
+        { q: "In the second room preparation, Pavlos explained that beautiful sets help children understand the meaning through what?[cite: 5]", o: ["Only reading books", "Their eyes and ears", "Running around", "Sleeping"], a: 1, ill: "👀" }
+    ];
+
+    let currentQ = 0;
+    let score = 0;
+    let firstTry = true;
+
+    function shootStars(btn) {
+        const rect = btn.getBoundingClientRect();
+        const emojis = ['⭐', '✨', '🌟', '🎉'];
+        for(let i=0; i<15; i++) {
+            let star = document.createElement('div');
+            star.className = 'star';
+            star.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+            star.style.left = (rect.left + rect.width/2) + 'px';
+            star.style.top = (rect.top + rect.height/2) + 'px';
+            
+            let angle = Math.random() * Math.PI * 2;
+            let distance = Math.random() * 120 + 60;
+            let tx = Math.cos(angle) * distance;
+            let ty = Math.sin(angle) * distance - 100; 
+            
+            star.style.setProperty('--tx', `${tx}px`);
+            star.style.setProperty('--ty', `${ty}px`);
+            
+            document.body.appendChild(star);
+            setTimeout(() => star.remove(), 1000);
+        }
+    }
+
+    function loadQuestion() {
+        firstTry = true;
+        const q = questions[currentQ];
+        document.getElementById('progress-text').innerText = `Question ${currentQ + 1} of ${questions.length}`;
+        document.getElementById('illustration').innerText = q.ill;
+        document.getElementById('question-text').innerText = q.q;
+        
+        const optionsGrid = document.getElementById('options-grid');
+        optionsGrid.innerHTML = '';
+        
+        q.o.forEach((opt, index) => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerText = opt;
+            btn.onclick = () => checkAnswer(index, btn);
+            optionsGrid.appendChild(btn);
+        });
+    }
+
+    function checkAnswer(index, btn) {
+        if(btn.classList.contains('wrong') || btn.classList.contains('correct')) return;
+
+        const q = questions[currentQ];
+        const buttons = document.querySelectorAll('.option-btn');
+        const container = document.getElementById('game-container');
+        
+        if (index === q.a) {
+            btn.classList.add('correct');
+            shootStars(btn);
+            if (firstTry) score++;
+            
+            buttons.forEach(b => b.style.pointerEvents = 'none');
+            
+            setTimeout(() => {
+                currentQ++;
+                if (currentQ < questions.length) {
+                    loadQuestion();
+                } else {
+                    showResult();
+                }
+            }, 1500);
+        } else {
+            btn.classList.add('wrong');
+            firstTry = false;
+            
+            container.classList.remove('warning');
+            void container.offsetWidth; 
+            container.classList.add('warning');
+        }
+    }
+
+    function showResult() {
+        document.getElementById('game-container').style.display = 'none';
+        document.getElementById('result-screen').style.display = 'block';
+        
+        const percent = Math.round((score / questions.length) * 100);
+        document.getElementById('result-text').innerText = `Amazing effort!\nYou scored ${score} out of ${questions.length} on your first try!\n\nThat's ${percent}%!`;
+    }
+
+    function retake() {
+        currentQ = 0;
+        score = 0;
+        document.getElementById('game-container').style.display = 'block';
+        document.getElementById('result-screen').style.display = 'none';
+        loadQuestion();
+    }
+
+    // Initialize Game
+    loadQuestion();
+</script>
+</body>
+</html>
