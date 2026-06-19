@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>4_St. Abba John The Short _ Quiz_Part 1</title>
+<style>
+    :root {
+        --primary: #43A047; /* Leafy Green */
+        --secondary: #FFB300; /* Warm Amber */
+        --bg: #E8F5E9; /* Light Green Background */
+        --correct: #388E3C;
+        --wrong: #D32F2F;
+        --text: #1B5E20;
+    }
+
+    body {
+        font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+        background-color: var(--bg);
+        color: var(--text);
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+        overflow-x: hidden;
+    }
+
+    #ribbon {
+        width: 100%;
+        background-color: var(--primary);
+        color: white;
+        padding: 15px 30px;
+        font-size: 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-sizing: border-box;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        font-weight: bold;
+    }
+
+    #music-controls {
+        cursor: pointer;
+        background: var(--secondary);
+        border: none;
+        border-radius: 12px;
+        padding: 10px 20px;
+        font-size: 18px;
+        font-weight: bold;
+        color: white;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        transition: transform 0.2s;
+    }
+
+    #music-controls:hover {
+        transform: scale(1.05);
+    }
+
+    #game-container, #result-screen {
+        background: white;
+        border-radius: 25px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        padding: 40px;
+        margin: 40px 20px;
+        max-width: 800px;
+        width: 90%;
+        text-align: center;
+        position: relative;
+    }
+
+    .warning {
+        animation: flashRed 0.6s ease-in-out 2;
+    }
+
+    @keyframes flashRed {
+        0% { box-shadow: 0 0 0px var(--wrong); }
+        50% { box-shadow: 0 0 30px var(--wrong); }
+        100% { box-shadow: 0 0 0px var(--wrong); }
+    }
+
+    #illustration {
+        font-size: 90px;
+        margin: 10px 0 20px 0;
+        text-shadow: 2px 2px 10px rgba(0,0,0,0.1);
+    }
+
+    #question-text {
+        font-size: 24px;
+        margin-bottom: 40px;
+        color: var(--primary);
+        font-weight: bold;
+        line-height: 1.5;
+    }
+
+    .options-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .option-btn {
+        background-color: #F5F5F5;
+        border: 4px solid var(--primary);
+        border-radius: 15px;
+        padding: 20px;
+        font-size: 20px;
+        cursor: pointer;
+        transition: transform 0.2s, background-color 0.3s, border-color 0.3s;
+        font-family: inherit;
+        color: var(--text);
+        font-weight: bold;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .option-btn:hover {
+        transform: translateY(-5px);
+        background-color: #E8F5E9;
+    }
+
+    .option-btn.correct {
+        background-color: var(--correct) !important;
+        color: white;
+        border-color: var(--correct);
+        box-shadow: 0 0 15px var(--correct);
+    }
+
+    .option-btn.wrong {
+        background-color: var(--wrong) !important;
+        color: white;
+        border-color: var(--wrong);
+        animation: shake 0.4s;
+    }
+
+    @keyframes shake {
+        0% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        50% { transform: translateX(5px); }
+        75% { transform: translateX(-5px); }
+        100% { transform: translateX(0); }
+    }
+
+    .star {
+        position: fixed;
+        font-size: 40px;
+        animation: flyUp 1s ease-out forwards;
+        pointer-events: none;
+        z-index: 1000;
+    }
+
+    @keyframes flyUp {
+        0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
+        100% { transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(1.5) rotate(180deg); opacity: 0; }
+    }
+
+    #result-screen {
+        display: none;
+    }
+
+    #result-title {
+        font-size: 48px;
+        color: var(--primary);
+        margin-bottom: 20px;
+    }
+
+    #result-text {
+        font-size: 32px;
+        color: var(--correct);
+        margin-bottom: 40px;
+    }
+
+    #retake-btn {
+        background-color: var(--secondary);
+        color: white;
+        border: none;
+        padding: 20px 50px;
+        font-size: 26px;
+        border-radius: 20px;
+        cursor: pointer;
+        font-weight: bold;
+        box-shadow: 0 6px 10px rgba(0,0,0,0.2);
+        transition: transform 0.2s;
+    }
+
+    #retake-btn:hover {
+        transform: scale(1.1);
+    }
+
+    @media(max-width: 768px) {
+        .options-grid {
+            grid-template-columns: 1fr;
+        }
+        #ribbon {
+            flex-direction: column;
+            gap: 10px;
+            font-size: 20px;
+            text-align: center;
+        }
+        #question-text {
+            font-size: 20px;
+        }
+        .option-btn {
+            font-size: 18px;
+        }
+    }
+</style>
+</head>
+<body>
+
+<div id="ribbon">
+    <div>✨ 4_St. Abba John The Short _ Quiz_Part 1</div>
+    <div id="progress-text">Question 1 of 30</div>
+    <button id="music-controls" onclick="toggleMusic()">🎵 Play Music</button>
+</div>
+
+<div id="game-container">
+    <div id="illustration"></div>
+    <div id="question-text"></div>
+    <div class="options-grid" id="options-grid"></div>
+</div>
+
+<div id="result-screen">
+    <div id="result-title">🌟 You Did It! 🌟</div>
+    <div id="result-text"></div>
+    <button id="retake-btn" onclick="retake()">Play Again! 🔄</button>
+</div>
+
+<script>
+    // --- Audio Synthesizer ---
+    let audioCtx;
+    let isPlaying = false;
+    let loopId;
+
+    function playTone(freq, time, duration) {
+        if (!audioCtx) return;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.value = freq;
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        gain.gain.setValueAtTime(0, time);
+        gain.gain.linearRampToValueAtTime(0.08, time + 0.05);
+        gain.gain.linearRampToValueAtTime(0, time + duration);
+        osc.start(time);
+        osc.stop(time + duration);
+    }
+
+    function playMelody() {
+        if (!isPlaying) return;
+        const now = audioCtx.currentTime;
+        // Peaceful desert melody
+        const melody = [
+            { f: 392.00, t: 0.0, d: 0.4 }, 
+            { f: 440.00, t: 0.4, d: 0.4 }, 
+            { f: 493.88, t: 0.8, d: 0.4 }, 
+            { f: 523.25, t: 1.2, d: 0.8 }
+        ];
+        
+        melody.forEach(note => playTone(note.f, now + note.t, note.d));
+        loopId = setTimeout(playMelody, 3500); 
+    }
+
+    function toggleMusic() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        const btn = document.getElementById('music-controls');
+        if (isPlaying) {
+            isPlaying = false;
+            clearTimeout(loopId);
+            btn.innerHTML = '🎵 Play Music';
+        } else {
+            isPlaying = true;
+            audioCtx.resume();
+            playMelody();
+            btn.innerHTML = '⏸️ Stop Music';
+        }
+    }
+
+    // --- Game Logic & Data ---
+    const questions = [
+        { q: "What special garments do monks wear that Verina mentioned to Sherry?[cite: 7]", o: ["A crown and cape", "A kolonsoa and eskim", "A gold ring and sandals", "A scarf and hat"], a: 1, ill: "👕" },
+        { q: "What does the name 'Youhanna' (John in Arabic) mean?[cite: 7]", o: ["God is strong", "God is love", "God is gracious", "God is light"], a: 2, ill: "📖" },
+        { q: "In what year was Saint John born?[cite: 7]", o: ["100 A.D.", "339 A.D.", "500 A.D.", "700 A.D."], a: 1, ill: "📅" },
+        { q: "Where was Saint John born?[cite: 7]", o: ["In a town in Upper Egypt", "In Jerusalem", "In Alexandria", "In Rome"], a: 0, ill: "🗺️" },
+        { q: "How old was John when God guided him to go to the wilderness?[cite: 7]", o: ["12 years old", "18 years old", "30 years old", "40 years old"], a: 1, ill: "🎂" },
+        { q: "What does the Coptic word for wilderness, \"Wi₂нт,\" mean?[cite: 7]", o: ["The dry land", "The hot sun", "The balance of hearts", "The empty space"], a: 2, ill: "🏜️" },
+        { q: "When John went to the wilderness of Scetis, who did he meet?[cite: 7]", o: ["Abba Anthony", "Abba Paul", "Abba Bimwa", "Abba Macarius"], a: 2, ill: "🧔" },
+        { q: "What did John do when he arrived and asked Abba Bimwa to stay with him?[cite: 7]", o: ["He sang a song", "He built a house", "He made a metanoia (a bow of respect)", "He gave him money"], a: 2, ill: "🙇‍♂️" },
+        { q: "How did Abba Bimwa initially test John?[cite: 7]", o: ["By making him carry water", "By telling him about the hardships of monastic life", "By asking him to read", "By sending him back home"], a: 1, ill: "🗣️" },
+        { q: "What do those who live in the wilderness depend on, according to Abba Bimwa?[cite: 7]", o: ["Only fishing", "The work of their hands, much fasting, prayer, and asceticism", "Money from the city", "Food from travelers"], a: 1, ill: "⚒️" },
+        { q: "How did John answer Abba Bimwa's test?[cite: 7]", o: ["He got angry", "He answered humbly while weeping, asking not to be sent away", "He laughed", "He ran away"], a: 1, ill: "😢" },
+        { q: "How long did Abba Bimwa pray to ask for God's guidance about John?[cite: 7]", o: ["For one hour", "For a whole week", "Until near dawn", "For three days"], a: 2, ill: "🙏" },
+        { q: "Who appeared to Abba Bimwa while he was praying about John?[cite: 7]", o: ["A saint", "An angel", "A prophet", "A lion"], a: 1, ill: "👼" },
+        { q: "What did the angel tell Abba Bimwa about John's service?[cite: 7]", o: ["It will be short", "It will be like incense accepted before God throughout all generations", "He will be a king", "He will travel the world"], a: 1, ill: "✨" },
+        { q: "Normally, how long would a person remain under a period of testing before becoming a monk?[cite: 7]", o: ["One month", "Three years", "Ten years", "One year"], a: 1, ill: "⏳" },
+        { q: "Why was John accepted into the monastic life without the normal testing period?[cite: 7]", o: ["He was rich", "He was strong", "Because he excelled in his spiritual life, an angel commanded it", "He was a good cook"], a: 2, ill: "🌟" },
+        { q: "After Abba Bimwa gave John spiritual advice, what did he bring him?[cite: 7]", o: ["A new book", "A walking stick", "Monastic garments", "A lot of food"], a: 2, ill: "👕" },
+        { q: "How long did Abba Bimwa and John fast before the garments were marked?[cite: 7]", o: ["One day", "Three days and three nights", "Seven days", "Forty days"], a: 1, ill: "🌙" },
+        { q: "Who marked John's monastic garments with the sign of the Cross three times?[cite: 7]", o: ["Abba Bimwa", "The angel of the Lord", "John himself", "A visiting bishop"], a: 1, ill: "✝️" },
+        { q: "Who was the monk that first wore the monastic habit after an angel appeared to him?[cite: 7]", o: ["Abba Paul", "Abba Anthony the Great", "Abba Shenouda", "Abba Moses"], a: 1, ill: "🧔" },
+        { q: "What is an eskim?[cite: 7]", o: ["A long cape", "A leather belt decorated with crosses", "A type of shoe", "A wooden staff"], a: 1, ill: "🛡️" },
+        { q: "What is a kolonsoa?[cite: 7]", o: ["A head covering/hood with crosses", "A special book", "A clay jar", "A woven basket"], a: 0, ill: "🧢" },
+        { q: "What does the term 'The Cross Bearers' mean spiritually for monks?[cite: 7]", o: ["They carry wooden crosses everywhere", "The Cross is infused into every aspect of their lives", "They paint crosses on doors", "They hide the cross"], a: 1, ill: "💖" },
+        { q: "Why was Abba John called 'the angel'?[cite: 7]", o: ["Because he had wings", "Because he was very humble and very obedient to his teacher", "Because he could fly", "Because he never ate"], a: 1, ill: "👼" },
+        { q: "What did Abba Bimwa ask John to bring him from among the tombs?[cite: 7]", o: ["A gold coin", "A clay jar", "A special flower", "A wooden box"], a: 1, ill: "🏺" },
+        { q: "What wild and dangerous animal was among the tombs?[cite: 7]", o: ["A lion", "A bear", "A hyena", "A wolf"], a: 2, ill: "🐾" },
+        { q: "When John asked his teacher what to do about the hyena, what did Abba Bimwa say?[cite: 7]", o: ["Run away fast", "If it comes to you... catch it, tie it up, and bring it here", "Hide until it leaves", "Throw stones at it"], a: 1, ill: "🗣️" },
+        { q: "What did John say to the hyena when it ran away from him?[cite: 7]", o: ["Stop right there!", "I am not afraid!", "My teacher told me to catch you and tie you up", "Come here, doggy!"], a: 2, ill: "🏃" },
+        { q: "What did the hyena do when John spoke to it?[cite: 7]", o: ["It attacked him", "It ran faster", "Immediately, the hyena stopped", "It climbed a tree"], a: 2, ill: "🛑" },
+        { q: "Why did the hyena obey Abba John?[cite: 7]", o: ["Because he was strong", "Because of his obedience to his teacher", "Because he gave it food", "Because it was tired"], a: 1, ill: "🤝" }
+    ];
+
+    let currentQ = 0;
+    let score = 0;
+    let firstTry = true;
+
+    function shootStars(btn) {
+        const rect = btn.getBoundingClientRect();
+        const emojis = ['⭐', '✨', '🌟', '🎉'];
+        for(let i=0; i<15; i++) {
+            let star = document.createElement('div');
+            star.className = 'star';
+            star.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+            star.style.left = (rect.left + rect.width/2) + 'px';
+            star.style.top = (rect.top + rect.height/2) + 'px';
+            
+            let angle = Math.random() * Math.PI * 2;
+            let distance = Math.random() * 120 + 60;
+            let tx = Math.cos(angle) * distance;
+            let ty = Math.sin(angle) * distance - 100; 
+            
+            star.style.setProperty('--tx', `${tx}px`);
+            star.style.setProperty('--ty', `${ty}px`);
+            
+            document.body.appendChild(star);
+            setTimeout(() => star.remove(), 1000);
+        }
+    }
+
+    function loadQuestion() {
+        firstTry = true;
+        const q = questions[currentQ];
+        document.getElementById('progress-text').innerText = `Question ${currentQ + 1} of ${questions.length}`;
+        document.getElementById('illustration').innerText = q.ill;
+        document.getElementById('question-text').innerText = q.q;
+        
+        const optionsGrid = document.getElementById('options-grid');
+        optionsGrid.innerHTML = '';
+        
+        q.o.forEach((opt, index) => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerHTML = opt;
+            btn.onclick = () => checkAnswer(index, btn);
+            optionsGrid.appendChild(btn);
+        });
+    }
+
+    function checkAnswer(index, btn) {
+        if(btn.classList.contains('wrong') || btn.classList.contains('correct')) return;
+
+        const q = questions[currentQ];
+        const buttons = document.querySelectorAll('.option-btn');
+        const container = document.getElementById('game-container');
+        
+        if (index === q.a) {
+            btn.classList.add('correct');
+            shootStars(btn);
+            if (firstTry) score++;
+            
+            buttons.forEach(b => b.style.pointerEvents = 'none');
+            
+            setTimeout(() => {
+                currentQ++;
+                if (currentQ < questions.length) {
+                    loadQuestion();
+                } else {
+                    showResult();
+                }
+            }, 1500);
+        } else {
+            btn.classList.add('wrong');
+            firstTry = false;
+            
+            container.classList.remove('warning');
+            void container.offsetWidth; 
+            container.classList.add('warning');
+        }
+    }
+
+    function showResult() {
+        document.getElementById('game-container').style.display = 'none';
+        document.getElementById('result-screen').style.display = 'block';
+        
+        const percent = Math.round((score / questions.length) * 100);
+        document.getElementById('result-text').innerText = `Amazing Job!\nYou scored ${score} out of ${questions.length} on your first try!\n\nThat's ${percent}%!`;
+    }
+
+    function retake() {
+        currentQ = 0;
+        score = 0;
+        document.getElementById('game-container').style.display = 'block';
+        document.getElementById('result-screen').style.display = 'none';
+        loadQuestion();
+    }
+
+    // Initialize Game
+    loadQuestion();
+</script>
+</body>
+</html>
