@@ -2,73 +2,442 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>أقوال الآباء عن إشارة الصليب</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إختبر معلوماتك _ أقوال الآباء عن إشارة الصليب</title>
     <style>
-        body { font-family: sans-serif; background: #f4f4f9; display: flex; justify-content: center; padding: 20px; }
-        #game-container { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); width: 100%; max-width: 600px; text-align: center; }
-        .option-btn { display: block; width: 100%; margin: 10px 0; padding: 15px; border: 1px solid #ccc; border-radius: 8px; cursor: pointer; background: #fff; }
-        .option-btn:hover { background: #eef; }
-        .correct { background: #c8e6c9 !important; border-color: #4caf50; }
-        .wrong { background: #ffcdd2 !important; border-color: #f44336; }
+        /* التنسيقات الأساسية */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            transition: background-color 0.5s;
+            overflow-x: hidden;
+        }
+
+        body.warning {
+            background: linear-gradient(135deg, #ffe6e6 0%, #ffcccc 100%);
+        }
+
+        #game-container {
+            background: white;
+            width: 90%;
+            max-width: 850px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            position: relative;
+            text-align: center;
+            border: 4px solid #4a90e2;
+        }
+
+        .screen { display: none; }
+        .screen.active { display: block; animation: fadeIn 0.5s ease; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 { color: #2c3e50; font-size: 2.2em; margin-bottom: 10px; line-height: 1.3; }
+        p.subtitle { color: #7f8c8d; font-size: 1.2em; margin-bottom: 30px; }
+
+        .btn-main {
+            background-color: #4a90e2; color: white; border: none; padding: 15px 40px;
+            font-size: 1.5em; border-radius: 50px; cursor: pointer;
+            box-shadow: 0 5px 15px rgba(74, 144, 226, 0.4); transition: transform 0.2s, background-color 0.2s;
+        }
+        .btn-main:hover { transform: scale(1.05); background-color: #357abd; }
+
+        #progress-ribbon {
+            background-color: #f1c40f; color: #2c3e50; padding: 10px 20px;
+            border-radius: 20px; font-size: 1.2em; font-weight: bold; margin-bottom: 20px;
+            display: inline-block; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .difficulty-badge {
+            display: inline-block; padding: 5px 15px; border-radius: 15px; color: white;
+            font-size: 0.9em; margin-right: 15px; font-weight: bold;
+        }
+        .diff-easy { background-color: #2ecc71; }
+        .diff-medium { background-color: #f39c12; }
+        .diff-hard { background-color: #e74c3c; }
+
+        #question-text {
+            font-size: 1.5em; color: #34495e; margin: 20px 0 30px;
+            line-height: 1.6; font-weight: bold;
+        }
+
+        #options-container {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 15px;
+        }
+        @media (max-width: 600px) {
+            #options-container { grid-template-columns: 1fr; }
+        }
+
+        .option-btn {
+            background-color: #ecf0f1; border: 2px solid #bdc3c7; padding: 15px;
+            font-size: 1.15em; border-radius: 15px; cursor: pointer; transition: all 0.3s;
+            color: #2c3e50; font-weight: bold; display: flex; align-items: center;
+            justify-content: center; line-height: 1.4; text-align: right;
+        }
+        .option-btn:hover { background-color: #e0e6ed; border-color: #3498db; transform: translateY(-3px); }
+        .option-btn.correct {
+            background-color: #2ecc71 !important; color: white !important;
+            border-color: #27ae60 !important; box-shadow: 0 0 20px rgba(46, 204, 113, 0.6);
+            transform: scale(1.05); z-index: 2; position: relative;
+        }
+        .option-btn.wrong {
+            background-color: #e74c3c !important; color: white !important;
+            border-color: #c0392b !important; animation: shake 0.4s;
+        }
+
+        .option-letter { margin-left: 10px; color: #e67e22; font-weight: bold; }
+
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+
+        .star {
+            position: absolute; font-size: 2em; pointer-events: none;
+            animation: flyStar 1s ease-out forwards; z-index: 10;
+        }
+        @keyframes flyStar {
+            0% { opacity: 1; transform: translate(0, 0) scale(1); }
+            100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(2); }
+        }
+
+        .result-icon { font-size: 5em; margin-bottom: 10px; }
+        #final-score { font-size: 2.5em; color: #d35400; font-weight: bold; margin: 20px 0; }
     </style>
 </head>
 <body>
 
-<div id="game-container">
-    <div id="quiz">
-        <h2 id="question">جاري التحميل...</h2>
-        <div id="options"></div>
+    <div id="game-container">
+        
+        <div id="start-screen" class="screen active">
+            <h1>أقوال الآباء عن إشارة الصليب</h1>
+            <p class="subtitle">يَعْظُمُ انْتِصَارُنَا بِالَّذِي أَحَبَّنَا (رو 37:8)</p>
+            <p style="font-size: 1.2em; color: #555; margin-bottom: 30px;">
+                استعد لاختبار معلوماتك حول أقوال الآباء (أثناسيوس، الأنبا أنطونيوس، مار أفرام، وغيرهم) عن قوة وعظمة الصليب. الخيارات الآن موزعة بشكل عشوائي!
+            </p>
+            <button class="btn-main" onclick="startGame()">▶️ ابدأ اللعب الآن</button>
+        </div>
+
+        <div id="game-screen" class="screen">
+            <div>
+                <span id="progress-ribbon">السؤال ١ من ٣٠</span>
+                <span id="difficulty-badge" class="difficulty-badge">سهل</span>
+            </div>
+            <div id="question-text"></div>
+            <div id="options-container"></div>
+        </div>
+
+        <div id="result-screen" class="screen">
+            <div class="result-icon" id="result-emoji">🏆</div>
+            <h1>اكتملت المسابقة بنجاح!</h1>
+            <div id="final-score"></div>
+            <p id="result-message" style="font-size: 1.3em; margin-bottom: 30px; color: #34495e;"></p>
+            <button class="btn-main" onclick="resetGame()">🔄 العب مرة أخرى</button>
+        </div>
+
     </div>
-</div>
 
-<script>
-    const questions = [
-        {
-            q: "من هو الأب الذي قال أن الصليب سلاح نافذ ينفذ في النار والهواء والماء والأرض؟",
-            options: ["البابا أثناسيوس", "مار أفرام السرياني", "الأنبا أنطونيوس", "يوحنا ذهبي الفم"],
-            answer: 0
-        },
-        {
-            q: "بحسب البابا أثناسيوس، ماذا تفعل الشياطين عندما تشاهد رسم الصليب؟",
-            options: ["تخضع لقوته وتهرب", "تحاول مقاومته", "تسخر منه", "لا تبالي به"],
-            answer: 0
-        },
-        {
-            q: "من الأب الذي نصحنا بطبع صورة الصليب على أعضائنا وقلوبنا بدلاً من حمل سلاح؟",
-            options: ["مار أفرام السرياني", "القديس كيرلس", "البابا أثناسيوس", "القديس أنطونيوس"],
-            answer: 0
+    <script>
+        // تمت مراجعة الكود البرمجي وإصلاح الأخطاء الكتابية (Syntax Errors) لتجنب تعطل الملف
+        const questions = [
+            {
+                q: "من هو الأب الذي قال أن الصليب سلاح نافذ ينفذ في النار والهواء والماء والأرض؟[cite: 18]", 
+                options: ["مار أفرام السرياني[cite: 18]", "الأنبا أنطونيوس[cite: 18]", "البابا أثناسيوس الرسولي[cite: 18]", "يوحنا ذهبي الفم[cite: 18]"], 
+                answer: 2, difficulty: "سهل", diffClass: "diff-easy"
+            },
+            {
+                q: "بحسب البابا أثناسيوس، ماذا تفعل الشياطين عندما تشاهد رسم الصليب؟[cite: 18]", 
+                options: ["تسخر منه[cite: 18]", "تخضع لقوته وتهرب[cite: 18]", "تحاول مقاومته[cite: 18]", "لا تبالي به[cite: 18]"], 
+                answer: 1, difficulty: "متوسط", diffClass: "diff-medium"
+            },
+            {
+                q: "من الأب الذي نصحنا بطبع صورة الصليب على أعضائنا وقلوبنا بدلاً من حمل سلاح؟[cite: 18]", 
+                options: ["القديس كيرلس[cite: 18]", "القديس أنطونيوس[cite: 18]", "البابا أثناسيوس[cite: 18]", "مار أفرام السرياني[cite: 18]"], 
+                answer: 3, difficulty: "سهل", diffClass: "diff-easy"
+            },
+            {
+                q: "مار أفرام السرياني نصحنا برسم الصليب في...[cite: 18]", 
+                options: ["دخولنا وخروجنا، جلوسنا وقيامنا، نومنا وعملنا[cite: 18]", "الكنيسة فقط[cite: 18]", "قبل الصلاة فقط[cite: 18]", "أيام الأعياد فقط[cite: 18]"], 
+                answer: 0, difficulty: "سهل", diffClass: "diff-easy"
+            },
+            {
+                q: "يوحنا ذهبي الفم يصف الصليب بأنه ينبوع...[cite: 18]", 
+                options: ["الألم والضعف[cite: 18]", "الشجاعة والبركات[cite: 18]", "العثرة والجهالة[cite: 18]", "الخوف والتردد[cite: 18]"], 
+                answer: 1, difficulty: "متوسط", diffClass: "diff-medium"
+            },
+            {
+                q: "القديس الأنبا أنطونيوس يقول إن الشياطين توجه هجماتها المنظورة إلى...[cite: 18]", 
+                options: ["الأقوياء[cite: 18]", "الحكماء[cite: 18]", "الجبناء[cite: 18]", "الأغنياء[cite: 18]"], 
+                answer: 2, difficulty: "متوسط", diffClass: "diff-medium"
+            },
+            {
+                q: "القديس كيرلس الأورشليمي يشبّه الصليب بالحية النحاسية التي أبطلت...[cite: 18]", 
+                options: ["الخوف من فرعون[cite: 18]", "سم الحيات[cite: 18]", "الجوع والعطش[cite: 18]", "التعب الجسدي[cite: 18]"], 
+                answer: 1, difficulty: "سهل", diffClass: "diff-easy"
+            },
+            {
+                q: "لماذا نكرم الصليب قبل أن نطلب معونة القديسين أو شفاعتهم؟[cite: 18]", 
+                options: ["لأنه أجمل في المنظر[cite: 18]", "لأنه من الذهب[cite: 18]", "لا يوجد سبب[cite: 18]", "لأنه علامة ابن الإنسان ورسم تجسده وآلامه[cite: 18]"], 
+                answer: 3, difficulty: "صعب", diffClass: "diff-hard"
+            },
+            {
+                q: "حيثما وُجدت إشارة الصليب، بحسب الأنبا أنطونيوس، فإن السحر...[cite: 18]", 
+                options: ["يضعف وتتلاشى قوة العرافة[cite: 18]", "يزداد[cite: 18]", "يتحول لخير[cite: 18]", "يبقى كما هو[cite: 18]"], 
+                answer: 0, difficulty: "سهل", diffClass: "diff-easy"
+            },
+            {
+                q: "كيف قام الأنبا أنطونيوس بتطهير المرضى المعذبين من الأرواح النجسة أمام الفلاسفة؟[cite: 18]", 
+                options: ["بالحجج العلمية[cite: 18]", "برشمهم ثلاث مرات بعلامة الصليب[cite: 18]", "بالسحر[cite: 18]", "بتقديم القرابين[cite: 18]"], 
+                answer: 1, difficulty: "متوسط", diffClass: "diff-medium"
+            },
+            {
+                q: "كيف يرتد هجوم الشياطين على الرهبان خائباً؟[cite: 18]", 
+                options: ["بالهرب[cite: 18]", "بمقاومة الأفكار فقط[cite: 18]", "بالصلاة والصوم وتحصين النفس بالإيمان وعلامة الصليب[cite: 18]", "بالتجربة[cite: 18]"], 
+                answer: 2, difficulty: "متوسط", diffClass: "diff-medium"
+            },
+            {
+                q: "ماذا نفعل إذا مدحت الشياطين نسكنا ودعتنا مباركين؟[cite: 18]", 
+                options: ["نفرح بمديحها[cite: 18]", "نناقشها في أمور روحية[cite: 18]", "نصدقها[cite: 18]", "نرشم أنفسنا وبيوتنا بعلامة الصليب ونصلي[cite: 18]"], 
+                answer: 3, difficulty: "سهل", diffClass: "diff-easy"
+            },
+            {
+                q: "لماذا تخشى الشياطين إشارة الصليب جداً؟[cite: 18]", 
+                options: ["لأنها في غاية الجبن، ولأن الرب قد جردها وأشهرها جهاراً على الصليب[cite: 18]", "لأنها تحترق من ضوئه[cite: 18]", "لأنها تسبب لها ألماً جسدياً[cite: 18]", "لا يوجد سبب[cite: 18]"], 
+                answer: 0, difficulty: "صعب", diffClass: "diff-hard"
+            },
+            {
+                q: "القديس كيرلس الأورشليمي يرى في الحية النحاسية رمزاً لما فعله المسيح الذي...[cite: 18]", 
+                options: ["رفع عنا المرض[cite: 18]", "أعطانا الناموس[cite: 18]", "سكب دمه الطاهر ليصير لنا بالدم الحياة وبالصليب النصرة[cite: 18]", "علمنا الصلاة[cite: 18]"], 
+                answer: 2, difficulty: "صعب", diffClass: "diff-hard"
+            },
+            {
+                q: "علامة الصليب هي الإشارة المشتركة بين جميع المؤمنين كرمز لـ...[cite: 18]", 
+                options: ["الخوف والترقب[cite: 18]", "الخلاص والمحبة المشتركة[cite: 18]", "القوة المادية[cite: 18]", "العادات والتقاليد[cite: 18]"], 
+                answer: 1, difficulty: "متوسط", diffClass: "diff-medium"
+            },
+            {
+                q: "مار أفرام السرياني يؤكد أن رسم الصليب يجب أن يكون باليد، وأيضاً بـ...[cite: 18]", 
+                options: ["الصوت العالي[cite: 18]", "اللباس الخارجي[cite: 18]", "الذهن والفكر[cite: 18]", "المال[cite: 18]"], 
+                answer: 2, difficulty: "سهل", diffClass: "diff-easy"
+            },
+            {
+                q: "القديس الأنبا أنطونيوس ينصحنا بعدم المعاملة مع الشياطين إذا مدحتنا، بل بالأحرى...[cite: 18]", 
+                options: ["نصمت[cite: 18]", "نرشم ذواتنا بالصليب ونصلي[cite: 18]", "نترك المكان[cite: 18]", "نصوم يومين[cite: 18]"], 
+                answer: 1, difficulty: "متوسط", diffClass: "diff-medium"
+            },
+            {
+                q: "الأنبا أنطونيوس تحدى الفلاسفة قائلاً: 'كفوا عن منازعتنا.. وعندئذ ترون...'[cite: 18]", 
+                options: ["قوة سحرنا[cite: 18]", "قدرة أصنامكم[cite: 18]", "ضعفنا[cite: 18]", "قوة صليب المسيح[cite: 18]"], 
+                answer: 3, difficulty: "متوسط", diffClass: "diff-medium"
+            },
+            {
+                q: "يقول البابا أثناسيوس: لا تحصل تخلية (ترك) لمن حمل الصليب إلا لمن...[cite: 18]", 
+                options: ["تعب كثيراً[cite: 18]", "ضعفت أمانته فيه[cite: 18]", "مرض جسدياً[cite: 18]", "ابتعد عن الكنيسة[cite: 18]"], 
+                answer: 1, difficulty: "صعب", diffClass: "diff-hard"
+            },
+            {
+                q: "يوحنا ذهبي الفم يطلب منا أن نلبس علامة الصليب ونفتخر به كـ...[cite: 18]", 
+                options: ["تاج[cite: 18]", "درع[cite: 18]", "سيف[cite: 18]", "ثوب[cite: 18]"], 
+                answer: 0, difficulty: "سهل", diffClass: "diff-easy"
+            },
+            {
+                q: "الأنبا أنطونيوس يؤكد أن الشياطين تخشى جداً علامة صليب الرب لأن...[cite: 18]", 
+                options: ["تخاف من الكهنة[cite: 18]", "تتجنب المسيحيين القديسين[cite: 18]", "الرب جردها وأشهرها جهاراً على الصليب[cite: 18]", "لا يوجد سبب[cite: 18]"], 
+                answer: 2, difficulty: "صعب", diffClass: "diff-hard"
+            },
+            {
+                q: "أين كان يعزل الأبرص قديماً؟[cite: 18]", 
+                options: ["في وسط المدينة[cite: 18]", "في أطراف المدينة[cite: 18]", "في الجبال البعيدة[cite: 18]", "في معابد خاصة[cite: 18]"], 
+                answer: 1, difficulty: "سهل", diffClass: "diff-easy"
+            },
+            {
+                q: "أكد الأنبا أنطونيوس للفلاسفة أن المرضى المعذبين من الأرواح النجسة شُفوا فوراً بعد...[cite: 18]", 
+                options: ["شربوا من ماء خاص[cite: 18]", "تلاوة تعاويذ[cite: 18]", "رشمهم بالصليب[cite: 18]", "استخدام أعشاب[cite: 18]"], 
+                answer: 2, difficulty: "متوسط", diffClass: "diff-medium"
+            },
+            {
+                q: "القديس كيرلس الأورشليمي يرى أن الصليب هو علامة...[cite: 18]", 
+                options: ["ابن الإنسان[cite: 18]", "نصرة الشيطان[cite: 18]", "الحكمة البشرية[cite: 18]", "الخوف من الموت[cite: 18]"], 
+                answer: 0, difficulty: "متوسط", diffClass: "diff-medium"
+            },
+            {
+                q: "البابا أثناسيوس يقول إن الصليب هو قوة المسيح للخلاص، و...[cite: 18]", 
+                options: ["الشياطين تتحالف معه[cite: 18]", "البشر لا يقدرون عليه[cite: 18]", "الملائكة يخضعون لقوته[cite: 18]", "لا أحد يفهمه[cite: 18]"], 
+                answer: 2, difficulty: "متوسط", diffClass: "diff-medium"
+            },
+            {
+                // الخطأ البرمجي كان متواجداً في هذا السؤال حيث كانت علامة التنصيص والقوس المربع مفقودين وتم إصلاحهم
+                q: "القديس أنطونيوس يدعونا لتحصين أنفسنا بعلامة الصليب بدلاً من...[cite: 18]", 
+                options: ["الهروب من الصعاب[cite: 18]", "الخوف من هجمات الشياطين[cite: 18]", "المديح الباطل[cite: 18]", "التفكير في الخطية[cite: 18]"], 
+                answer: 1, difficulty: "متوسط", diffClass: "diff-medium"
+            },
+            {
+                q: "يوحنا ذهبي الفم يقول عن علامة الصليب إنها ينبوع...[cite: 18]", 
+                options: ["الدموع[cite: 18]", "الخسارة[cite: 18]", "البركات[cite: 18]", "الضعف[cite: 18]"], 
+                answer: 2, difficulty: "سهل", diffClass: "diff-easy"
+            },
+            {
+                q: "القديس كيرلس الأورشليمي يوضح أن السيد المسيح على الصليب قدم نفسه...[cite: 18]", 
+                options: ["ذبيحة لله الآب من أجل خطايانا[cite: 18]", "مجرد مثال للصبر[cite: 18]", "كقائد جيش[cite: 18]", "كعظيم في قومه[cite: 18]"], 
+                answer: 0, difficulty: "متوسط", diffClass: "diff-medium"
+            },
+            {
+                q: "ماذا يفعل الرهبان والمؤمنون المجدون عندما تهاجمهم الشياطين بالأفكار الشريرة؟[cite: 18]", 
+                options: ["يستسلمون[cite: 18]", "يغضبون[cite: 18]", "يسألون الفلاسفة[cite: 18]", "يتحصنون بالإيمان وعلامة الصليب[cite: 18]"], 
+                answer: 3, difficulty: "سهل", diffClass: "diff-easy"
+            },
+            {
+                q: "يقول البابا أثناسيوس عن قوة الصليب إنها لا تحجبها ولا تعترضها...[cite: 18]", 
+                options: ["قوة نار أو هواء أو ماء أو أرض[cite: 18]", "قوة الشيطان[cite: 18]", "حكمة الناس[cite: 18]", "أعمال البشر[cite: 18]"], 
+                answer: 0, difficulty: "صعب", diffClass: "diff-hard"
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let firstAttempt = true;
+        const alphabet = ['أ', 'ب', 'ج', 'د'];
+
+        function startGame() {
+            document.getElementById('start-screen').classList.remove('active');
+            document.getElementById('game-screen').classList.add('active');
+            currentQuestionIndex = 0;
+            score = 0;
+            loadQuestion();
         }
-    ];
 
-    let current = 0;
+        function loadQuestion() {
+            firstAttempt = true;
+            const q = questions[currentQuestionIndex];
+            
+            document.getElementById('progress-ribbon').innerText = `السؤال ${currentQuestionIndex + 1} من ${questions.length}`;
+            
+            const badge = document.getElementById('difficulty-badge');
+            badge.innerText = q.difficulty;
+            badge.className = `difficulty-badge ${q.diffClass}`;
 
-    function render() {
-        const q = questions[current];
-        document.getElementById('question').innerText = q.q;
-        const opts = document.getElementById('options');
-        opts.innerHTML = '';
-        q.options.forEach((opt, i) => {
-            const btn = document.createElement('button');
-            btn.className = 'option-btn';
-            btn.innerText = opt;
-            btn.onclick = () => {
-                if(i === q.answer) {
-                    btn.className = 'option-btn correct';
-                    setTimeout(() => {
-                        current++;
-                        if(current < questions.length) render();
-                        else alert('انتهت المسابقة!');
-                    }, 1000);
-                } else {
-                    btn.className = 'option-btn wrong';
-                }
-            };
-            opts.appendChild(btn);
-        });
-    }
+            document.getElementById('question-text').innerText = q.q;
 
-    render();
-</script>
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+            
+            q.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                
+                const letterSpan = document.createElement('span');
+                letterSpan.className = 'option-letter';
+                letterSpan.innerText = `(${alphabet[index]})`;
+                
+                const textSpan = document.createElement('span');
+                textSpan.innerText = ` ${opt}`;
 
+                btn.appendChild(letterSpan);
+                btn.appendChild(textSpan);
+
+                btn.onclick = () => checkAnswer(index, btn);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(selectedIndex, button) {
+            const q = questions[currentQuestionIndex];
+            
+            if (selectedIndex === q.answer) {
+                button.classList.add('correct');
+                
+                const allButtons = document.querySelectorAll('.option-btn');
+                allButtons.forEach(btn => btn.style.pointerEvents = 'none');
+
+                if (firstAttempt) score++;
+                
+                showStarsEffect(button);
+                document.body.classList.remove('warning');
+
+                setTimeout(() => {
+                    currentQuestionIndex++;
+                    if (currentQuestionIndex < questions.length) {
+                        loadQuestion();
+                    } else {
+                        showResult();
+                    }
+                }, 1500);
+
+            } else {
+                firstAttempt = false;
+                button.classList.add('wrong');
+                button.style.pointerEvents = 'none';
+                
+                document.body.classList.add('warning');
+                setTimeout(() => document.body.classList.remove('warning'), 500);
+            }
+        }
+
+        function showStarsEffect(button) {
+            const rect = button.getBoundingClientRect();
+            const x = rect.left + rect.width / 2;
+            const y = rect.top + rect.height / 2;
+
+            for (let i = 0; i < 8; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.innerText = '✨';
+                star.style.left = x + 'px';
+                star.style.top = y + 'px';
+                
+                const angle = Math.random() * Math.PI * 2;
+                const distance = 80 + Math.random() * 50;
+                star.style.setProperty('--tx', `${Math.cos(angle) * distance}px`);
+                star.style.setProperty('--ty', `${Math.sin(angle) * distance}px`);
+                
+                document.body.appendChild(star);
+                
+                setTimeout(() => star.remove(), 1000);
+            }
+        }
+
+        function showResult() {
+            document.getElementById('game-screen').classList.remove('active');
+            document.getElementById('result-screen').classList.add('active');
+            
+            document.getElementById('final-score').innerText = `النتيجة: ${score} من ${questions.length}`;
+            
+            let message = "";
+            let emoji = "";
+            
+            if (score === questions.length) {
+                message = "ممتاز جداً! أنت تحفظ أقوال الآباء عن إشارة الصليب بكل دقة.";
+                emoji = "👑";
+            } else if (score >= 20) {
+                message = "رائع! معلوماتك قوية، استمر في قراءة وتأمل أقوال الآباء.";
+                emoji = "🌟";
+            } else {
+                message = "محاولة جيدة! نرجو مراجعة الدرس مرة أخرى لتعميق فهمك لأقوال الآباء.";
+                emoji = "📖";
+            }
+            
+            document.getElementById('result-message').innerText = message;
+            document.getElementById('result-emoji').innerText = emoji;
+        }
+
+        function resetGame() {
+            document.getElementById('result-screen').classList.remove('active');
+            document.getElementById('start-screen').classList.add('active');
+        }
+    </script>
 </body>
 </html>
