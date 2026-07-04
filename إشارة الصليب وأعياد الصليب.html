@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إشارة الصليب وأعياد الصليب</title>
+    <style>
+        /* التنسيقات الأساسية */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            transition: background-color 0.5s;
+            overflow-x: hidden;
+        }
+
+        /* شاشة التحذير الخفيف (الإجابة الخاطئة) */
+        body.warning {
+            background: linear-gradient(135deg, #ffe6e6 0%, #ffcccc 100%);
+        }
+
+        /* حاوية اللعبة */
+        #game-container {
+            background: white;
+            width: 90%;
+            max-width: 800px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            position: relative;
+            text-align: center;
+            border: 4px solid #4a90e2;
+        }
+
+        /* شاشة البداية والنهاية */
+        .screen {
+            display: none;
+        }
+        .screen.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 {
+            color: #2c3e50;
+            font-size: 2.2em;
+            margin-bottom: 10px;
+            line-height: 1.3;
+        }
+        
+        p.subtitle {
+            color: #7f8c8d;
+            font-size: 1.2em;
+            margin-bottom: 30px;
+        }
+
+        /* الأزرار الرئيسية */
+        .btn-main {
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.5em;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(74, 144, 226, 0.4);
+            transition: transform 0.2s, background-color 0.2s;
+        }
+        .btn-main:hover {
+            transform: scale(1.05);
+            background-color: #357abd;
+        }
+
+        /* شريط التقدم */
+        #progress-ribbon {
+            background-color: #f1c40f;
+            color: #2c3e50;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 20px;
+            display: inline-block;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        /* مستوى الصعوبة */
+        .difficulty-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 15px;
+            color: white;
+            font-size: 0.9em;
+            margin-right: 15px;
+            font-weight: bold;
+        }
+        .diff-easy { background-color: #2ecc71; }
+        .diff-medium { background-color: #f39c12; }
+        .diff-hard { background-color: #e74c3c; }
+
+        /* منطقة السؤال */
+        #question-text {
+            font-size: 1.5em;
+            color: #34495e;
+            margin: 20px 0 30px;
+            line-height: 1.5;
+            font-weight: bold;
+        }
+
+        /* خيارات الإجابة */
+        #options-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        @media (max-width: 600px) {
+            #options-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .option-btn {
+            background-color: #ecf0f1;
+            border: 2px solid #bdc3c7;
+            padding: 15px;
+            font-size: 1.15em;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #2c3e50;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1.3;
+        }
+
+        .option-btn:hover {
+            background-color: #e0e6ed;
+            border-color: #3498db;
+            transform: translateY(-3px);
+        }
+
+        .option-btn.correct {
+            background-color: #2ecc71 !important;
+            color: white !important;
+            border-color: #27ae60 !important;
+            box-shadow: 0 0 20px rgba(46, 204, 113, 0.6);
+            transform: scale(1.05);
+        }
+
+        .option-btn.wrong {
+            background-color: #e74c3c !important;
+            color: white !important;
+            border-color: #c0392b !important;
+            animation: shake 0.4s;
+        }
+
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+
+        /* تأثير النجوم الساطعة */
+        .star {
+            position: absolute;
+            font-size: 2em;
+            pointer-events: none;
+            animation: flyStar 1s ease-out forwards;
+            z-index: 10;
+        }
+
+        @keyframes flyStar {
+            0% { opacity: 1; transform: translate(0, 0) scale(1); }
+            100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(2); }
+        }
+
+        /* النتيجة النهائية */
+        .result-icon {
+            font-size: 5em;
+            margin-bottom: 10px;
+        }
+        #final-score {
+            font-size: 2.5em;
+            color: #d35400;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        
+        <!-- شاشة البداية -->
+        <div id="start-screen" class="screen active">
+            <h1>إشارة الصليب وأعياد الصليب</h1>
+            <p class="subtitle">يَعْظُمُ انْتِصَارُنَا بِالَّذِي أَحَبَّنَا (رو 37:8)</p>
+            <p style="font-size: 1.2em; color: #555; margin-bottom: 30px;">
+                مرحباً بك! استعد لاختبار معلوماتك حول قوة إشارة الصليب، وتاريخ أعياد الصليب كما ورد في الدرس.
+            </p>
+            <button class="btn-main" onclick="startGame()">▶️ ابدأ اللعب الآن</button>
+        </div>
+
+        <!-- شاشة الأسئلة -->
+        <div id="game-screen" class="screen">
+            <div>
+                <span id="progress-ribbon">السؤال ١ من ٣٠</span>
+                <span id="difficulty-badge" class="difficulty-badge">سهل</span>
+            </div>
+            
+            <div id="question-text">نص السؤال يظهر هنا...</div>
+            
+            <div id="options-container">
+                <!-- الأزرار ستُضاف هنا -->
+            </div>
+        </div>
+
+        <!-- شاشة النتيجة -->
+        <div id="result-screen" class="screen">
+            <div class="result-icon" id="result-emoji">🏆</div>
+            <h1>اكتملت المسابقة بنجاح!</h1>
+            <div id="final-score">نتيجتك: 0 / 30</div>
+            <p id="result-message" style="font-size: 1.3em; margin-bottom: 30px; color: #34495e;"></p>
+            <button class="btn-main" onclick="resetGame()">🔄 العب مرة أخرى</button>
+        </div>
+
+    </div>
+
+    <script>
+        const questions = [
+            {
+                q: "إشارة الصليب تقليد كنسي قديم جدًا يبتدئ بابتداء...[cite: 8]",
+                options: ["الناموس[cite: 8]", "الإنجيل[cite: 8]", "الخليقة[cite: 8]", "تأسيس الكنيسة بروما[cite: 8]"],
+                answer: 1, difficulty: "سهل", diffClass: "diff-easy"
+            },
+            {
+                q: "أشار البشير متى في إنجيله إلى الصليب بأنه علامة...[cite: 8]",
+                options: ["النهاية[cite: 8]", "ابن الإنسان[cite: 8]", "السماء[cite: 8]", "الروح القدس[cite: 8]"],
+                answer: 1, difficulty: "سهل", diffClass: "diff-easy"
+            },
+            {
+                q: "أكمل الآية: 'وَحِينَئِذٍ تَظْهَرُ عَلَامَةُ ابْنِ الْإِنْسَانِ فِي...' (مت ٣٠:٢٤)[cite: 8]",
+                options: ["السَّمَاءِ[cite: 8]", "الأَرْضِ[cite: 8]", "الْهَيْكَلِ[cite: 8]", "السَّحَابِ[cite: 8]"],
+                answer: 0, difficulty: "متوسط", diffClass: "diff-medium"
+            },
+            {
+                q: "الصليب ليس مجرد علامة، بل هو يحمل صفة شخصية ملازمة للمسيح.[cite: 8]",
+                options: ["صح[cite: 8]", "خطأ[cite: 8]"],
+                answer: 0, difficulty: "سهل", diffClass: "diff-easy"
+            },
+            {
+                q: "كيف عَرّف الملاك شخص المسيح لمريم المجدلية؟ 'فَإِنِّي أَعْلَمُ أَنَّكُمَا تَطْلُبَانِ...'[cite: 8]",
+                options: ["يَسُوعَ الْمُعَلِّمَ[cite: 8]", "يَسُوعَ النَّاصِرِيَّ[cite: 8]", "يَسُوعَ الْمَصْلُوبَ[cite: 8]", "يَسُوعَ الْمَلِكَ[cite: 8]"],
+                answer: 2, difficulty: "متوسط", diffClass: "diff-medium"
+            },
+            {
+                q: "يقول معلمنا بولس الرسول: 'وَلكِنَّنَا نَحْنُ نَكْرِزُ بِالْمَسِيحِ مَصْلُوبًا: لِلْيَهُودِ...'[cite: 8]",
+                options: ["عَثْرَةٌ[cite: 8]", "جَهَالَةً[cite: 8]", "قُوَّةٌ[cite: 8]", "حِكْمَةٌ[cite: 8]"],
+                answer: 0, difficulty: "صعب", diffClass: "diff-hard"
+            },
+            {
+                q: "حسب قول بولس الرسول، الصليب يعتبر لليونانيين...[cite: 8]",
+                options: ["عَثْرَةٌ[cite: 8]", "جَهَالَةً[cite: 8]", "فَلْسَفَةً[cite: 8]", "فَخْراً[cite: 8]"],
+                answer: 1, difficulty: "صعب", diffClass: "diff-hard"
+            },
+            {
+                q: "عملية الصلب لم تكن حادثاً وانتهى، بل استعدت لها كل الأزمنة السابقة.[cite: 8]",
+                options: ["صح[cite: 8]", "خطأ[cite: 8]"],
+                answer: 0, difficulty: "سهل", diffClass: "diff-easy"
+            },
+            {
+                q: "الصليب يعتبر كباب مفتوح للعبور إلى...[cite: 8]",
+                options: ["الراحة الجسدية[cite: 8]", "الملكوت المعد[cite: 8]", "التاريخ القديم[cite: 8]", "الأرض الجديدة فقط[cite: 8]"],
+                answer: 1, difficulty: "متوسط", diffClass: "diff-medium"
+            },
+            {
+                q: "المصلوب لا زال يحمل في يديه ورجليه جروح الصليب حتى هذه الساعة.[cite: 8]",
+                options: ["صح[cite: 8]", "خطأ[cite: 8]"],
+                answer: 0, difficulty: "سهل", diffClass: "diff-easy"
+            },
+            {
+                q: "ماذا رأى يوحنا الحبيب في وسط العرش في سفر الرؤيا؟[cite: 8]",
+                options: ["ملاكاً بمبخرة ذهبية[cite: 8]", "خَرُوفٌ قَائِمٌ كَأَنَّهُ مَذْبُوحٌ[cite: 8]", "نسراً طائراً[cite: 8]", "سفرًا مختوماً بسبعة ختوم[cite: 8]"],
+                answer: 1, difficulty: "متوسط", diffClass: "diff-medium"
+            },
+            {
+                q: "كانت الملائكة حول العرش تقول بصوت عظيم: 'مُسْتَحِقُّ هُوَ الْخَرُوفُ الْمَذْبُوحُ أَنْ يَأْخُذَ...'[cite: 8]",
+                options: ["الْقُدْرَةَ وَالْغِنَى وَالْحِكْمَةَ وَالْقُوَّةَ وَالْكَرَامَةَ وَالْمَجْدَ وَالْبَرَكَةَ[cite: 8]", "السَّمَاوَاتِ وَالأَرْضَ[cite: 8]", "الأَرْوَاحَ الشِّرِّيرَةَ[cite: 8]", "الدَّيْنُونَةَ[cite: 8]"],
+                answer: 0, difficulty: "صعب", diffClass: "diff-hard"
+            },
+            {
+                q: "الصليب لا زال قائماً يعمل بقوة...[cite: 8]",
+                options: ["الخشب المصنوع منه[cite: 8]", "الدم المسفوك عليه[cite: 8]", "الإمبراطورية الرومانية[cite: 8]", "المسامير الثلاثة[cite: 8]"],
+                answer: 1, difficulty: "سهل", diffClass: "diff-easy"
+            },
+            {
+                q: "أكمل الآية: 'عَامِلاً الصُّلْحَ بِدَمِ...' (كو ١: ٢٠)[cite: 8]",
+                options: ["ذَبَائِحِهِ[cite: 8]", "صَلِيبِهِ[cite: 8]", "أَنْبِيَائِهِ[cite: 8]", "شَهَادَتِهِ[cite: 8]"],
+                answer: 1, difficulty: "متوسط", diffClass: "diff-medium"
+            },
+            {
+                q: "من القائل: 'الرب نفسه يثبت قوة الصليب على جبهتنا حتى أن العلامة التي كانت للخزى تصير للافتخار'؟[cite: 8]",
+                options: ["القديس يوحنا ذهبي الفم[cite: 8]", "القديس أثناسيوس الرسولي[cite: 8]", "القديس أغسطينوس[cite: 8]", "القديس كيرلس الكبير[cite: 8]"],
+                answer: 2, difficulty: "صعب", diffClass: "diff-hard"
+            },
+            {
+                q: "حسب قول القديس أغسطينوس، العلامة التي كانت للخزي صارت علامة...[cite: 8]",
+                options: ["للخوف[cite: 8]", "للافتخار[cite: 8]", "للضعف[cite: 8]", "للألم الدائم[cite: 8]"],
+                answer: 1, difficulty: "سهل", diffClass: "diff-easy"
+            },
+            {
+                q: "كم مرة تحتفل كنيستنا القبطية الأرثوذكسية بعيد الصليب في السنة؟[cite: 8]",
+                options: ["مرة واحدة[cite: 8]", "مرتين[cite: 8]", "ثلاث مرات[cite: 8]", "أربع مرات[cite: 8]"],
+                answer: 1, difficulty: "سهل", diffClass: "diff-easy"
+            },
+            {
+                q: "الاحتفال الأول بظهور الصليب المجيد يكون في اليوم العاشر من شهر...[cite: 8]",
+                options: ["توت[cite: 8]", "برمهات[cite: 8]", "كيهك[cite: 8]", "بابه[cite: 8]"],
+                answer: 1, difficulty: "متوسط", diffClass: "diff-medium"
+            },
+            {
+                q: "في أي عام ظهر الصليب المجيد على يد الملكة هيلانة؟[cite: 8]",
+                options: ["٣٢٦م[cite: 8]", "٦٢٨م[cite: 8]", "٤٥١م[cite: 8]", "٣١٣م[cite: 8]"],
+                answer: 0, difficulty: "صعب", diffClass: "diff-hard"
+            },
+            {
+                q: "مَن هو الإمبراطور الذي أعد كل شيء لإتمام زيارة والدته الملكة هيلانة المقدسة؟[cite: 8]",
+                options: ["هرقل[cite: 8]", "قسطنطين الكبير[cite: 8]", "دقلديانوس[cite: 8]", "نيرون[cite: 8]"],
+                answer: 1, difficulty: "سهل", diffClass: "diff-easy"
+            },
+            {
+                q: "ماذا نذرت القديسة هيلانة وقت أن قبل ابنها قسطنطين الإيمان؟[cite: 8]",
+                options: ["أن تمضي إلى أورشليم[cite: 8]", "أن تبني كنيسة في روما[cite: 8]", "أن تعيش في الصحراء[cite: 8]", "أن توزع أموالها[cite: 8]"],
+                answer: 0, difficulty: "متوسط", diffClass: "diff-medium"
+            },
+            {
+                q: "كيف اضطرت الملكة هيلانة الشيخ اليهودي للإرشاد عن مكان الصليب؟[cite: 8]",
+                options: ["أعطته أموالاً كثيرة[cite: 8]", "ضيقت عليه بالجوع والعطش[cite: 8]", "بالنقاش اللاهوتي[cite: 8]", "وعدته بمنصب كبير[cite: 8]"],
+                answer: 1, difficulty: "متوسط", diffClass: "diff-medium"
+            },
+            {
+                q: "أين عثرت الملكة هيلانة على الصلبان الثلاثة؟[cite: 8]",
+                options: ["في الهيكل[cite: 8]", "في نهر الأردن[cite: 8]", "في الجلجثة بعد تنظيفها[cite: 8]", "في بيت لحم[cite: 8]"],
+                answer: 2, difficulty: "سهل", diffClass: "diff-easy"
+            },
+            {
+                q: "كيف ميزت الملكة هيلانة صليب السيد المسيح من بين الصلبان الثلاثة؟[cite: 8]",
+                options: ["كان مكتوباً عليه اسمه[cite: 8]", "كان يشع نوراً[cite: 8]", "وضعوا عليه ميتاً فقام لوقته[cite: 8]", "كان أكبر حجماً[cite: 8]"],
+                answer: 2, difficulty: "سهل", diffClass: "diff-easy"
+            },
+            {
+                q: "ماذا أرسلت الملكة هيلانة إلى ابنها قسطنطين بعد اكتشاف الصليب؟[cite: 8]",
+                options: ["الصلبان الثلاثة[cite: 8]", "جزءاً منه مع المسامير[cite: 8]", "تراباً من الجلجثة[cite: 8]", "تاج الشوك[cite: 8]"],
+                answer: 1, difficulty: "متوسط", diffClass: "diff-medium"
+            },
+            {
+                q: "الاحتفال الثاني للصليب (تذكار الصليب) يكون في اليوم السابع عشر من شهر...[cite: 8]",
+                options: ["توت[cite: 8]", "برمهات[cite: 8]", "أبيب[cite: 8]", "بشنس[cite: 8]"],
+                answer: 0, difficulty: "متوسط", diffClass: "diff-medium"
+            },
+            {
+                q: "استعادة الصليب في الاحتفال الثاني كانت على يد الإمبراطور هرقل عام...[cite: 8]",
+                options: ["٣٢٦م[cite: 8]", "٦٢٨م[cite: 8]", "٧٥٠م[cite: 8]", "٢٨٤م[cite: 8]"],
+                answer: 1, difficulty: "صعب", diffClass: "diff-hard"
+            },
+            {
+                q: "ماذا حدث للأمير الفارسي عندما مد يده للقطعة الخشبية المشعة في كنيسة الصليب؟[cite: 8]",
+                options: ["أخذها بسهولة[cite: 8]", "خرجت منها نار وأحرقت أصابعه[cite: 8]", "أصبح مسيحياً فوراً[cite: 8]", "اختفت القطعة[cite: 8]"],
+                answer: 1, difficulty: "متوسط", diffClass: "diff-medium"
+            },
+            {
+                q: "أين أخفى الأمير الفارسي صندوق الصليب بعد أن احتال على الشماسين؟[cite: 8]",
+                options: ["في حفرة في بستانه ثم ردمها وقتلهما[cite: 8]", "في صندوق مجوهراته[cite: 8]", "في قصر الملك الفارسي[cite: 8]", "في معبد وثني[cite: 8]"],
+                answer: 0, difficulty: "صعب", diffClass: "diff-hard"
+            },
+            {
+                q: "من التي أرشدت الإمبراطور هرقل لمكان الصليب المخفي في بلاد الفرس؟[cite: 8]",
+                options: ["الملكة هيلانة في رؤيا[cite: 8]", "أحد الشماسين[cite: 8]", "إحدى سباياه وهي ابنة أحد الكهنة[cite: 8]", "شيخ فارسي[cite: 8]"],
+                answer: 2, difficulty: "سهل", diffClass: "diff-easy"
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let firstAttempt = true;
+
+        function startGame() {
+            document.getElementById('start-screen').classList.remove('active');
+            document.getElementById('game-screen').classList.add('active');
+            currentQuestionIndex = 0;
+            score = 0;
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            firstAttempt = true;
+            const q = questions[currentQuestionIndex];
+            
+            document.getElementById('progress-ribbon').innerText = `السؤال ${currentQuestionIndex + 1} من ${questions.length}`;
+            
+            const badge = document.getElementById('difficulty-badge');
+            badge.innerText = q.difficulty;
+            badge.className = `difficulty-badge ${q.diffClass}`;
+
+            document.getElementById('question-text').innerText = q.q;
+
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+            
+            q.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerText = opt;
+                btn.onclick = () => checkAnswer(index, btn);
+                optionsContainer.appendChild(btn);
+            });
+            
+            if (q.options.length === 2) {
+                optionsContainer.style.gridTemplateColumns = '1fr 1fr';
+            } else {
+                optionsContainer.style.gridTemplateColumns = window.innerWidth > 600 ? '1fr 1fr' : '1fr';
+            }
+        }
+
+        function checkAnswer(selectedIndex, button) {
+            const q = questions[currentQuestionIndex];
+            
+            if (selectedIndex === q.answer) {
+                button.classList.add('correct');
+                
+                const allButtons = document.querySelectorAll('.option-btn');
+                allButtons.forEach(btn => btn.style.pointerEvents = 'none');
+
+                if (firstAttempt) score++;
+                
+                showStarsEffect(button);
+                document.body.classList.remove('warning');
+
+                setTimeout(() => {
+                    currentQuestionIndex++;
+                    if (currentQuestionIndex < questions.length) {
+                        loadQuestion();
+                    } else {
+                        showResult();
+                    }
+                }, 1500);
+
+            } else {
+                firstAttempt = false;
+                button.classList.add('wrong');
+                button.style.pointerEvents = 'none'; 
+                
+                document.body.classList.add('warning');
+                setTimeout(() => document.body.classList.remove('warning'), 500);
+            }
+        }
+
+        function showStarsEffect(button) {
+            const rect = button.getBoundingClientRect();
+            const x = rect.left + rect.width / 2;
+            const y = rect.top + rect.height / 2;
+
+            for (let i = 0; i < 8; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.innerText = '✨';
+                star.style.left = x + 'px';
+                star.style.top = y + 'px';
+                
+                const angle = Math.random() * Math.PI * 2;
+                const distance = 80 + Math.random() * 50;
+                star.style.setProperty('--tx', `${Math.cos(angle) * distance}px`);
+                star.style.setProperty('--ty', `${Math.sin(angle) * distance}px`);
+                
+                document.body.appendChild(star);
+                
+                setTimeout(() => star.remove(), 1000);
+            }
+        }
+
+        function showResult() {
+            document.getElementById('game-screen').classList.remove('active');
+            document.getElementById('result-screen').classList.add('active');
+            
+            document.getElementById('final-score').innerText = `النتيجة: ${score} من ${questions.length}`;
+            
+            let message = "";
+            let emoji = "";
+            
+            if (score === questions.length) {
+                message = "ممتاز جداً! أنت ملم بكل تواريخ ومعلومات أعياد الصليب بدقة عالية.";
+                emoji = "👑";
+            } else if (score >= 20) {
+                message = "رائع! أداء جميل جداً ومجهود مقدر، استمر في تفوقك.";
+                emoji = "🌟";
+            } else {
+                message = "محاولة جيدة! نرجو مراجعة الدرس مرة أخرى لتعميق فهمك لتاريخ أعياد الصليب.";
+                emoji = "📖";
+            }
+            
+            document.getElementById('result-message').innerText = message;
+            document.getElementById('result-emoji').innerText = emoji;
+        }
+
+        function resetGame() {
+            document.getElementById('result-screen').classList.remove('active');
+            document.getElementById('start-screen').classList.add('active');
+        }
+    </script>
+</body>
+</html>
