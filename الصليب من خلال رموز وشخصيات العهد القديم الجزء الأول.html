@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إختبر معلوماتك _ الصليب من خلال رموز وشخصيات العهد القديم _ الجزء الأول</title>
+    <style>
+        /* التنسيقات الأساسية */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            transition: background-color 0.5s;
+            overflow-x: hidden;
+        }
+
+        /* شاشة التحذير الخفيف (الإجابة الخاطئة) */
+        body.warning {
+            background: linear-gradient(135deg, #ffe6e6 0%, #ffcccc 100%);
+        }
+
+        /* حاوية اللعبة */
+        #game-container {
+            background: white;
+            width: 90%;
+            max-width: 850px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            position: relative;
+            text-align: center;
+            border: 4px solid #4a90e2;
+        }
+
+        /* شاشة البداية والنهاية */
+        .screen {
+            display: none;
+        }
+        .screen.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 {
+            color: #2c3e50;
+            font-size: 2.2em;
+            margin-bottom: 10px;
+            line-height: 1.3;
+        }
+        
+        p.subtitle {
+            color: #7f8c8d;
+            font-size: 1.2em;
+            margin-bottom: 30px;
+        }
+
+        /* الأزرار الرئيسية */
+        .btn-main {
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.5em;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(74, 144, 226, 0.4);
+            transition: transform 0.2s, background-color 0.2s;
+        }
+        .btn-main:hover {
+            transform: scale(1.05);
+            background-color: #357abd;
+        }
+
+        /* شريط التقدم */
+        #progress-ribbon {
+            background-color: #f1c40f;
+            color: #2c3e50;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 20px;
+            display: inline-block;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        /* مستوى الصعوبة */
+        .difficulty-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 15px;
+            color: white;
+            font-size: 0.9em;
+            margin-right: 15px;
+            font-weight: bold;
+        }
+        .diff-easy { background-color: #2ecc71; }
+        .diff-medium { background-color: #f39c12; }
+        .diff-hard { background-color: #e74c3c; }
+
+        /* منطقة السؤال */
+        #question-text {
+            font-size: 1.5em;
+            color: #34495e;
+            margin: 20px 0 30px;
+            line-height: 1.5;
+            font-weight: bold;
+        }
+
+        /* خيارات الإجابة */
+        #options-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        @media (max-width: 600px) {
+            #options-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .option-btn {
+            background-color: #ecf0f1;
+            border: 2px solid #bdc3c7;
+            padding: 15px;
+            font-size: 1.15em;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #2c3e50;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1.3;
+        }
+
+        .option-btn:hover {
+            background-color: #e0e6ed;
+            border-color: #3498db;
+            transform: translateY(-3px);
+        }
+
+        .option-btn.correct {
+            background-color: #2ecc71 !important;
+            color: white !important;
+            border-color: #27ae60 !important;
+            box-shadow: 0 0 20px rgba(46, 204, 113, 0.6);
+            transform: scale(1.05);
+        }
+
+        .option-btn.wrong {
+            background-color: #e74c3c !important;
+            color: white !important;
+            border-color: #c0392b !important;
+            animation: shake 0.4s;
+        }
+        
+        .option-letter { 
+            margin-left: 10px; 
+            color: #e67e22; 
+            font-weight: bold; 
+        }
+
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+
+        /* تأثير النجوم الساطعة */
+        .star {
+            position: absolute;
+            font-size: 2em;
+            pointer-events: none;
+            animation: flyStar 1s ease-out forwards;
+            z-index: 10;
+        }
+
+        @keyframes flyStar {
+            0% { opacity: 1; transform: translate(0, 0) scale(1); }
+            100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(2); }
+        }
+
+        /* النتيجة النهائية */
+        .result-icon {
+            font-size: 5em;
+            margin-bottom: 10px;
+        }
+        #final-score {
+            font-size: 2.5em;
+            color: #d35400;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        
+        <!-- شاشة البداية -->
+        <div id="start-screen" class="screen active">
+            <h1>إختبر معلوماتك _ الصليب من خلال رموز وشخصيات العهد القديم _ الجزء الأول</h1>
+            <p class="subtitle">يَعْظُمُ انْتِصَارُنَا بِالَّذِي أَحَبَّنَا (رو 37:8)</p>
+            <p style="font-size: 1.2em; color: #555; margin-bottom: 30px;">
+                مرحباً بك! استعد لاختبار معلوماتك حول رموز الصليب في العهد القديم، مثل ذبيحة هابيل، فلك نوح، وأيوب، وإسحق.
+            </p>
+            <button class="btn-main" onclick="startGame()">▶️ ابدأ اللعب الآن</button>
+        </div>
+
+        <!-- شاشة الأسئلة -->
+        <div id="game-screen" class="screen">
+            <div>
+                <span id="progress-ribbon">السؤال ١ من ٣٠</span>
+                <span id="difficulty-badge" class="difficulty-badge">سهل</span>
+            </div>
+            
+            <div id="question-text">نص السؤال يظهر هنا...</div>
+            
+            <div id="options-container">
+                <!-- الأزرار ستُضاف هنا -->
+            </div>
+        </div>
+
+        <!-- شاشة النتيجة -->
+        <div id="result-screen" class="screen">
+            <div class="result-icon" id="result-emoji">🏆</div>
+            <h1>اكتملت المسابقة بنجاح!</h1>
+            <div id="final-score">نتيجتك: 0 / 30</div>
+            <p id="result-message" style="font-size: 1.3em; margin-bottom: 30px; color: #34495e;"></p>
+            <button class="btn-main" onclick="resetGame()">🔄 العب مرة أخرى</button>
+        </div>
+
+    </div>
+
+    <script>
+        const questions = [
+            {
+                q: "اهتم الله بالإشارة إلى الصليب في العهد القديم من خلال النبوات والذبائح والرموز.[cite: 4]",
+                options: ["صح", "خطأ"],
+                answer: 0, difficulty: "سهل", diffClass: "diff-easy"
+            },
+            {
+                q: "ماذا قدم قايين كقربان للرب؟[cite: 4]",
+                options: ["من أبكار غنمه", "من أثمار الأرض", "فضة وذهب", "بخوراً"],
+                answer: 1, difficulty: "سهل", diffClass: "diff-easy"
+            },
+            {
+                q: "ماذا قدم هابيل كقربان للرب؟[cite: 4]",
+                options: ["من أبكار غنمه ومن سمانها", "من ثمار الحقل", "طيوراً", "ماءً"],
+                answer: 0, difficulty: "سهل", diffClass: "diff-easy"
+            },
+            {
+                q: "لماذا لم ينظر الرب إلى قربان قايين؟[cite: 4]",
+                options: ["لأن قايين خالف أباه آدم وقدم من ثمار الأرض التي لعنها الله", "لأن أثمار الأرض كانت قليلة", "لأنه لم يكن يصلي", "لأنه قدمها في الوقت الخطأ"],
+                answer: 0, difficulty: "متوسط", diffClass: "diff-medium"
+            },
+            {
+                q: "تقدمة هابيل قُبلت لأنه قدم ذبيحة دموية معترفاً بحاجته للمغفرة.[cite: 4]",
+                options: ["صح", "خطأ"],
+                answer: 0, difficulty: "سهل", diffClass: "diff-easy"
+            },
+            {
+                q: "من أين تسلم آدم طقس الذبيحة الدموية؟[cite: 4]",
+                options: ["ابتكرها بنفسه", "من الملائكة", "من الله الذي ذبح حملاً وصنع لهما رداء من جلد", "من هابيل ابنه"],
+                answer: 2, difficulty: "متوسط", diffClass: "diff-medium"
+            },
+            {
+                q: "ذبيحة هابيل كانت أفضل من ذبيحة قايين ليس لأن قيمتها المادية أكبر، بل لأنها...[cite: 4]",
+                options: ["كانت أثقل وزناً", "ترمز لذبيحة الصليب", "كانت من حيوان أليف", "تم تقديمها بسرعة"],
+                answer: 1, difficulty: "صعب", diffClass: "diff-hard"
+            },
+            {
+                q: "قبول ذبيحة هابيل إعلان وتأكيد أن الإنسان لن تغفر خطاياه إلا بـ...[cite: 4]",
+                options: ["الأعمال الحسنة فقط", "سفك الدم", "الصوم الدائم", "تقديم العطايا"],
+                answer: 1, difficulty: "متوسط", diffClass: "diff-medium"
+            },
+            {
+                q: "لماذا ذبح قايين أخاه هابيل؟[cite: 4]",
+                options: ["حسداً، لأن أعمال قايين كانت شريرة وأعمال أخيه بارة", "بالخطأ", "بسبب خلاف على الأرض", "لأنه سرق ماشيته"],
+                answer: 0, difficulty: "سهل", diffClass: "diff-easy"
+            },
+            {
+                q: "هابيل الذي ذُبح حسداً كان رمزاً للسيد المسيح الذي أسلمه إخوته اليهود ليذبح على الصليب...[cite: 4]",
+                options: ["بسبب الفقر", "حسداً", "بسبب الديون", "خوفاً من الرومان"],
+                answer: 1, difficulty: "متوسط", diffClass: "diff-medium"
+            },
+            {
+                q: "إلى ماذا يرمز فلك نوح الخشبي الذي كان واسطة النجاة للجنس البشري؟[cite: 4]",
+                options: ["خشبة الصليب التي عن طريقها نالت البشرية النجاة من الهلاك الأبدي", "الكنيسة فقط", "الهروب من العالم", "بناء السفن"],
+                answer: 0, difficulty: "سهل", diffClass: "diff-easy"
+            },
+            {
+                q: "أيوب البار الذي اشتكى عليه الشيطان واجتاز التجربة كان رمزاً للسيد المسيح (أيوب الجديد) الذي قام منتصراً.[cite: 4]",
+                options: ["صح", "خطأ"],
+                answer: 0, difficulty: "سهل", diffClass: "diff-easy"
+            },
+            {
+                q: "إسحق هو ابن الموعد والابن الحبيب لأبيه، وهو بذلك يرمز إلى ربنا يسوع الذي قال الآب عنه...[cite: 4]",
+                options: ["هذَا هُوَ النَّبِيُّ", "هذَا هُوَ ابْنِي الْحَبِيبُ الَّذِي بِهِ سُرِرْتُ", "هذَا هُوَ الْمُعَلِّمُ", "هذَا هُوَ الْمَلِكُ"],
+                answer: 1, difficulty: "متوسط", diffClass: "diff-medium"
+            },
+            {
+                q: "على أي جبل طلب الله من إبراهيم أن يصعد ابنه إسحق محرقة (والذي يقول التقليد أنه هو نفسه جبل الجلجثة)؟[cite: 4]",
+                options: ["جبل سيناء", "جبل المريا", "جبل الزيتون", "جبل تابور"],
+                answer: 1, difficulty: "صعب", diffClass: "diff-hard"
+            },
+            {
+                q: "كم غلاماً تبع إسحق إلى مكان الذبح، كرمز للصين اللذين صلبا مع السيد المسيح؟[cite: 4]",
+                options: ["غلام واحد", "غلامان", "ثلاثة غلمان", "أربعة غلمان"],
+                answer: 1, difficulty: "متوسط", diffClass: "diff-medium"
+            },
+            {
+                q: "مكث إسحق ثلاثة أيام في الطريق محكوماً عليه بالموت، كرمز لـ...[cite: 4]",
+                options: ["عدد مسامير الصليب", "بقاء السيد المسيح في القبر ثلاثة أيام في حكم الموت", "عدد مرات المحاكمة", "أيام الصوم"],
+                answer: 1, difficulty: "متوسط", diffClass: "diff-medium"
+            },
+            {
+                q: "حمل إسحق حطب المحرقة وهو رمز لربنا يسوع الذي...[cite: 4]",
+                options: ["حمل خطايانا", "حمل خشبة الصليب في اتضاع", "عمل كنجار", "تألم من الشوك"],
+                answer: 1, difficulty: "سهل", diffClass: "diff-easy"
+            },
+            {
+                q: "القول النبوي 'وَتَكُونُ الرِّيَاسَةُ عَلَى كَتِفِهِ' يشير إلى حمل المسيح للصليب في اتضاع عجيب.[cite: 4]",
+                options: ["صح", "خطأ"],
+                answer: 0, difficulty: "صعب", diffClass: "diff-hard"
+            },
+            {
+                q: "عندما سأل إسحق 'أَيْنَ الْخَرُوفُ لِلْمُحْرَقَةِ؟'، أجابه إبراهيم...[cite: 4]",
+                options: ["سنبحث عنه", "الله يرى له الخروف للمحرقة", "نسيناه في المنزل", "أنت هو الخروف"],
+                answer: 1, difficulty: "سهل", diffClass: "diff-easy"
+            },
+            {
+                q: "من هو الشخص الذي أشار إلى الحمل الحقيقي قائلاً: 'هُوَذَا حَمَلُ اللهِ الَّذِي يَرْفَعُ خَطِيَّةَ الْعَالَمِ'؟[cite: 4]",
+                options: ["بطرس الرسول", "إشعياء النبي", "يوحنا المعمدان", "إبراهيم أب الآباء"],
+                answer: 2, difficulty: "متوسط", diffClass: "diff-medium"
+            },
+            {
+                q: "عبارة 'ذَهَبَا كِلاهُمَا مَعًا' في قصة إبراهيم وإسحق تعكس معنى جميل هو أن الذبيحة تعتبر...[cite: 4]",
+                options: ["ذبيحة الأب (الحب الباذل) وذبيحة الابن (الطاعة حتى الموت)", "مجرد طاعة للقدر", "تضحية بلا قيمة", "إجباراً من الأب"],
+                answer: 0, difficulty: "صعب", diffClass: "diff-hard"
+            },
+            {
+                q: "أطاع إسحق أباه دون أن يقاوم أو يهرب، وهذا يرمز لطاعة السيد المسيح للآب السماوي حتى الموت.[cite: 4]",
+                options: ["صح", "خطأ"],
+                answer: 0, difficulty: "سهل", diffClass: "diff-easy"
+            },
+            {
+                q: "كما كان إسحق مزمعاً أن يموت دون ذنب جناه، هكذا مات السيد المسيح...[cite: 4]",
+                options: ["بسبب أخطائه", "لأنه أخطأ للقانون الروماني", "دون ذنب جناه", "بالصدفة"],
+                answer: 2, difficulty: "متوسط", diffClass: "diff-medium"
+            },
+            {
+                q: "ماذا رأى إبراهيم ممسكاً في الغابة بقرنيه ليصعده محرقة عوضاً عن ابنه إسحق؟[cite: 4]",
+                options: ["عجلاً", "كبشاً", "تيس الماعز", "بقرة حمراء"],
+                answer: 1, difficulty: "سهل", diffClass: "diff-easy"
+            },
+            {
+                q: "الكبش الذي ذُبح فعلاً وفدى إسحق يرمز لربنا يسوع، والشجرة التي أمسكت بالكبش ترمز لـ...[cite: 4]",
+                options: ["المذبح الخشبي", "خشبة الصليب", "شجرة معرفة الخير والشر", "إكليل الشوك"],
+                answer: 1, difficulty: "متوسط", diffClass: "diff-medium"
+            },
+            {
+                q: "رجوع إسحق حياً يرمز إلى قيامة ربنا يسوع المسيح من بين الأموات حياً.[cite: 4]",
+                options: ["صح", "خطأ"],
+                answer: 0, difficulty: "سهل", diffClass: "diff-easy"
+            },
+            {
+                q: "أعطى الله لإبراهيم أن يعاين قيامة ربنا يسوع فرأى وفرح، وقد أشار السيد المسيح لذلك بقوله...[cite: 4]",
+                options: ["أَبُوكُمْ إِبْرَاهِيمُ تَهَلَّلَ بِأَنْ يَرَى يَوْمِي فَرَأَى وَفَرِحَ", "إبراهيم أبوكم جميعاً", "من قبل أن يكون إبراهيم أنا كائن", "لا شيء مما سبق"],
+                answer: 0, difficulty: "صعب", diffClass: "diff-hard"
+            },
+            {
+                q: "بسبب كثرة أوجه الشبه بين ذبح إسحق وصلب ربنا يسوع، اختارت الكنيسة هذا الموضوع لقسمة أي قداس؟[cite: 4]",
+                options: ["قداس عيد القيامة", "قداس عيد الميلاد", "قداس خميس العهد", "قداس أحد الشعانين"],
+                answer: 2, difficulty: "متوسط", diffClass: "diff-medium"
+            },
+            {
+                q: "لماذا فشلت أوراق الشجر في ستر عري آدم وزوجته؟[cite: 4]",
+                options: ["لأنها كانت صغيرة", "لأنها جفت بسرعة", "لأن الدم كان ضرورياً للستر (الذبيحة)", "لأنها لم تكن جميلة"],
+                answer: 2, difficulty: "صعب", diffClass: "diff-hard"
+            },
+            {
+                q: "يقول الإنجيل عن هابيل: 'بِالإِيمَانِ قَدَّمَ هَابِيلُ للهِ ذَبِيحَةً أَفْضَلَ مِنْ قَايِينَ فَبِهِ شَهِدَ لَهُ أَنَّهُ...'[cite: 4]",
+                options: ["غَنِيٌّ", "قَوِيٌّ", "بَارٌّ", "حَكِيمٌ"],
+                answer: 2, difficulty: "سهل", diffClass: "diff-easy"
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let firstAttempt = true;
+        const alphabet = ['أ', 'ب', 'ج', 'د'];
+
+        function startGame() {
+            document.getElementById('start-screen').classList.remove('active');
+            document.getElementById('game-screen').classList.add('active');
+            currentQuestionIndex = 0;
+            score = 0;
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            firstAttempt = true;
+            const q = questions[currentQuestionIndex];
+            
+            document.getElementById('progress-ribbon').innerText = `السؤال ${currentQuestionIndex + 1} من ${questions.length}`;
+            
+            const badge = document.getElementById('difficulty-badge');
+            badge.innerText = q.difficulty;
+            badge.className = `difficulty-badge ${q.diffClass}`;
+
+            document.getElementById('question-text').innerText = q.q;
+
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+            
+            q.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                
+                // إضافة الحروف (أ، ب، ج، د) للخيارات المتعددة فقط (ليس الصح والخطأ)
+                if (q.options.length > 2) {
+                    const letterSpan = document.createElement('span');
+                    letterSpan.className = 'option-letter';
+                    letterSpan.innerText = `(${alphabet[index]})`;
+                    
+                    const textSpan = document.createElement('span');
+                    textSpan.innerText = ` ${opt}`;
+
+                    btn.appendChild(letterSpan);
+                    btn.appendChild(textSpan);
+                } else {
+                    btn.innerText = opt;
+                }
+
+                btn.onclick = () => checkAnswer(index, btn);
+                optionsContainer.appendChild(btn);
+            });
+            
+            if (q.options.length === 2) {
+                optionsContainer.style.gridTemplateColumns = '1fr 1fr';
+            } else {
+                optionsContainer.style.gridTemplateColumns = window.innerWidth > 600 ? '1fr 1fr' : '1fr';
+            }
+        }
+
+        function checkAnswer(selectedIndex, button) {
+            const q = questions[currentQuestionIndex];
+            
+            if (selectedIndex === q.answer) {
+                button.classList.add('correct');
+                
+                const allButtons = document.querySelectorAll('.option-btn');
+                allButtons.forEach(btn => btn.style.pointerEvents = 'none');
+
+                if (firstAttempt) score++;
+                
+                showStarsEffect(button);
+                document.body.classList.remove('warning');
+
+                setTimeout(() => {
+                    currentQuestionIndex++;
+                    if (currentQuestionIndex < questions.length) {
+                        loadQuestion();
+                    } else {
+                        showResult();
+                    }
+                }, 1500);
+
+            } else {
+                firstAttempt = false;
+                button.classList.add('wrong');
+                button.style.pointerEvents = 'none';
+                
+                document.body.classList.add('warning');
+                setTimeout(() => document.body.classList.remove('warning'), 500);
+            }
+        }
+
+        function showStarsEffect(button) {
+            const rect = button.getBoundingClientRect();
+            const x = rect.left + rect.width / 2;
+            const y = rect.top + rect.height / 2;
+
+            for (let i = 0; i < 8; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.innerText = '✨';
+                star.style.left = x + 'px';
+                star.style.top = y + 'px';
+                
+                const angle = Math.random() * Math.PI * 2;
+                const distance = 80 + Math.random() * 50;
+                star.style.setProperty('--tx', `${Math.cos(angle) * distance}px`);
+                star.style.setProperty('--ty', `${Math.sin(angle) * distance}px`);
+                
+                document.body.appendChild(star);
+                
+                setTimeout(() => star.remove(), 1000);
+            }
+        }
+
+        function showResult() {
+            document.getElementById('game-screen').classList.remove('active');
+            document.getElementById('result-screen').classList.add('active');
+            
+            document.getElementById('final-score').innerText = `النتيجة: ${score} من ${questions.length}`;
+            
+            let message = "";
+            let emoji = "";
+            
+            if (score === questions.length) {
+                message = "ممتاز جداً! أنت ملم بكل تفاصيل رموز العهد القديم وشخصياته بقوة.";
+                emoji = "👑";
+            } else if (score >= 20) {
+                message = "رائع! أداء جميل جداً ومجهود مقدر، استمر في دراستك وتأملاتك.";
+                emoji = "🌟";
+            } else {
+                message = "محاولة جيدة! نرجو مراجعة الدرس مرة أخرى لتعميق فهمك لرموز الصليب.";
+                emoji = "📖";
+            }
+            
+            document.getElementById('result-message').innerText = message;
+            document.getElementById('result-emoji').innerText = emoji;
+        }
+
+        function resetGame() {
+            document.getElementById('result-screen').classList.remove('active');
+            document.getElementById('start-screen').classList.add('active');
+        }
+    </script>
+</body>
+</html>
