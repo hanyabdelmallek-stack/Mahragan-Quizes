@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إختبر معلوماتك _ الصليب روحياً</title>
+    <style>
+        /* التنسيقات الأساسية */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            transition: background-color 0.5s;
+            overflow-x: hidden;
+        }
+
+        /* شاشة التحذير الخفيف (الإجابة الخاطئة) */
+        body.warning {
+            background: linear-gradient(135deg, #ffe6e6 0%, #ffcccc 100%);
+        }
+
+        /* حاوية اللعبة */
+        #game-container {
+            background: white;
+            width: 90%;
+            max-width: 800px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            position: relative;
+            text-align: center;
+            border: 4px solid #4a90e2;
+        }
+
+        /* شاشة البداية والنهاية */
+        .screen {
+            display: none;
+        }
+        .screen.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 {
+            color: #2c3e50;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        p.subtitle {
+            color: #7f8c8d;
+            font-size: 1.2em;
+            margin-bottom: 30px;
+        }
+
+        /* الأزرار الرئيسية */
+        .btn-main {
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.5em;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(74, 144, 226, 0.4);
+            transition: transform 0.2s, background-color 0.2s;
+        }
+        .btn-main:hover {
+            transform: scale(1.05);
+            background-color: #357abd;
+        }
+
+        /* شريط التقدم */
+        #progress-ribbon {
+            background-color: #f1c40f;
+            color: #2c3e50;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 20px;
+            display: inline-block;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        /* مستوى الصعوبة */
+        .difficulty-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 15px;
+            color: white;
+            font-size: 0.9em;
+            margin-right: 15px;
+            font-weight: bold;
+        }
+        .diff-easy { background-color: #2ecc71; }
+        .diff-medium { background-color: #f39c12; }
+        .diff-hard { background-color: #e74c3c; }
+
+        /* منطقة السؤال */
+        #question-text {
+            font-size: 1.6em;
+            color: #34495e;
+            margin: 20px 0 30px;
+            line-height: 1.5;
+            font-weight: bold;
+        }
+
+        /* خيارات الإجابة */
+        #options-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        @media (max-width: 600px) {
+            #options-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .option-btn {
+            background-color: #ecf0f1;
+            border: 2px solid #bdc3c7;
+            padding: 15px;
+            font-size: 1.2em;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #2c3e50;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1.3;
+        }
+
+        .option-btn:hover {
+            background-color: #e0e6ed;
+            border-color: #3498db;
+            transform: translateY(-3px);
+        }
+
+        .option-btn.correct {
+            background-color: #2ecc71 !important;
+            color: white !important;
+            border-color: #27ae60 !important;
+            box-shadow: 0 0 20px rgba(46, 204, 113, 0.6);
+            transform: scale(1.05);
+        }
+
+        .option-btn.wrong {
+            background-color: #e74c3c !important;
+            color: white !important;
+            border-color: #c0392b !important;
+            animation: shake 0.4s;
+        }
+
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+
+        /* تأثير النجوم الساطعة */
+        .star {
+            position: absolute;
+            font-size: 2em;
+            pointer-events: none;
+            animation: flyStar 1s ease-out forwards;
+            z-index: 10;
+        }
+
+        @keyframes flyStar {
+            0% { opacity: 1; transform: translate(0, 0) scale(1); }
+            100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(2); }
+        }
+
+        /* النتيجة النهائية */
+        .result-icon {
+            font-size: 5em;
+            margin-bottom: 10px;
+        }
+        #final-score {
+            font-size: 2.5em;
+            color: #d35400;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        
+        <!-- شاشة البداية -->
+        <div id="start-screen" class="screen active">
+            <h1>إختبر معلوماتك _ الصليب روحياً</h1>
+            <p class="subtitle">يَعْظُمُ انْتِصَارُنَا بِالَّذِي أَحَبَّنَا (رو 37:8)</p>
+            <p style="font-size: 1.2em; color: #555; margin-bottom: 30px;">
+                مرحباً بك! اختبر معلوماتك الآن حول أسباب سماح الله بالتجارب، بركات الصليب، وثماره في حياتنا الروحية.
+            </p>
+            <button class="btn-main" onclick="startGame()">▶️ ابدأ اللعب الآن</button>
+        </div>
+
+        <!-- شاشة الأسئلة -->
+        <div id="game-screen" class="screen">
+            <div>
+                <span id="progress-ribbon">السؤال ١ من ٣٠</span>
+                <span id="difficulty-badge" class="difficulty-badge">سهل</span>
+            </div>
+            
+            <div id="question-text">نص السؤال يظهر هنا...</div>
+            
+            <div id="options-container">
+                <!-- الأزرار ستُضاف هنا -->
+            </div>
+        </div>
+
+        <!-- شاشة النتيجة -->
+        <div id="result-screen" class="screen">
+            <div class="result-icon" id="result-emoji">🏆</div>
+            <h1>اكتملت المسابقة بنجاح!</h1>
+            <div id="final-score">نتيجتك: 0 / 30</div>
+            <p id="result-message" style="font-size: 1.3em; margin-bottom: 30px; color: #34495e;"></p>
+            <button class="btn-main" onclick="resetGame()">🔄 العب مرة أخرى</button>
+        </div>
+
+    </div>
+
+    <script>
+        // بنك الأسئلة مبني حصرياً على النص المرفق
+        const questions = [
+            {
+                q: "ما هو الهدف من 'تجارب التتويب' التي يسمح بها الله كقصة الابن الضال؟[cite: 3]",
+                options: ["الدعوة للتوبة والانتباه للبعد عن الله", "زيادة الأموال", "الوقاية من المرض", "إثبات البر الذاتي"],
+                answer: 0, difficulty: "سهل", diffClass: "diff-easy"
+            },
+            {
+                q: "لماذا سمح الله لأيوب البار بتجارب متنوعة مثل وفاة أولاده وخسارة ثروته؟[cite: 3]",
+                options: ["لتزكيته", "للتتويب", "للتنقية من البر الذاتي لأنه كان يحس بأنه بار", "للوقاية من النجاح"],
+                answer: 2, difficulty: "متوسط", diffClass: "diff-medium"
+            },
+            {
+                q: "تجربة أبينا إبراهيم حينما طلب منه الله تقديم ابنه إسحق ذبيحة، تعتبر مثالاً على أي نوع من التجارب؟[cite: 3]",
+                options: ["تجارب للوقاية", "تجارب للتزكية", "تجارب للتنقية", "تجارب للتتويب"],
+                answer: 1, difficulty: "متوسط", diffClass: "diff-medium"
+            },
+            {
+                q: "ما هو الهدف من 'تجارب الوقاية' التي يسمح بها الله؟[cite: 3]",
+                options: ["الوقاية من الكبرياء", "الوقاية من الفقر", "الوقاية من الموت الجسدي", "الوقاية من الأعداء الخارجيين"],
+                answer: 0, difficulty: "سهل", diffClass: "diff-easy"
+            },
+            {
+                q: "أعطيت لمعلمنا بولس الرسول شوكة في الجسد (مرض) خوفاً عليه من أن يستكبر بسبب نجاحاته في الخدمة.[cite: 3]",
+                options: ["صح", "خطأ"],
+                answer: 0, difficulty: "سهل", diffClass: "diff-easy"
+            },
+            {
+                q: "في الحياة الرباعية في صليب المسيح، 'حياة الجسد' تتسم بـ...[cite: 3]",
+                options: ["العشرة والشركة مع الله", "الطهارة والقداسة", "الكرامة الزمنية", "السكن في أورشليم السمائية"],
+                answer: 1, difficulty: "متوسط", diffClass: "diff-medium"
+            },
+            {
+                q: "في الحياة الرباعية، كيف تتم 'حياة الروح'؟[cite: 3]",
+                options: ["بالطهارة فقط", "بالتمتع بكرامة أولاد الله", "بالعشرة والشركة مع الله", "بالتواجد مع الرب في أورشليم السمائية"],
+                answer: 2, difficulty: "صعب", diffClass: "diff-hard"
+            },
+            {
+                q: "الله قادر أن يحول كل آلام التجارب في اتجاه مشيئته الصالحة، وفي النهاية يصبح كل شيء...[cite: 3]",
+                options: ["غريباً", "حَسَنٌ جداً", "متعباً", "غير مفهوم للأبد"],
+                answer: 1, difficulty: "سهل", diffClass: "diff-easy"
+            },
+            {
+                q: "حتى عندما تسير الأمور عكس ما نشتهي وقت التجربة، ماذا يجب أن نفعل؟[cite: 3]",
+                options: ["نيأس", "نثق في تدبير الله ومشيئته الصالحة", "نطلب إنهاء التجربة فوراً", "نعزل أنفسنا"],
+                answer: 1, difficulty: "سهل", diffClass: "diff-easy"
+            },
+            {
+                q: "أكمل الآية التي تعبر عن الترتيب الإلهي الدقيق: 'لَسْتَ تَعْلَمُ أَنْتَ الآنَ مَا أَنَا أَصْنَعُ، وَلكِنَّكَ...' (يو ٧:١٣).[cite: 3]",
+                options: ["سَتَفْهَمُ فِيمَا بَعْدُ", "سَتَحْزَنُ كَثِيراً", "سَتَنْسَى قَرِيباً", "سَتَرَى الْمَجْدَ الآنَ"],
+                answer: 0, difficulty: "متوسط", diffClass: "diff-medium"
+            },
+            {
+                q: "يقول القديسون: 'مَنْ لِي فِي السَّمَاءِ؟ وَمَعَكَ لاَ أُرِيدُ...'[cite: 3]",
+                options: ["ذَهَبَاً", "شَيْئاً فِي الأَرْضِ", "عَدُواً", "مَرَضاً"],
+                answer: 1, difficulty: "متوسط", diffClass: "diff-medium"
+            },
+            {
+                q: "'بركة الغفران' التي ننالها بدم المسيح بالتوبة، تخص أي زمن في حياتنا؟[cite: 3]",
+                options: ["الماضي", "الحاضر", "المستقبل", "الدهر الآتي"],
+                answer: 0, difficulty: "سهل", diffClass: "diff-easy"
+            },
+            {
+                q: "'بركة التطهير' التي تطهرنا من آثار الخطيئة الكامنة فينا تخص الحاضر وتتم من خلال...[cite: 3]",
+                options: ["النوم العميق", "الابتعاد عن الناس", "وسائط النعمة (الصلاة، الاعتراف، التناول...)", "العمل الشاق"],
+                answer: 2, difficulty: "متوسط", diffClass: "diff-medium"
+            },
+            {
+                q: "'بركة التقديس' تخص المستقبل، حيث يتخصص الإنسان ويصير ملكاً للرب، ويحدث هذا في سر...[cite: 3]",
+                options: ["الزيجة", "مسحة المرضى", "المعمودية والميرون", "الاعتراف فقط"],
+                answer: 2, difficulty: "متوسط", diffClass: "diff-medium"
+            },
+            {
+                q: "في سر الميرون، يُرشم المؤمن بـ ٣٦ رشماً من أجل تقديس الفكر، والحواس، والقلب والإرادة، والأعمال، والخطوات.[cite: 3]",
+                options: ["صح", "خطأ"],
+                answer: 0, difficulty: "صعب", diffClass: "diff-hard"
+            },
+            {
+                q: "بركة التثبيت المرتبطة بتناول جسد الرب ودمه، تخص أي جانب من حياتنا؟[cite: 3]",
+                options: ["الماضي البعيد", "الجهاد الروحي", "الراحة الجسدية", "الحياة الأدبية فقط"],
+                answer: 1, difficulty: "صعب", diffClass: "diff-hard"
+            },
+            {
+                q: "نحن في الكنيسة نؤمن بالنعمة فقط دون الحاجة إلى مشاركة بالجهاد الروحي.[cite: 3]",
+                options: ["صح", "خطأ"],
+                answer: 1, difficulty: "متوسط", diffClass: "diff-medium"
+            },
+            {
+                q: "ما هي البركة التي تخص 'الدهر الآتي' وتوصلنا إلى أورشليم الأبدية؟[cite: 3]",
+                options: ["بركة الغفران", "بركة التطهير", "بركة الخلود", "بركة التثبيت"],
+                answer: 2, difficulty: "سهل", diffClass: "diff-easy"
+            },
+            {
+                q: "من القائل: 'ارسمه (الصليب) في كل مناسبة في دخولك وخروجك... باسم الآب والابن والروح القدس'؟[cite: 3]",
+                options: ["القديس أثناسيوس الرسولي", "مار أفرام السرياني", "القديس بولس الرسول", "البابا شنودة الثالث"],
+                answer: 1, difficulty: "صعب", diffClass: "diff-hard"
+            },
+            {
+                q: "من ثمار الصليب 'الفردوس المفتوح'، فمن هو الذي دخل الفردوس مع الرب في نفس يوم الصلب؟[cite: 3]",
+                options: ["بيلاطس البنطي", "اللص التائب", "يهوذا الإسخريوطي", "قائد المئة"],
+                answer: 1, difficulty: "سهل", diffClass: "diff-easy"
+            },
+            {
+                q: "لماذا أخفى الرب المحب ألوهيته عن الشيطان وقبل شكل الضعف كالجوع والنوم والبكاء؟[cite: 3]",
+                options: ["لأنه فقد اللاهوت مؤقتاً", "حتى إذا لم يتأكد الشيطان أنه المخلص، لا يمنع موته، وبهذا يتم الفداء", "ليختبر حياة البشر العادية فقط", "لأنه كان خائفاً"],
+                answer: 1, difficulty: "صعب", diffClass: "diff-hard"
+            },
+            {
+                q: "عندما مات السيد المسيح، ذهبت نفسه الإنسانية إلى الجحيم، فهل تمكن الشيطان من القبض عليها؟[cite: 3]",
+                options: ["نعم، لفترة طويلة", "لا، لأن اللاهوت كان متحداً بها", "نعم، بمساعدة اليهود", "لا، لأن الملائكة أخذتها بعيداً"],
+                answer: 1, difficulty: "متوسط", diffClass: "diff-medium"
+            },
+            {
+                q: "بفضل نزول السيد المسيح إلى الجحيم بلاهوته المتحد بناسوته، أخذ الراقدين على رجاء وأدخلهم إلى...[cite: 3]",
+                options: ["الأرض مرة أخرى", "الفردوس السعيد", "الهيكل القديم", "مصر"],
+                answer: 1, difficulty: "سهل", diffClass: "diff-easy"
+            },
+            {
+                q: "ترنم الكنيسة في عيد القيامة قائلة: 'قد قام الرب من بين الأموات.. وسبى...'[cite: 3]",
+                options: ["الرومان سبياً", "الجحيم سبياً", "العالم سبياً", "الخطية سبياً"],
+                answer: 1, difficulty: "متوسط", diffClass: "diff-medium"
+            },
+            {
+                q: "من القائل: 'وبعلامة الصليب يبطل كل سحر' في كتاب تجسد الكلمة؟[cite: 3]",
+                options: ["مار أفرام السرياني", "القديس أثناسيوس الرسولي", "القديس يوحنا ذهبي الفم", "القديس كيرلس الكبير"],
+                answer: 1, difficulty: "صعب", diffClass: "diff-hard"
+            },
+            {
+                q: "بسبب موت الرب النيابي عنا، نقول في أوشية الراقدين: 'لا يكون موت لعبيدك بل هو...'[cite: 3]",
+                options: ["نهاية", "انتقال", "عقاب", "نوم أبدي"],
+                answer: 1, difficulty: "سهل", diffClass: "diff-easy"
+            },
+            {
+                q: "في سر المعمودية، نحن...[cite: 3]",
+                options: ["نغسل خطايانا بالماء العادي فقط", "نموت ونقوم مع الرب ونتجدد بالروح القدس", "نأكل جسد الرب", "نُرشم بالزيت ٣٦ مرة"],
+                answer: 1, difficulty: "متوسط", diffClass: "diff-medium"
+            },
+            {
+                q: "كيف يسكن فينا روح الله وندشن كهياكل مقدسة لإلغاء الفساد؟[cite: 3]",
+                options: ["بالميرون", "بالصوم الانقطاعي", "بدفع العشور", "بقراءة الكتب فقط"],
+                answer: 0, difficulty: "متوسط", diffClass: "diff-medium"
+            },
+            {
+                q: "لكي تكون شهوتنا الوحيدة هي الله نفسه، ماذا يطلب منا الدرس في النهاية أن نصلب؟[cite: 3]",
+                options: ["الممتلكات المادية", "الشهوات والأهواء والذات", "العلاقات الأسرية", "الطموح العلمي"],
+                answer: 1, difficulty: "سهل", diffClass: "diff-easy"
+            },
+            {
+                q: "أكمل الآية الختامية: 'الْعَالَمُ يَمْضِي وَشَهْوَتُهُ، وَأَمَّا الَّذِي يَصْنَعُ مَشِيئَةَ اللهِ فَيَثْبُتُ...' (١ يو ١٧:٢).[cite: 3]",
+                options: ["لِلأَبَدِ", "فِي مَكَانِهِ", "فِي الْكَنِيسَةِ", "فِي الأَرْضِ"],
+                answer: 0, difficulty: "سهل", diffClass: "diff-easy"
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let firstAttempt = true;
+
+        // دالة بدء اللعبة
+        function startGame() {
+            document.getElementById('start-screen').classList.remove('active');
+            document.getElementById('game-screen').classList.add('active');
+            currentQuestionIndex = 0;
+            score = 0;
+            loadQuestion();
+        }
+
+        // دالة تحميل السؤال
+        function loadQuestion() {
+            firstAttempt = true;
+            const q = questions[currentQuestionIndex];
+            
+            // تحديث الشريط والصعوبة
+            document.getElementById('progress-ribbon').innerText = `السؤال ${currentQuestionIndex + 1} من ${questions.length}`;
+            
+            const badge = document.getElementById('difficulty-badge');
+            badge.innerText = q.difficulty;
+            badge.className = `difficulty-badge ${q.diffClass}`;
+
+            // نص السؤال
+            document.getElementById('question-text').innerText = q.q;
+
+            // توليد الأزرار
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+            
+            q.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerText = opt;
+                btn.onclick = () => checkAnswer(index, btn);
+                optionsContainer.appendChild(btn);
+            });
+            
+            // تعديل تصميم أزرار (صح/خطأ) لتكون بجوار بعضها
+            if (q.options.length === 2) {
+                optionsContainer.style.gridTemplateColumns = '1fr 1fr';
+            } else {
+                optionsContainer.style.gridTemplateColumns = window.innerWidth > 600 ? '1fr 1fr' : '1fr';
+            }
+        }
+
+        // دالة فحص الإجابة
+        function checkAnswer(selectedIndex, button) {
+            const q = questions[currentQuestionIndex];
+            
+            if (selectedIndex === q.answer) {
+                // إجابة صحيحة
+                button.classList.add('correct');
+                
+                // منع النقر على باقي الأزرار
+                const allButtons = document.querySelectorAll('.option-btn');
+                allButtons.forEach(btn => btn.style.pointerEvents = 'none');
+
+                if (firstAttempt) score++;
+                
+                showStarsEffect(button);
+                document.body.classList.remove('warning');
+
+                // الانتقال للسؤال التالي بعد تأخير
+                setTimeout(() => {
+                    currentQuestionIndex++;
+                    if (currentQuestionIndex < questions.length) {
+                        loadQuestion();
+                    } else {
+                        showResult();
+                    }
+                }, 1500);
+
+            } else {
+                // إجابة خاطئة
+                firstAttempt = false;
+                button.classList.add('wrong');
+                button.style.pointerEvents = 'none'; // منع النقر على نفس الزر مرة أخرى
+                // يبقى السؤال على الشاشة، وتظل الخيارات الأخرى متاحة للنقر
+                
+                // تأثير التحذير البصري (إضاءة حمراء خفيفة)
+                document.body.classList.add('warning');
+                setTimeout(() => document.body.classList.remove('warning'), 500);
+            }
+        }
+
+        // تأثير النجوم المتطايرة
+        function showStarsEffect(button) {
+            const rect = button.getBoundingClientRect();
+            const x = rect.left + rect.width / 2;
+            const y = rect.top + rect.height / 2;
+
+            for (let i = 0; i < 8; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.innerText = '✨';
+                star.style.left = x + 'px';
+                star.style.top = y + 'px';
+                
+                // اتجاهات عشوائية للنجوم
+                const angle = Math.random() * Math.PI * 2;
+                const distance = 80 + Math.random() * 50;
+                star.style.setProperty('--tx', `${Math.cos(angle) * distance}px`);
+                star.style.setProperty('--ty', `${Math.sin(angle) * distance}px`);
+                
+                document.body.appendChild(star);
+                
+                // إزالة النجمة بعد انتهاء الحركة
+                setTimeout(() => star.remove(), 1000);
+            }
+        }
+
+        // عرض النتيجة النهائية
+        function showResult() {
+            document.getElementById('game-screen').classList.remove('active');
+            document.getElementById('result-screen').classList.add('active');
+            
+            document.getElementById('final-score').innerText = `النتيجة: ${score} من ${questions.length}`;
+            
+            let message = "";
+            let emoji = "";
+            
+            if (score === questions.length) {
+                message = "ممتاز جداً! أنت ملم بكل تفاصيل المعاني الروحية للصليب بقوة.";
+                emoji = "👑";
+            } else if (score >= 20) {
+                message = "رائع! أداء جميل جداً ومجهود مقدر، استمر في دراستك وتأملاتك.";
+                emoji = "🌟";
+            } else {
+                message = "محاولة جيدة! نرجو مراجعة الدرس مرة أخرى لتعميق فهمك لبركات وثمار الصليب.";
+                emoji = "📖";
+            }
+            
+            document.getElementById('result-message').innerText = message;
+            document.getElementById('result-emoji').innerText = emoji;
+        }
+
+        // إعادة ضبط اللعبة
+        function resetGame() {
+            document.getElementById('result-screen').classList.remove('active');
+            document.getElementById('start-screen').classList.add('active');
+        }
+    </script>
+</body>
+</html>
