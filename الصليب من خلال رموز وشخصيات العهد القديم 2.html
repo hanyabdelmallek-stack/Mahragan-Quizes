@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إختبر معلوماتك _ الصليب من خلال رموز وشخصيات العهد القديم _ الجزء الثانى</title>
+    <style>
+        /* التنسيقات الأساسية */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            transition: background-color 0.5s;
+            overflow-x: hidden;
+        }
+
+        /* شاشة التحذير الخفيف (الإجابة الخاطئة) */
+        body.warning {
+            background: linear-gradient(135deg, #ffe6e6 0%, #ffcccc 100%);
+        }
+
+        /* حاوية اللعبة */
+        #game-container {
+            background: white;
+            width: 90%;
+            max-width: 800px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            position: relative;
+            text-align: center;
+            border: 4px solid #4a90e2;
+        }
+
+        /* شاشة البداية والنهاية */
+        .screen {
+            display: none;
+        }
+        .screen.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 {
+            color: #2c3e50;
+            font-size: 2.2em;
+            margin-bottom: 10px;
+            line-height: 1.3;
+        }
+        
+        p.subtitle {
+            color: #7f8c8d;
+            font-size: 1.2em;
+            margin-bottom: 30px;
+        }
+
+        /* الأزرار الرئيسية */
+        .btn-main {
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.5em;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(74, 144, 226, 0.4);
+            transition: transform 0.2s, background-color 0.2s;
+        }
+        .btn-main:hover {
+            transform: scale(1.05);
+            background-color: #357abd;
+        }
+
+        /* شريط التقدم */
+        #progress-ribbon {
+            background-color: #f1c40f;
+            color: #2c3e50;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 20px;
+            display: inline-block;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        /* مستوى الصعوبة */
+        .difficulty-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 15px;
+            color: white;
+            font-size: 0.9em;
+            margin-right: 15px;
+            font-weight: bold;
+        }
+        .diff-easy { background-color: #2ecc71; }
+        .diff-medium { background-color: #f39c12; }
+        .diff-hard { background-color: #e74c3c; }
+
+        /* منطقة السؤال */
+        #question-text {
+            font-size: 1.5em;
+            color: #34495e;
+            margin: 20px 0 30px;
+            line-height: 1.5;
+            font-weight: bold;
+        }
+
+        /* خيارات الإجابة */
+        #options-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        @media (max-width: 600px) {
+            #options-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .option-btn {
+            background-color: #ecf0f1;
+            border: 2px solid #bdc3c7;
+            padding: 15px;
+            font-size: 1.15em;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #2c3e50;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1.3;
+        }
+
+        .option-btn:hover {
+            background-color: #e0e6ed;
+            border-color: #3498db;
+            transform: translateY(-3px);
+        }
+
+        .option-btn.correct {
+            background-color: #2ecc71 !important;
+            color: white !important;
+            border-color: #27ae60 !important;
+            box-shadow: 0 0 20px rgba(46, 204, 113, 0.6);
+            transform: scale(1.05);
+        }
+
+        .option-btn.wrong {
+            background-color: #e74c3c !important;
+            color: white !important;
+            border-color: #c0392b !important;
+            animation: shake 0.4s;
+        }
+
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+
+        /* تأثير النجوم الساطعة */
+        .star {
+            position: absolute;
+            font-size: 2em;
+            pointer-events: none;
+            animation: flyStar 1s ease-out forwards;
+            z-index: 10;
+        }
+
+        @keyframes flyStar {
+            0% { opacity: 1; transform: translate(0, 0) scale(1); }
+            100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(2); }
+        }
+
+        /* النتيجة النهائية */
+        .result-icon {
+            font-size: 5em;
+            margin-bottom: 10px;
+        }
+        #final-score {
+            font-size: 2.5em;
+            color: #d35400;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        
+        <!-- شاشة البداية -->
+        <div id="start-screen" class="screen active">
+            <h1>إختبر معلوماتك _ الصليب من خلال رموز وشخصيات العهد القديم _ الجزء الثانى</h1>
+            <p class="subtitle">يَعْظُمُ انْتِصَارُنَا بِالَّذِي أَحَبَّنَا (رو 37:8)</p>
+            <p style="font-size: 1.2em; color: #555; margin-bottom: 30px;">
+                مرحباً بك! استعد لاختبار معلوماتك حول رموز الصليب المتمثلة في سلم يعقوب، بركته، قصة يوسف الصديق، وخروف الفصح.
+            </p>
+            <button class="btn-main" onclick="startGame()">▶️ ابدأ اللعب الآن</button>
+        </div>
+
+        <!-- شاشة الأسئلة -->
+        <div id="game-screen" class="screen">
+            <div>
+                <span id="progress-ribbon">السؤال ١ من ٣٠</span>
+                <span id="difficulty-badge" class="difficulty-badge">سهل</span>
+            </div>
+            
+            <div id="question-text">نص السؤال يظهر هنا...</div>
+            
+            <div id="options-container">
+                <!-- الأزرار ستُضاف هنا -->
+            </div>
+        </div>
+
+        <!-- شاشة النتيجة -->
+        <div id="result-screen" class="screen">
+            <div class="result-icon" id="result-emoji">🏆</div>
+            <h1>اكتملت المسابقة بنجاح!</h1>
+            <div id="final-score">نتيجتك: 0 / 30</div>
+            <p id="result-message" style="font-size: 1.3em; margin-bottom: 30px; color: #34495e;"></p>
+            <button class="btn-main" onclick="resetGame()">🔄 العب مرة أخرى</button>
+        </div>
+
+    </div>
+
+    <script>
+        const questions = [
+            {
+                q: "رأى يعقوب في حلمه سلماً منصوبة على الأرض ورأسها يمس السماء، والرب واقف عليها. إلى ماذا يشير هذا السلم؟[cite: 5]",
+                options: ["خشبة الصليب التي علق عليها السيد المسيح فصالح السمائيين بالأرضيين[cite: 5]", "برج بابل[cite: 5]", "الهروب من عيسو[cite: 5]", "صعود الملائكة فقط[cite: 5]"],
+                answer: 0, difficulty: "سهل", diffClass: "diff-easy"
+            },
+            {
+                q: "لمن قال السيد المسيح مشيراً لسلم يعقوب: 'مِنَ الآنَ تَرَوْنَ السَّمَاءَ مَفْتُوحَةً، وَمَلَائِكَةَ اللهِ يَصْعَدُونَ وَيَنْزِلُونَ عَلَى ابْنِ الإِنْسَانِ'؟[cite: 5]",
+                options: ["نيقوديموس[cite: 5]", "نثنائيل[cite: 5]", "بطرس[cite: 5]", "يوحنا[cite: 5]"],
+                answer: 1, difficulty: "متوسط", diffClass: "diff-medium"
+            },
+            {
+                q: "عندما بارك يعقوب ابني يوسف، وضع يده اليمنى على رأس الابن الأصغر الذي يُدعى...[cite: 5]",
+                options: ["منسى[cite: 5]", "رأوبين[cite: 5]", "أفرايم[cite: 5]", "بنيامين[cite: 5]"],
+                answer: 2, difficulty: "سهل", diffClass: "diff-easy"
+            },
+            {
+                q: "في بركة يعقوب لابني يوسف، سبط منسى (البكر) يشير للشعب اليهودي، بينما سبط أفرايم (الصغير) يشير إلى...[cite: 5]",
+                options: ["الوثنيين الذين رفضوا الإيمان[cite: 5]", "الأمم الذين قبلوا الإيمان بالمصلوب فتزايد عددهم جداً[cite: 5]", "الكهنة فقط[cite: 5]", "الأنبياء[cite: 5]"],
+                answer: 1, difficulty: "متوسط", diffClass: "diff-medium"
+            },
+            {
+                q: "وضع يعقوب يديه متقاطعتين ليبارك أفرايم ومنسى كان يمثل صنع مثال للصليب.[cite: 5]",
+                options: ["صح[cite: 5]", "خطأ[cite: 5]"],
+                answer: 0, difficulty: "سهل", diffClass: "diff-easy"
+            },
+            {
+                q: "بناءً على بركة يعقوب لابني يوسف، ما هو أول مكان رُشمت فيه علامة الصليب؟[cite: 5]",
+                options: ["أورشليم[cite: 5]", "أرض كنعان[cite: 5]", "أرض مصر[cite: 5]", "بابل[cite: 5]"],
+                answer: 2, difficulty: "صعب", diffClass: "diff-hard"
+            },
+            {
+                q: "أين نرى نفس اليدين المتقاطعتين على شكل صليب في طقس الكنيسة اليوم؟[cite: 5]",
+                options: ["أثناء قراءة الإنجيل[cite: 5]", "في كل قداس عند اختيار الحمل[cite: 5]", "عند التناول فقط[cite: 5]", "عند غسل الأيدي[cite: 5]"],
+                answer: 1, difficulty: "متوسط", diffClass: "diff-medium"
+            },
+            {
+                q: "كان يوسف الصديق موضع حب أبيه وصنع له قميصاً ملوناً، وهذا يرمز لكون السيد المسيح...[cite: 5]",
+                options: ["ابن الله المحبوب[cite: 5]", "غريباً في الأرض[cite: 5]", "حزيناً دائماً[cite: 5]", "يعمل كنجار[cite: 5]"],
+                answer: 0, difficulty: "سهل", diffClass: "diff-easy"
+            },
+            {
+                q: "سار يوسف للميل الثاني لافتقاد سلامة إخوته في دوثان، كما أن السيد المسيح جاء ليفتقد سلامة العالم وخلاصه.[cite: 5]",
+                options: ["صح[cite: 5]", "خطأ[cite: 5]"],
+                answer: 0, difficulty: "متوسط", diffClass: "diff-medium"
+            },
+            {
+                q: "يوسف حسده إخوته وطرحوه في البئر (للموت) ثم خرج حياً، وهذا يرمز لـ...[cite: 5]",
+                options: ["السفر لمصر[cite: 5]", "المسيح الذي وضع في جوف القبر وقام حياً منتصراً على الموت[cite: 5]", "معجزة إشباع الجموع[cite: 5]", "الشفاء من الأمراض[cite: 5]"],
+                answer: 1, difficulty: "سهل", diffClass: "diff-easy"
+            },
+            {
+                q: "بعد أن طرح الإخوة يوسف في البئر جلسوا ليأكلوا طعاماً، وهذا يشبه اليهود الذين بعد تآمرهم على المسيح جلسوا ليأكلوا...[cite: 5]",
+                options: ["المن[cite: 5]", "الفصح[cite: 5]", "الخبز المختمر[cite: 5]", "الذبائح الوثنية[cite: 5]"],
+                answer: 1, difficulty: "متوسط", diffClass: "diff-medium"
+            },
+            {
+                q: "إخوة يوسف باعوه بـ ٢٠ من الفضة، بينما باع يهوذا السيد المسيح للكهنة بـ...[cite: 5]",
+                options: ["عشرين من الفضة[cite: 5]", "ثلاثين من الفضة[cite: 5]", "أربعين من الفضة[cite: 5]", "خمسين من الفضة[cite: 5]"],
+                answer: 1, difficulty: "سهل", diffClass: "diff-easy"
+            },
+            {
+                q: "غمس إخوة يوسف قميصه في الدم، وهذا يرمز للذين صلبوا السيد المسيح حينما...[cite: 5]",
+                options: ["نزعوا عنه ثيابه الملطخة بالدم وألقوا عليها قرعة[cite: 5]", "ألبسوه ثوباً أبيض[cite: 5]", "أعطوه خلاً[cite: 5]", "غسلوا أيديهم[cite: 5]"],
+                answer: 0, difficulty: "صعب", diffClass: "diff-hard"
+            },
+            {
+                q: "إلى ماذا يشير رئيس السقاة ورئيس الخبازين اللذان كانا مع يوسف في السجن (أحدهما نال الحياة والآخر الموت)؟[cite: 5]",
+                options: ["إلى بيلاطس وهيرودس[cite: 5]", "إلى اللصين اللذين صلبا مع السيد المسيح[cite: 5]", "إلى الفريسيين والصدوقيين[cite: 5]", "إلى بطرس ويهوذا[cite: 5]"],
+                answer: 1, difficulty: "متوسط", diffClass: "diff-medium"
+            },
+            {
+                q: "يوسف رُفض من إخوته وقبلته مصر وتزوج أجنبية، وهذا يرمز للسيد المسيح المرفوض من اليهود والذي اقترن بـ...[cite: 5]",
+                options: ["الرومان فقط[cite: 5]", "كنيسة الأمم[cite: 5]", "الكهنة[cite: 5]", "الملائكة[cite: 5]"],
+                answer: 1, difficulty: "متوسط", diffClass: "diff-medium"
+            },
+            {
+                q: "دعا فرعون يوسف 'صفنات فعنيح' أي المخلص الذي يعطي الحياة، وبدأ يدبر مصر وهو في عمر...[cite: 5]",
+                options: ["العشرين[cite: 5]", "الثلاثين[cite: 5]", "الأربعين[cite: 5]", "الخمسين[cite: 5]"],
+                answer: 1, difficulty: "سهل", diffClass: "diff-easy"
+            },
+            {
+                q: "اشترى يوسف المصريين وممتلكاتهم فنالوا الحياة، والسيد المسيح اشترانا بدمه وجعلنا...[cite: 5]",
+                options: ["عبيداً للناموس[cite: 5]", "ملوكاً وكهنة[cite: 5]", "أغنياء في الأرض[cite: 5]", "أقوياء جسدياً[cite: 5]"],
+                answer: 1, difficulty: "صعب", diffClass: "diff-hard"
+            },
+            {
+                q: "كانت وصية يوسف لإخوته 'لا تتغاضبوا في الطريق'، وتطابق وصية السيد المسيح للرسل:[cite: 5]",
+                options: ["لا تخافوا من الذين يقتلون الجسد[cite: 5]", "هذه هي وصيتي أن تحبوا بعضكم بعضاً كما أحببتكم[cite: 5]", "اذهبوا وتلمذوا جميع الأمم[cite: 5]", "اسهروا وصلوا[cite: 5]"],
+                answer: 1, difficulty: "سهل", diffClass: "diff-easy"
+            },
+            {
+                q: "خروف الفصح كان ذكراً ابن سنة من الخرفان أو المواعز، إشارة للسيد المسيح الذي...[cite: 5]",
+                options: ["قدم ذاته في عنفوان شبابه كحمل وديع[cite: 5]", "وُلد في بيت لحم[cite: 5]", "صام أربعين يوماً[cite: 5]", "عاش فقيراً[cite: 5]"],
+                answer: 0, difficulty: "سهل", diffClass: "diff-easy"
+            },
+            {
+                q: "ظل خروف الفصح تحت الحفظ ٥ أيام، وكذلك دخل ربنا يسوع أورشليم وظل تحت الحفظ أمام الكتبة من...[cite: 5]",
+                options: ["الاثنين للجمعة[cite: 5]", "أحد الشعانين إلى مساء الخميس[cite: 5]", "السبت للأربعاء[cite: 5]", "الخميس للأحد[cite: 5]"],
+                answer: 1, difficulty: "متوسط", diffClass: "diff-medium"
+            },
+            {
+                q: "ذُبح الفصح بواسطة كل جمهور إسرائيل في العشية، والسيد المسيح حكم عليه كل الجمهور وظل مرفوعاً حتى...[cite: 5]",
+                options: ["الصباح[cite: 5]", "الظهر[cite: 5]", "وقت الغروب[cite: 5]", "منتصف الليل[cite: 5]"],
+                answer: 2, difficulty: "متوسط", diffClass: "diff-medium"
+            },
+            {
+                q: "لماذا لم يوضع دم الفصح على العتبة السفلى للبيوت؟[cite: 5]",
+                options: ["لأن الدم كان قليلاً[cite: 5]", "لكي لا يُداس بالأقدام، لأن من يرفض الصليب يدوس دم العهد[cite: 5]", "لأن الملاك لا ينظر للأسفل[cite: 5]", "لأنه سريع الجفاف[cite: 5]"],
+                answer: 1, difficulty: "صعب", diffClass: "diff-hard"
+            },
+            {
+                q: "بحسب القديس هيبوليتس الروماني، الدم على العتبة العليا يشير للكنيسة، والقائمتان يشيران إلى...[cite: 5]",
+                options: ["الأنبياء والرسل[cite: 5]", "اليهود والأمم[cite: 5]", "الملائكة والبشر[cite: 5]", "السماء والأرض[cite: 5]"],
+                answer: 1, difficulty: "صعب", diffClass: "diff-hard"
+            },
+            {
+                q: "كان خروف الفصح يُشوى على سيخين متعامدين، وهذا يرمز لـ...[cite: 5]",
+                options: ["عارضتي الصليب[cite: 5]", "العصا والرمح[cite: 5]", "السيف والخنجر[cite: 5]", "أعمدة الهيكل[cite: 5]"],
+                answer: 0, difficulty: "سهل", diffClass: "diff-easy"
+            },
+            {
+                q: "يُسوى الفصح على أعشاب مرة إشارة إلى...[cite: 5]",
+                options: ["الجوع والعطش[cite: 5]", "الآلام النفسية التي جاز فيها ربنا يسوع 'نفسي حزينة جداً'[cite: 5]", "فقر الشعب اليهودي[cite: 5]", "مرارة العبودية في مصر فقط[cite: 5]"],
+                answer: 1, difficulty: "متوسط", diffClass: "diff-medium"
+            },
+            {
+                q: "يؤكل الفصح بالكامل ولا يُبقى منه للصباح، ولذلك في الكنيسة يمسح الكاهن الصينية لئلا تبقى جوهرة من الجسد لليوم التالي.[cite: 5]",
+                options: ["صح[cite: 5]", "خطأ[cite: 5]"],
+                answer: 0, difficulty: "سهل", diffClass: "diff-easy"
+            },
+            {
+                q: "كل إنسان غير مختون لا يأكل الفصح، والختان رمز لسر المعمودية، فالإنسان غير المعمد لا يشترك في وليمة القداس.[cite: 5]",
+                options: ["صح[cite: 5]", "خطأ[cite: 5]"],
+                answer: 0, difficulty: "سهل", diffClass: "diff-easy"
+            },
+            {
+                q: "حقق السيد المسيح شرط 'عظماً لا تكسروا منه' عندما أرادوا كسر ساقيه على الصليب فوجدوه قد مات.[cite: 5]",
+                options: ["صح[cite: 5]", "خطأ[cite: 5]"],
+                answer: 0, difficulty: "متوسط", diffClass: "diff-medium"
+            },
+            {
+                q: "كلمة 'الفصح' معناها العبور، وكما عبر الفصح بإسرائيل هكذا عبر المصلوب بنا من الموت الأبدي للحياة الأبدية.[cite: 5]",
+                options: ["صح[cite: 5]", "خطأ[cite: 5]"],
+                answer: 0, difficulty: "سهل", diffClass: "diff-easy"
+            },
+            {
+                q: "حدثت رموز كثيرة للصليب في مصر (مثل الفصح، عبور البحر، الحية النحاسية)، لذلك يقول سفر الرؤيا 'ومصر، حيث...'[cite: 5]",
+                options: ["بُني الهيكل[cite: 5]", "صُلب ربنا[cite: 5]", "أكلوا المن[cite: 5]", "وُلد موسى[cite: 5]"],
+                answer: 1, difficulty: "صعب", diffClass: "diff-hard"
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let firstAttempt = true;
+
+        function startGame() {
+            document.getElementById('start-screen').classList.remove('active');
+            document.getElementById('game-screen').classList.add('active');
+            currentQuestionIndex = 0;
+            score = 0;
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            firstAttempt = true;
+            const q = questions[currentQuestionIndex];
+            
+            document.getElementById('progress-ribbon').innerText = `السؤال ${currentQuestionIndex + 1} من ${questions.length}`;
+            
+            const badge = document.getElementById('difficulty-badge');
+            badge.innerText = q.difficulty;
+            badge.className = `difficulty-badge ${q.diffClass}`;
+
+            document.getElementById('question-text').innerText = q.q;
+
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+            
+            q.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerText = opt;
+                btn.onclick = () => checkAnswer(index, btn);
+                optionsContainer.appendChild(btn);
+            });
+            
+            if (q.options.length === 2) {
+                optionsContainer.style.gridTemplateColumns = '1fr 1fr';
+            } else {
+                optionsContainer.style.gridTemplateColumns = window.innerWidth > 600 ? '1fr 1fr' : '1fr';
+            }
+        }
+
+        function checkAnswer(selectedIndex, button) {
+            const q = questions[currentQuestionIndex];
+            
+            if (selectedIndex === q.answer) {
+                button.classList.add('correct');
+                
+                const allButtons = document.querySelectorAll('.option-btn');
+                allButtons.forEach(btn => btn.style.pointerEvents = 'none');
+
+                if (firstAttempt) score++;
+                
+                showStarsEffect(button);
+                document.body.classList.remove('warning');
+
+                setTimeout(() => {
+                    currentQuestionIndex++;
+                    if (currentQuestionIndex < questions.length) {
+                        loadQuestion();
+                    } else {
+                        showResult();
+                    }
+                }, 1500);
+
+            } else {
+                firstAttempt = false;
+                button.classList.add('wrong');
+                button.style.pointerEvents = 'none'; 
+                
+                document.body.classList.add('warning');
+                setTimeout(() => document.body.classList.remove('warning'), 500);
+            }
+        }
+
+        function showStarsEffect(button) {
+            const rect = button.getBoundingClientRect();
+            const x = rect.left + rect.width / 2;
+            const y = rect.top + rect.height / 2;
+
+            for (let i = 0; i < 8; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.innerText = '✨';
+                star.style.left = x + 'px';
+                star.style.top = y + 'px';
+                
+                const angle = Math.random() * Math.PI * 2;
+                const distance = 80 + Math.random() * 50;
+                star.style.setProperty('--tx', `${Math.cos(angle) * distance}px`);
+                star.style.setProperty('--ty', `${Math.sin(angle) * distance}px`);
+                
+                document.body.appendChild(star);
+                
+                setTimeout(() => star.remove(), 1000);
+            }
+        }
+
+        function showResult() {
+            document.getElementById('game-screen').classList.remove('active');
+            document.getElementById('result-screen').classList.add('active');
+            
+            document.getElementById('final-score').innerText = `النتيجة: ${score} من ${questions.length}`;
+            
+            let message = "";
+            let emoji = "";
+            
+            if (score === questions.length) {
+                message = "ممتاز جداً! أنت ملم بكل تفاصيل رموز العهد القديم المتبقية بقوة.";
+                emoji = "👑";
+            } else if (score >= 20) {
+                message = "رائع! أداء جميل جداً ومجهود مقدر، استمر في دراستك وتأملاتك.";
+                emoji = "🌟";
+            } else {
+                message = "محاولة جيدة! نرجو مراجعة الدرس مرة أخرى لتعميق فهمك لرموز الصليب كخروف الفصح ويوسف الصديق.";
+                emoji = "📖";
+            }
+            
+            document.getElementById('result-message').innerText = message;
+            document.getElementById('result-emoji').innerText = emoji;
+        }
+
+        function resetGame() {
+            document.getElementById('result-screen').classList.remove('active');
+            document.getElementById('start-screen').classList.add('active');
+        }
+    </script>
+</body>
+</html>
