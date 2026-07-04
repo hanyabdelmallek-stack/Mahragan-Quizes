@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الصليب.. قوة ومجد ورسالة</title>
+    <style>
+        /* التنسيقات الأساسية */
+        body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%); display: flex; justify-content: center; align-items: center; min-height: 100vh; transition: background-color 0.5s; overflow-x: hidden; }
+        body.warning { background: linear-gradient(135deg, #ffe6e6 0%, #ffcccc 100%); }
+        #game-container { background: white; width: 90%; max-width: 800px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); padding: 30px; position: relative; text-align: center; border: 4px solid #4a90e2; }
+        .screen { display: none; }
+        .screen.active { display: block; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        h1 { color: #2c3e50; font-size: 2.2em; margin-bottom: 10px; line-height: 1.3; }
+        p.subtitle { color: #7f8c8d; font-size: 1.2em; margin-bottom: 30px; }
+        .btn-main { background-color: #4a90e2; color: white; border: none; padding: 15px 40px; font-size: 1.5em; border-radius: 50px; cursor: pointer; box-shadow: 0 5px 15px rgba(74, 144, 226, 0.4); transition: transform 0.2s, background-color 0.2s; }
+        .btn-main:hover { transform: scale(1.05); background-color: #357abd; }
+        #progress-ribbon { background-color: #f1c40f; color: #2c3e50; padding: 10px 20px; border-radius: 20px; font-size: 1.2em; font-weight: bold; margin-bottom: 20px; display: inline-block; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .difficulty-badge { display: inline-block; padding: 5px 15px; border-radius: 15px; color: white; font-size: 0.9em; margin-right: 15px; font-weight: bold; }
+        .diff-easy { background-color: #2ecc71; } .diff-medium { background-color: #f39c12; } .diff-hard { background-color: #e74c3c; }
+        #question-text { font-size: 1.5em; color: #34495e; margin: 20px 0 30px; line-height: 1.5; font-weight: bold; }
+        #options-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .option-btn { background-color: #ecf0f1; border: 2px solid #bdc3c7; padding: 15px; font-size: 1.15em; border-radius: 15px; cursor: pointer; transition: all 0.3s; color: #2c3e50; font-weight: bold; display: flex; align-items: center; justify-content: center; line-height: 1.3; }
+        .option-btn:hover { background-color: #e0e6ed; border-color: #3498db; transform: translateY(-3px); }
+        .option-btn.correct { background-color: #2ecc71 !important; color: white !important; border-color: #27ae60 !important; box-shadow: 0 0 20px rgba(46, 204, 113, 0.6); transform: scale(1.05); }
+        .option-btn.wrong { background-color: #e74c3c !important; color: white !important; border-color: #c0392b !important; animation: shake 0.4s; }
+        @keyframes shake { 0% { transform: translateX(0); } 25% { transform: translateX(-5px); } 50% { transform: translateX(5px); } 75% { transform: translateX(-5px); } 100% { transform: translateX(0); } }
+        .star { position: absolute; font-size: 2em; pointer-events: none; animation: flyStar 1s ease-out forwards; z-index: 10; }
+        @keyframes flyStar { 0% { opacity: 1; transform: translate(0, 0) scale(1); } 100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(2); } }
+        #final-score { font-size: 2.5em; color: #d35400; font-weight: bold; margin: 20px 0; }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <div id="start-screen" class="screen active">
+            <h1>الصليب.. قوة ومجد ورسالة</h1>
+            <p class="subtitle">يَعْظُمُ انْتِصَارُنَا بِالَّذِي أَحَبَّنَا (رو 37:8)</p>
+            <p style="font-size: 1.2em; color: #555; margin-bottom: 30px;">اختبر معلوماتك حول قوة الصليب ومجده، وكيف نعيش رسالة حمل الصليب في حياتنا اليومية.</p>
+            <button class="btn-main" onclick="startGame()">▶️ ابدأ اللعب الآن</button>
+        </div>
+
+        <div id="game-screen" class="screen">
+            <div><span id="progress-ribbon">السؤال ١ من ٣٠</span><span id="difficulty-badge" class="difficulty-badge">سهل</span></div>
+            <div id="question-text"></div>
+            <div id="options-container"></div>
+        </div>
+
+        <div id="result-screen" class="screen">
+            <div class="result-icon" id="result-emoji">🏆</div>
+            <h1>اكتملت المسابقة!</h1>
+            <div id="final-score"></div>
+            <p id="result-message" style="font-size: 1.3em; margin-bottom: 30px; color: #34495e;"></p>
+            <button class="btn-main" onclick="resetGame()">🔄 العب مرة أخرى</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {q: "ماذا فعل الصليب بالخليقة بحسب النص؟[cite: 9]", options: ["تركها كما هي", "رفعها من دائرة العصيان للمصالحة", "أهلكها", "جعلها تعيش في الخوف"], answer: 1, difficulty: "سهل", diffClass: "diff-easy"},
+            {q: "الصليب في حياة السيد المسيح ليس حادثة عرضية بل...[cite: 9]", options: ["شيء طارئ", "غاية ونهج شمل حياته كلها", "خيار بديل", "مجرد موت"], answer: 1, difficulty: "متوسط", diffClass: "diff-medium"},
+            {q: "لماذا تكريم الصليب نابع من كرامة القيامة؟[cite: 9]", options: ["لأن الموت الذي باشره الرب أثمر قيامة", "لأن الصليب ذهبي", "لأن القيامة حدثت على الصليب", "لأن الصليب يرمز للقوة الجسدية"], answer: 0, difficulty: "متوسط", diffClass: "diff-medium"},
+            {q: "ماذا يعني السيد المسيح بقوله: 'وَأَنَا إِنِ ارْتَفَعْتُ عَنِ الْأَرْضِ أَجْذِبُ إِلَى الْجَمِيعَ'؟[cite: 9]", options: ["الصعود للسماء", "الموت على الصليب", "القيامة", "التجلي"], answer: 1, difficulty: "متوسط", diffClass: "diff-medium"},
+            {q: "احتمال الصليب 'مستهيناً بالخزي' هو علامة على...[cite: 9]", options: ["الضعف", "التلمذة الحقيقية", "الهروب من العالم", "عدم المبالاة"], answer: 1, difficulty: "سهل", diffClass: "diff-easy"},
+            {q: "ما الذي يحدث عندما نمتلك 'فكر المسيح'؟[cite: 9]", options: ["نفتخر بمعرفتنا", "نصبح في مصالحة مع الصليب", "ندين الآخرين", "نتجنب الآلام"], answer: 1, difficulty: "صعب", diffClass: "diff-hard"},
+            {q: "ماذا يحدث لمن يقرأ الإنجيل دون أن يكون له 'فكر المسيح' تجاه الصليب؟[cite: 9]", options: ["يصبح معلماً كاذباً", "يصبح قديساً", "يفهم كل الأسرار", "يصبح متواضعاً"], answer: 0, difficulty: "متوسط", diffClass: "diff-medium"},
+            {q: "أحد شروط التلمذة الحقيقية هو...[cite: 9]", options: ["الخدمة السهلة", "احتمال الخزي", "طلب المجد", "تجنب التجارب"], answer: 1, difficulty: "سهل", diffClass: "diff-easy"},
+            {q: "الصليب يحررنا من سلطان الخطية بأن...[cite: 9]", options: ["الإنسان العتيق قد صُلب مع المسيح", "الخطية لم تعد موجودة", "العالم انتهى", "الألم انتهى"], answer: 0, difficulty: "صعب", diffClass: "diff-hard"},
+            {q: "ماذا فعل السيد المسيح بالصك الذي كان ضدنا؟[cite: 9]", options: ["خبأه", "مسمره بالصليب", "نسيه", "أحرقه"], answer: 1, difficulty: "متوسط", diffClass: "diff-medium"},
+            {q: "ماذا فعل الصليب بالرياسات والسلاطين؟[cite: 9]", options: ["جَرَّدَهُمْ وأشهرهم جهاراً", "خاف منهم", "صالحهم", "تجاهلهم"], answer: 0, difficulty: "صعب", diffClass: "diff-hard"},
+            {q: "المصلوب لا زال يُنظر إليه في الرؤيا كـ...[cite: 9]", options: ["خروف مذبوح", "ملك عظيم", "قاضٍ صارم", "أسد خارج من سبط يهوذا"], answer: 0, difficulty: "متوسط", diffClass: "diff-medium"},
+            {q: "تعتبر 'حياة الروح' في الصليب مرتبطة بـ...[cite: 9]", options: ["الطهارة والقداسة", "العشرة والشركة مع الله", "الكرامة", "أورشليم السمائية"], answer: 1, difficulty: "متوسط", diffClass: "diff-medium"},
+            {q: "التصالح مع الصليب يتطلب أن نضع ذاتنا كما فعل المسيح ونطيع حتى...[cite: 9]", options: ["الخدمة", "الموت موت الصليب", "التسبيح", "الموت الطبيعي"], answer: 1, difficulty: "سهل", diffClass: "diff-easy"},
+            {q: "الصليب يرمز لـ 'أعظم حب' وهو أن يضع الإنسان...[cite: 9]", options: ["ماله", "نفسه لأجل أحبائه", "حكمته", "مكانه"], answer: 1, difficulty: "سهل", diffClass: "diff-easy"},
+            {q: "يقول النص أن 'حمل الصليب' هو علامة التلمذة الحقيقية من خلال...[cite: 9]", options: ["حفظ الوصية واحتمال المشقة", "كثرة الكلام", "الافتخار بالعلم", "المكانة الاجتماعية"], answer: 0, difficulty: "سهل", diffClass: "diff-easy"},
+            {q: "ما هي الغاية من الصليب في نظر القديس بولس في أفسس؟[cite: 9]", options: ["لِيَجْمَعَ كُلَّ شَيْءٍ فِي الْمَسِيحِ", "لِإِدَانَةِ الْعَالَمِ", "لِيُعْلِنَ سُلْطَةَ الْأَرْضِ", "لِإِبْطَالِ النَّامُوسِ"], answer: 0, difficulty: "صعب", diffClass: "diff-hard"},
+            {q: "قبل أن يتمجد المسيح، كان يوحنا يرى أن الصليب هو...[cite: 9]", options: ["المجد", "الخزي", "البداية", "النهاية"], answer: 0, difficulty: "متوسط", diffClass: "diff-medium"},
+            {q: "طاعة المسيح للآب في الصليب أثبتت...[cite: 9]", options: ["برهان حبه الأبدي للإنسان", "أنه يخاف من الآب", "أنه يريد التخلص من العالم", "ضعف الطبيعة البشرية"], answer: 0, difficulty: "سهل", diffClass: "diff-easy"},
+            {q: "الصليب هو مصدر كل...[cite: 9]", options: ["ارتفاع ومجد", "خوف ودينونة", "جهل وعثرة", "غنى أرضي"], answer: 0, difficulty: "سهل", diffClass: "diff-easy"},
+            {q: "الافتخار الوحيد للمؤمن هو...[cite: 9]", options: ["قوته", "صليب ربنا يسوع المسيح", "نسبه", "أعماله"], answer: 1, difficulty: "سهل", diffClass: "diff-easy"},
+            {q: "تتميم إرادة الله حتى الموت تظهر في قول المسيح في جثسيماني...[cite: 9]", options: ["لتكن لا إرادتي بل إرادتك", "سأقاوم حتى النهاية", "أين الملائكة؟", "كفاني ألماً"], answer: 0, difficulty: "متوسط", diffClass: "diff-medium"},
+            {q: "الشرط الأول للتلمذة المذكور في النص هو...[cite: 9]", options: ["بذل النفس", "كثرة الخدمة", "القوة", "العلم"], answer: 0, difficulty: "سهل", diffClass: "diff-easy"},
+            {q: "الصليب قاتل لروح...[cite: 9]", options: ["المحبة", "العداوة", "الخدمة", "العمل"], answer: 1, difficulty: "سهل", diffClass: "diff-easy"},
+            {q: "الصليب هو الذي حقق...[cite: 9]", options: ["الصلح بين السماويين والأرضيين", "زيادة الدينونة", "الافتخار بالذات", "تمجيد العالم"], answer: 0, difficulty: "متوسط", diffClass: "diff-medium"},
+            {q: "بموت المسيح (رئيس الكهنة الأعظم) نال المؤمنون...[cite: 9]", options: ["الموت", "الغفران والفداء", "الخوف", "الفشل"], answer: 1, difficulty: "سهل", diffClass: "diff-easy"},
+            {q: "الإنسان الذي ليس له 'فكر المسيح' يجعل تعليم الإنجيل...[cite: 9]", options: ["للدينونة والافتخار", "للخلاص", "للمحبة", "للطاعة"], answer: 0, difficulty: "صعب", diffClass: "diff-hard"},
+            {q: "التشبه بموت المسيح يعني...[cite: 9]", options: ["احتمال الآلام", "الهروب من الألم", "الخوف من الموت", "طلب المجد"], answer: 0, difficulty: "متوسط", diffClass: "diff-medium"},
+            {q: "بسط يدي المسيح كان 'طول النهار' لقبول...[cite: 9]", options: ["الشعب المتمرّد", "الأبرار فقط", "الرسل فقط", "المؤمنين فقط"], answer: 0, difficulty: "صعب", diffClass: "diff-hard"},
+            {q: "كلمة 'لابسي الصليب' تعني...[cite: 9]", options: ["الجهاد في السير خلف السيد المسيح", "لبس صليب ذهبي فقط", "حفظ قوانين الكنيسة فقط", "الظهور بمظهر المتدينين"], answer: 0, difficulty: "متوسط", diffClass: "diff-medium"}
+        ];
+
+        let currentQuestionIndex = 0, score = 0, firstAttempt = true;
+        function startGame() { document.getElementById('start-screen').classList.remove('active'); document.getElementById('game-screen').classList.add('active'); currentQuestionIndex = 0; score = 0; loadQuestion(); }
+        function loadQuestion() {
+            firstAttempt = true;
+            const q = questions[currentQuestionIndex];
+            document.getElementById('progress-ribbon').innerText = `السؤال ${currentQuestionIndex + 1} من ${questions.length}`;
+            const badge = document.getElementById('difficulty-badge'); badge.innerText = q.difficulty; badge.className = `difficulty-badge ${q.diffClass}`;
+            document.getElementById('question-text').innerText = q.q;
+            const optionsContainer = document.getElementById('options-container'); optionsContainer.innerHTML = '';
+            q.options.forEach((opt, index) => {
+                const btn = document.createElement('button'); btn.className = 'option-btn'; btn.innerText = opt; btn.onclick = () => checkAnswer(index, btn); optionsContainer.appendChild(btn);
+            });
+        }
+        function checkAnswer(selectedIndex, button) {
+            if (selectedIndex === questions[currentQuestionIndex].answer) {
+                button.classList.add('correct');
+                const allButtons = document.querySelectorAll('.option-btn'); allButtons.forEach(btn => btn.style.pointerEvents = 'none');
+                if (firstAttempt) score++;
+                showStarsEffect(button);
+                document.body.classList.remove('warning');
+                setTimeout(() => { currentQuestionIndex++; currentQuestionIndex < questions.length ? loadQuestion() : showResult(); }, 1500);
+            } else {
+                firstAttempt = false; button.classList.add('wrong'); button.style.pointerEvents = 'none';
+                document.body.classList.add('warning'); setTimeout(() => document.body.classList.remove('warning'), 500);
+            }
+        }
+        function showStarsEffect(button) {
+            const rect = button.getBoundingClientRect();
+            const x = rect.left + rect.width / 2; const y = rect.top + rect.height / 2;
+            for (let i = 0; i < 8; i++) {
+                const star = document.createElement('div'); star.className = 'star'; star.innerText = '✨';
+                star.style.left = x + 'px'; star.style.top = y + 'px';
+                const angle = Math.random() * Math.PI * 2; const distance = 80 + Math.random() * 50;
+                star.style.setProperty('--tx', `${Math.cos(angle) * distance}px`);
+                star.style.setProperty('--ty', `${Math.sin(angle) * distance}px`);
+                document.body.appendChild(star);
+                setTimeout(() => star.remove(), 1000);
+            }
+        }
+        function showResult() {
+            document.getElementById('game-screen').classList.remove('active'); document.getElementById('result-screen').classList.add('active');
+            document.getElementById('final-score').innerText = `النتيجة: ${score} من ${questions.length}`;
+            let message = score === questions.length ? "ممتاز جداً! أنت ملم بكل تفاصيل هذا الدرس ببراعة." : (score >= 20 ? "رائع! أداء جميل جداً ومجهود مقدر." : "محاولة جيدة! نرجو مراجعة الدرس مرة أخرى.");
+            document.getElementById('result-message').innerText = message;
+            document.getElementById('result-emoji').innerText = score === questions.length ? "👑" : "🌟";
+        }
+        function resetGame() { document.getElementById('result-screen').classList.remove('active'); document.getElementById('start-screen').classList.add('active'); }
+    </script>
+</body>
+</html>
