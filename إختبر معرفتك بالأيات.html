@@ -5,9 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>إختبر معرفتك بالأيات</title>
     <style>
+        /* التنسيقات الأساسية */
         body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%); display: flex; justify-content: center; align-items: center; min-height: 100vh; transition: background-color 0.5s; overflow-x: hidden; }
         body.warning { background: linear-gradient(135deg, #ffe6e6 0%, #ffcccc 100%); }
-        #game-container { background: white; width: 90%; max-width: 800px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); padding: 30px; position: relative; text-align: center; border: 4px solid #4a90e2; }
+        #game-container { background: white; width: 90%; max-width: 850px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); padding: 30px; position: relative; text-align: center; border: 4px solid #4a90e2; }
         .screen { display: none; } .screen.active { display: block; animation: fadeIn 0.5s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         h1 { color: #2c3e50; font-size: 2.2em; margin-bottom: 10px; line-height: 1.3; }
@@ -15,12 +16,11 @@
         .btn-main { background-color: #4a90e2; color: white; border: none; padding: 15px 40px; font-size: 1.5em; border-radius: 50px; cursor: pointer; box-shadow: 0 5px 15px rgba(74, 144, 226, 0.4); transition: transform 0.2s, background-color 0.2s; }
         .btn-main:hover { transform: scale(1.05); background-color: #357abd; }
         #progress-ribbon { background-color: #f1c40f; color: #2c3e50; padding: 10px 20px; border-radius: 20px; font-size: 1.2em; font-weight: bold; margin-bottom: 20px; display: inline-block; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .difficulty-badge { display: inline-block; padding: 5px 15px; border-radius: 15px; color: white; font-size: 0.9em; margin-right: 15px; font-weight: bold; }
-        .diff-easy { background-color: #2ecc71; } .diff-medium { background-color: #f39c12; } .diff-hard { background-color: #e74c3c; }
-        #question-text { font-size: 1.5em; color: #34495e; margin: 20px 0 30px; line-height: 1.5; font-weight: bold; }
+        .difficulty-badge { display: inline-block; padding: 5px 15px; border-radius: 15px; color: white; font-size: 0.9em; margin-right: 15px; font-weight: bold; background-color: #e74c3c; }
+        #question-text { font-size: 1.4em; color: #34495e; margin: 20px 0 30px; line-height: 1.6; font-weight: bold; }
         #options-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         @media (max-width: 600px) { #options-container { grid-template-columns: 1fr; } }
-        .option-btn { background-color: #ecf0f1; border: 2px solid #bdc3c7; padding: 15px; font-size: 1.15em; border-radius: 15px; cursor: pointer; transition: all 0.3s; color: #2c3e50; font-weight: bold; display: flex; align-items: center; justify-content: center; line-height: 1.3; }
+        .option-btn { background-color: #ecf0f1; border: 2px solid #bdc3c7; padding: 15px; font-size: 1.15em; border-radius: 15px; cursor: pointer; transition: all 0.3s; color: #2c3e50; font-weight: bold; display: flex; align-items: center; justify-content: center; line-height: 1.4; text-align: center; }
         .option-btn:hover { background-color: #e0e6ed; border-color: #3498db; transform: translateY(-3px); }
         .option-btn.correct { background-color: #2ecc71 !important; color: white !important; border-color: #27ae60 !important; box-shadow: 0 0 20px rgba(46, 204, 113, 0.6); transform: scale(1.05); }
         .option-btn.wrong { background-color: #e74c3c !important; color: white !important; border-color: #c0392b !important; animation: shake 0.4s; }
@@ -28,6 +28,7 @@
         .star { position: absolute; font-size: 2em; pointer-events: none; animation: flyStar 1s ease-out forwards; z-index: 10; }
         @keyframes flyStar { 0% { opacity: 1; transform: translate(0, 0) scale(1); } 100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(2); } }
         #final-score { font-size: 2.5em; color: #d35400; font-weight: bold; margin: 20px 0; }
+        .option-letter { margin-left: 10px; color: #e67e22; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -35,11 +36,14 @@
         <div id="start-screen" class="screen active">
             <h1>إختبر معرفتك بالأيات</h1>
             <p class="subtitle">يَعْظُمُ انْتِصَارُنَا بِالَّذِي أَحَبَّنَا (رو 37:8)</p>
-            <p style="font-size: 1.2em; color: #555; margin-bottom: 30px;">اختبر حفظك وفهمك لجميع الآيات المقدسة التي وردت في كافة دروسنا السابقة.</p>
+            <p style="font-size: 1.2em; color: #555; margin-bottom: 30px;">تم إعداد هذا الاختبار الشامل ليغطي جميع الآيات الواردة في المنهج. الخيارات الآن موزعة بشكل عشوائي لتحدي حقيقي!</p>
             <button class="btn-main" onclick="startGame()">▶️ ابدأ الاختبار</button>
         </div>
         <div id="game-screen" class="screen">
-            <div><span id="progress-ribbon">السؤال ١ من ٣٠</span><span id="difficulty-badge" class="difficulty-badge">سهل</span></div>
+            <div>
+                <span id="progress-ribbon">السؤال ١</span>
+                <span id="difficulty-badge" class="difficulty-badge">تحدي شامل</span>
+            </div>
             <div id="question-text"></div>
             <div id="options-container"></div>
         </div>
@@ -48,90 +52,196 @@
             <h1>اكتمل الاختبار!</h1>
             <div id="final-score"></div>
             <p id="result-message" style="font-size: 1.3em; margin-bottom: 30px; color: #34495e;"></p>
-            <button class="btn-main" onclick="resetGame()">🔄 ابدأ من جديد</button>
+            <button class="btn-main" onclick="resetGame()">🔄 أعد الاختبار</button>
         </div>
     </div>
 
     <script>
         const questions = [
-            {q: "أكمل الآية: 'يَعْظُمُ انْتِصَارُنَا بِالَّذِي...'", options: ["أَحَبَّنَا (رو 37:8)", "خَلَقَنَا (رو 37:8)", "فَدَانَا (رو 37:8)", "أعطانا الحياة (رو 37:8)"], answer: 0},
-            {q: "ما هي الآية التي تقول: 'كَمَا رَفَعَ مُوسَى الْحَيَّةَ فِي الْبَرِّيَّةِ هَكَذَا يَنْبَغِي أَنْ يُرْفَعَ...'؟", options: ["ابْنُ الإِنْسَانِ (يو 14:3)", "الصَّلِيبُ (يو 14:3)", "المسيح (يو 14:3)", "الخلاص (يو 14:3)"], answer: 0},
-            {q: "أكمل: 'لأَنَّهُ كَمَا كَانَ يُونَانُ فِي بَطْنِ الْحُوتِ ثَلَاثَةَ أَيَّامٍ وَثَلاثَ لَيَال، هكَذَا يَكُونُ...' ", options: ["ابْنُ الإِنْسَانِ فِي قَلْبِ الأَرْضِ (مت 40:12)", "المسيح في القبر (مت 40:12)", "الخلاص في التاريخ (مت 40:12)", "آدم في الأرض (مت 40:12)"], answer: 0},
-            {q: "أكمل: 'الْمَحَبَّةَ قَوِيَّةٌ كَالْمَوْتِ.. مِيَاةٌ كَثِيرَةٌ لَا تَسْتَطِيعُ أَنْ تُطْفِئَ...' ", options: ["الْمَحَبَّةَ (نش 7:8)", "الروح (نش 7:8)", "الإيمان (نش 7:8)", "السلام (نش 7:8)"], answer: 0},
-            {q: "أكمل: 'مَنْ أَحَبَّ أَبًا أَوْ أَمَّا أَكْثَرَ مِنِّي...' ", options: ["فَلَا يَسْتَحِقْنِي (مت 37:10)", "فَلَا يَنْالُ الرَّحْمَةَ (مت 37:10)", "فَلَا يَدْخُلُ مَلَكُوتِي (مت 37:10)", "فَلَا يَكُونُ تِلْمِيذِي (مت 37:10)"], answer: 0},
-            {q: "أكمل: 'الْمَحَبَّةُ لاَ تَسْقُطُ...' ", options: ["أَبَدًا (1 كو 8:13)", "أَخِيرًا (1 كو 8:13)", "قَطُّ (1 كو 8:13)", "دَائِمًا (1 كو 8:13)"], answer: 0},
-            {q: "أكمل: 'تُحِبُّ الرَّبِّ إلهَكَ مِنْ كُلِّ قَلْبِكَ وَمِنْ كُلِّ نَفْسِكَ وَمِنْ كُلِّ...' ", options: ["قُوَّتِكَ (تث 5:6)", "فِكْرِكَ (تث 5:6)", "حَيَاتِكَ (تث 5:6)", "عَقْلِكَ (تث 5:6)"], answer: 0},
-            {q: "أكمل: 'مَحَبَّةَ الْعَالَمِ...' ", options: ["عَدَاوَةٌ لله (يع 4:4)", "بَاطِلٌ (يع 4:4)", "خَطِيَّةٌ (يع 4:4)", "غُرْبَةٌ (يع 4:4)"], answer: 0},
-            {q: "أكمل: 'يَا ابْنِي أَعْطِنِي...' ", options: ["قَلْبَكَ (أم 26:23)", "أُذُنَكَ (أم 26:23)", "حَيَاتَكَ (أم 26:23)", "وَقْتَكَ (أم 26:23)"], answer: 0},
-            {q: "أكمل: 'مَنْ سَيَفْصِلُنَا عَنْ...' ", options: ["مَحَبَّةِ الْمَسِيحِ (رو 35:8)", "قُوَّةِ الْمَسِيحِ (رو 35:8)", "عَذَابِ الْمَسِيحِ (رو 35:8)", "قُدْرَةِ الْمَسِيحِ (رو 35:8)"], answer: 0},
-            {q: "أكمل: 'وَلَمَّا قَالَ هَذَا ارْتَفَعَ وَهُمْ يَنْظُرُونَ. وَأَخَذَتْهُ...' ", options: ["سَحَابَةٌ عَنْ أَعْيُنِهِمْ (أع 9:1)", "مَلائِكَةٌ عَنْ أَعْيُنِهِمْ (أع 9:1)", "نُورٌ عَنْ أَعْيُنِهِمْ (أع 9:1)", "ريحٌ عَنْ أَعْيُنِهِمْ (أع 9:1)"], answer: 0},
-            {q: "أكمل: 'إِذْ مَحَا الصَّكَ الَّذِي عَلَيْنَا فِي الْفَرَائِضِ الَّذِي كَانَ ضِدًّا لَنَا، وَقَدْ رَفَعَهُ مِنَ الْوَسَطِ...' ", options: ["مُسَمِّرًا إِيَّاهُ بِالصَّلِيبِ (كو 14:2)", "رَامِيًا إِيَّاهُ بِالصَّلِيبِ (كو 14:2)", "مُحْرِقًا إِيَّاهُ بِالصَّلِيبِ (كو 14:2)", "مُقَطِّعًا إِيَّاهُ بِالصَّلِيبِ (كو 14:2)"], answer: 0},
-            {q: "أكمل: 'مَعَ الْمَسِيحِ صُلِبْتُ، فَأَحْيَا لَا أَنَا، بَلِ...' ", options: ["الْمَسِيحُ يَحْيَا فِيَّ (غل 20:2)", "الآبُ يَحْيَا فِيَّ (غل 20:2)", "الرُّوحُ يَحْيَا فِيَّ (غل 20:2)", "الخلاصُ يَحْيَا فِيَّ (غل 20:2)"], answer: 0},
-            {q: "أكمل: 'وَأَمَّا مِنْ جِهَتِي، فَحَاشَا لِي أَنْ أَفْتَخِرَ إِلَّا بِ...' ", options: ["صَلِيبِ رَبِّنَا يَسُوعَ الْمَسِيحِ (غل 14:6)", "قُوَّةِ رَبِّنَا يَسُوعَ الْمَسِيحِ (غل 14:6)", "عَظَمَةِ رَبِّنَا يَسُوعَ الْمَسِيحِ (غل 14:6)", "قيامة رَبِّنَا يَسُوعَ الْمَسِيحِ (غل 14:6)"], answer: 0},
-            {q: "أكمل: 'فَلْيَكُنْ فِيكُمْ هَذَا الْفِكْرُ الَّذِي فِي الْمَسِيحِ يَسُوعَ أَيْضًا: الَّذِي إِذْ كَانَ فِى صُورَةِ اللهِ...' ", options: ["لَمْ يَحْسِبْ خُلْسَةً أَنْ يَكُونَ مُعَادِلاً لِلهِ (في 5:2)", "تَوَاضَعَ وَسَارَ فِي الطَّرِيقِ (في 5:2)", "خَدَمَ الْجَمِيعَ بِحُبٍّ (في 5:2)", "صَارَ إِنْسَانًا لِيَفْدِيَنَا (في 5:2)"], answer: 0},
-            {q: "أكمل: 'لأَعْرِفَهُ، وَقُوَّةَ قِيَامَتِهِ، وَشَرِكَةَ...' ", options: ["آلامِهِ (في 10:3)", "خِدْمَتِهِ (في 10:3)", "مَجْدِهِ (في 10:3)", "حُبِّهِ (في 10:3)"], answer: 0},
-            {q: "أكمل: 'قَدْ أُكْمِلَ. وَنَكِّسَ رَأْسَهُ وَأَسْلَمَ...' ", options: ["الرُّوحَ (يو 30:19)", "النَّفْسَ (يو 30:19)", "الْجَسَدَ (يو 30:19)", "الْحَيَاةَ (يو 30:19)"], answer: 0},
-            {q: "أكمل: 'وَيُصَالِحَ الاثْنَيْنِ فِي جَسَدٍ وَاحِدٍ مَعَ اللهِ بِالصَّلِيبِ، قَاتِلاً...' ", options: ["الْعَدَاوَةَ بِهِ (أف 16:2)", "الخَطِيَّةَ بِهِ (أف 16:2)", "الْمَوْتَ بِهِ (أف 16:2)", "الظُّلْمَةَ بِهِ (أف 16:2)"], answer: 0},
-            {q: "أكمل: 'عَالِمِينَ هَذَا : أَنَّ إِنْسَانَنَا الْعَتِيقَ قَدْ صُلِبَ مَعَهُ لِيُبْطَلَ...' ", options: ["جَسَدُ الْخَطِيَّةِ (رو 6:6)", "سُلْطَانُ الْمَوْتِ (رو 6:6)", "شَرُّ الْعَالَمِ (رو 6:6)", "طَبِيعَةُ الْفَسَادِ (رو 6:6)"], answer: 0},
-            {q: "أكمل: 'مَحَبَّةَ الْمَسِيحِ، الَّتِي تَفُوقُ...' ", options: ["الْمَعْرِفَةَ (أف 19:3)", "كُلَّ شَيْءٍ (أف 19:3)", "كُلَّ حِكْمَةٍ (أف 19:3)", "كُلَّ قُوَّةٍ (أف 19:3)"], answer: 0},
-            {q: "أكمل: 'لِأَنَّ هَذَا الْفَاسِدَ لَابُدَّ أَنْ يَلْبَسَ...' ", options: ["عَدَمَ فَسَادٍ (1 كو 53:15)", "حَيَاةً جَدِيدَةً (1 كو 53:15)", "مَجْدًا جَدِيدًا (1 كو 53:15)", "نُورًا أَبَدِيًّا (1 كو 53:15)"], answer: 0},
-            {q: "أكمل: 'يَبْلَعُ الْمَوْتَ إِلَى الأَبَدِ، وَيَمْسَحُ السِّيدُ الرَّبُّ...' ", options: ["الدُّمُوعَ عَنْ كُلِّ الْوُجُوهِ (إش 8:25)", "الْحُزْنَ عَنِ الْبَشَرِ (إش 8:25)", "الضِّيقَ عَنِ النُّفُوسِ (إش 8:25)", "الخَطِيَّةَ عَنِ الْجَمِيعِ (إش 8:25)"], answer: 0},
-            {q: "أكمل: 'الْيَوْمَ تَكُونُ مَعِي فِي...' ", options: ["الْفِرْدَوْسِ (لو 43:23)", "الْمَلَكُوتِ (لو 43:23)", "السَّمَاوَاتِ (لو 43:23)", "مَجْدِي (لو 43:23)"], answer: 0},
-            {q: "أكمل: 'إِنِّي أَنَا حَيٌّ فَأَنْتُمْ...' ", options: ["سَتَحْيَوْنَ (يو 19:14)", "سَتَغْلِبُونَ (يو 19:14)", "سَتَفْرَحُونَ (يو 19:14)", "سَتَمْلِكُونَ (يو 19:14)"], answer: 0},
-            {q: "أكمل: 'مَنْ يَأْكُلُ جَسَدِي وَيَشْرَبُ دَمِي فَلَهُ...' ", options: ["حَيَاةٌ أَبَدِيَّةٌ (يو 54:6)", "حَيَاةٌ جَدِيدَةٌ (يو 54:6)", "فَرَحٌ أَبَدِيٌّ (يو 54:6)", "نُورٌ أَبَدِيٌّ (يو 54:6)"], answer: 0},
-            {q: "أكمل: 'الْأَشْيَاءُ الْعَتِيقَةُ قَدْ مَضَتْ، هُوَذَا الْكُلُّ قَدْ صَارَ...' ", options: ["جَدِيدًا (2 كو 17:5)", "حَيًّا (2 كو 17:5)", "مُقَدَّسًا (2 كو 17:5)", "مَجِيدًا (2 كو 17:5)"], answer: 0},
-            {q: "أكمل: 'بِالإِثْمِ صُوِّرْتُ، وَبِالْخَطِيَّةِ...' ", options: ["حَبِلَتْ بِي أُمِّي (مز 5:51)", "أَحْضَرَتْنِي أُمِّي (مز 5:51)", "وَلَدَتْنِي أُمِّي (مز 5:51)", "رَبَّتْنِي أُمِّي (مز 5:51)"], answer: 0},
-            {q: "أكمل: 'مَنْ يَأْكُلْ جَسَدِي وَيَشْرَبْ دَمِي يَثْبُتْ فِيَّ وَأَنَا...' ", options: ["فِيهِ (يو 56:6)", "مَعَهُ (يو 56:6)", "لِأَجْلِهِ (يو 56:6)", "حَوْلَهُ (يو 56:6)"], answer: 0},
-            {q: "أكمل: 'الرَّبُّ رَاعِيَّ فَلَا...' ", options: ["يُعْوِزُنِي شَيْءٌ (مز 1:23)", "أَحْتَاجُ لِشَيْءٍ (مز 1:23)", "أَخَافُ شَيْئًا (مز 1:23)", "أَضِلُّ فِي طَرِيقِي (مز 1:23)"], answer: 0},
-            {q: "أكمل: 'الَّذِينَ هُمْ لِلْمَسِيحِ قَدْ صَلَبُوا...' ", options: ["الْجَسَدَ مَعَ الْأَهْوَاءِ وَالشَّهَوَاتِ (غل 24:5)", "الذَّاتَ مَعَ الْخَطَايَا (غل 24:5)", "الْعَالَمَ مَعَ مَفَاخِرِهِ (غل 24:5)", "الْقَلْبَ مَعَ أَحْزَانِهِ (غل 24:5)"], answer: 0}
+            {q: "أكمل: 'يَعْظُمُ انْتِصَارُنَا بِالَّذِي...' (رو 37:8)", options: ["خَلَقَنَا", "أَحَبَّنَا", "فَدَانَا", "أعطانا الحياة"], answer: 1},
+            {q: "أكمل: 'دَمُ يَسُوعَ الْمَسِيحِ ابْنِهِ يُطَهِّرُنَا...' (1 يو 7:1)", options: ["مِنْ كُلِّ دَنَسٍ", "مِنْ كُلِّ شَرٍّ", "مِنْ كُلِّ خَطِيَّةٍ", "مِنْ كُلِّ إِثْمٍ"], answer: 2},
+            {q: "أكمل: 'أَجْرَةَ الْخَطِيَّةِ هِيَ مَوْتٌ، وَأَمَّا هِبَةُ اللهِ فَهِيَ حَيَاةٌ أَبَدِيَّةٌ...' (رو 6: 23)", options: ["فِي مَلَكُوتِ السَّمَاوَاتِ", "لِكُلِّ مَنْ يُؤْمِنُ", "بِالرُّوحِ الْقُدُسِ", "بِالْمَسِيحِ يَسُوعَ رَبِّنَا"], answer: 3},
+            {q: "أكمل: 'كَمَا رَفَعَ مُوسَى الْحَيَّةَ فِي الْبَرِّيَّةِ هَكَذَا يَنْبَغِي أَنْ يُرْفَعَ...' (يو 14:3)", options: ["ابْنُ الإِنْسَانِ", "الصَّلِيبُ", "الْمَسِيحُ", "ابْنُ اللهِ"], answer: 0},
+            {q: "أكمل: 'جِيلٌ شِرِّيرٌ وَفَاسِقٌ يَطْلُبُ آيَةً، وَلَا تُعْطَى لَهُ آيَةٌ إِلَّا آيَةَ...' (مت 39:12)", options: ["إِيلِيَّا النَّبِي", "مُوسَى النَّبِي", "يُونَانَ النَّبِي", "دَاوُدَ النَّبِي"], answer: 2},
+            {q: "أكمل: 'لأَنَّكَ لَنْ تَتْرُكَ نَفْسِي فِي الْهَاوِيَةِ. لَنْ تَدَعَ تَقِيَّكَ...' (مز 10:16)", options: ["يَهْلِكُ أَبَدًا", "يَرَى فَسَادًا", "يُعَانِي أَلَمًا", "يَسْقُطُ فِي التَّجْرِبَةِ"], answer: 1},
+            {q: "أكمل: 'وَحِينَئِذٍ تَظْهَرُ عَلَامَةُ ابْنِ الْإِنْسَانِ...' (مت 30:24)", options: ["فِي الْأَرْضِ", "فِي السَّحَابِ", "فِي الْهَيْكَلِ", "فِي السَّمَاءِ"], answer: 3},
+            {q: "أكمل قول الملاك: 'فَإِنِّى أَعْلَمُ أَنَّكُمَا تَطْلُبَانِ يَسُوعَ...' (مت 5:28)", options: ["الْمَصْلُوبَ", "النَّاصِرِيَّ", "الْقَائِمَ", "الْمُعَلِّمَ"], answer: 0},
+            {q: "أكمل: 'وَلكِنَّنَا نَحْنُ نَكْرِزُ بِالْمَسِيحِ مَصْلُوبًا: لِلْيَهُودِ عَثْرَةٌ، وَلِلْيُونَانِيِّينَ...' (1 كو 23:1)", options: ["حَمَاقَةً", "ضَعْفًا", "جَهَالَةً", "جُنُونًا"], answer: 2},
+            {q: "أكمل الرؤيا: 'وَرَأَيْتُ فَإِذَا فِي وَسَطِ الْعَرْشِ... خَرُوفٌ قَائِمٌ...' (رؤ 6:5)", options: ["مُكَلَّلٌ بِالْمَجْدِ", "كَأَنَّهُ مَذْبُوحٌ", "يَحْمِلُ سِفْرًا", "يَغْلِبُ الْعَالَمَ"], answer: 1},
+            {q: "أكمل: 'عَامِلا الصُّلْحَ بِدَمٍ...' (كو 20:1)", options: ["عَهْدِهِ", "جَسَدِهِ", "فِدَائِهِ", "صَلِيبِهِ"], answer: 3},
+            {q: "أكمل: 'وَأَنَا إِنِ ارْتَفَعْتُ عَنِ الْأَرْضِ أَجْذِبُ إِلَىَّ...' (يو 32:12)", options: ["الْمُؤْمِنِينَ", "الْجَمِيعَ", "الْخُطَاةَ", "الأُمَمَ"], answer: 1},
+            {q: "أكمل: 'فَلْيَكُنْ فِيكُمْ هَذَا الْفِكْرُ الَّذِي فِي...' (في 5:2)", options: ["الرُّوحِ الْقُدُسِ", "الآبِ السَّمَاوِيِّ", "الْمَسِيحِ يَسُوعَ أَيْضًا", "الْكَنِيسَةِ الْمُقَدَّسَةِ"], answer: 2},
+            {q: "أكمل: 'لَيْسَ لأَحَدٍ حُبِّ أَعْظَمُ مِنْ هَذَا أَنْ يَضَعَ أَحَدٌ نَفْسَهُ...' (يو 13:15)", options: ["لأَجْلِ أَحِبَّائِهِ", "لأَجْلِ أَصْدِقَائِهِ", "لأَجْلِ الْخُطَاةِ", "لأَجْلِ الْعَالَمِ"], answer: 0},
+            {q: "أكمل: 'نَاظِرِينَ إِلَى رَئِيسِ الإِيمَانِ وَمُكَمِّلِهِ يَسُوعَ الَّذِي مِنْ أَجْلِ السُّرُورِ الْمَوْضُوعِ أَمَامَهُ، احْتَمَلَ...' (عب 2:12)", options: ["الآلَامَ كُلَّهَا", "الْمَوْتَ عَنِ الْعَالَمِ", "الصَّلِيبَ مُسْتَهِينًا بِالْخِزْيِ", "الْعَذَابَ وَالْهَوَانَ"], answer: 2},
+            {q: "أكمل: 'لأَعْرِفَهُ، وَقُوَّةَ قِيَامَتِهِ، وَشَرِكَةَ...' (في 10:3)", options: ["مَجْدِهِ", "آلامِهِ", "رُوحِهِ", "خِدْمَتِهِ"], answer: 1},
+            {q: "أكمل: 'قَدْ أُكْمِلَ. وَنَكِّسَ رَأْسَهُ وَأَسْلَمَ...' (يو 30:19)", options: ["النَّفْسَ", "الْجَسَدَ", "الْحَيَاةَ", "الروح"], answer: 3},
+            {q: "أكمل: 'وَإِذْ وُجِدَ فِي الْهَيْئَةِ كَإِنْسَانٍ، وَضَعَ نَفْسَهُ وَأَطَاعَ حَتَّى الْمَوْتَ...' (في 8:2)", options: ["مَوْتَ الصليب", "مَوْتَ الْخَطِيَّةِ", "مَوْتَ الْجَسَدِ", "مَوْتَ اللّعْنَةِ"], answer: 0},
+            {q: "أكمل: 'أَنَّ إِنْسَانَنَا الْعَتِيقَ قَدْ صُلِبَ مَعَهُ لِيُبْطَلَ...' (رو 6:6)", options: ["سُلْطَانُ الْمَوْتِ", "عَمَلُ إِبْلِيسَ", "جَسَدُ الْخَطِيَّةِ", "ضَعْفُ الْجَسَدِ"], answer: 2},
+            {q: "أكمل: 'إِذْ مَحَا الصَّكَ الَّذِي عَلَيْنَا فِي الْفَرَائِضِ... مُسَمِّرًا إِيَّاهُ...' (كو 14:2)", options: ["عَلَى الْخَشَبَةِ", "بِالصَّلِيبِ", "بِالْمَسَامِيرِ", "فِي جَسَدِهِ"], answer: 1},
+            {q: "أكمل: 'مَعَ الْمَسِيحِ صُلِبْتُ، فَأَحْيَا لَا أَنَا بَلِ...' (غل 20:2)", options: ["رُوحُ اللهِ فِيَّ", "الْكَلِمَةُ فِيَّ", "الْمَحَبَّةُ فِيَّ", "الْمَسِيحُ يَحْيَا فِيَّ"], answer: 3},
+            {q: "أكمل: 'وَأَمَّا مِنْ جِهَتِي، فَحَاشَا لِي أَنْ أَفْتَخِرَ إِلَّا بِ...' (غل 14:6)", options: ["صَلِيبِ رَبِّنَا يَسُوعَ الْمَسِيحِ", "مَجْدِ رَبِّنَا يَسُوعَ الْمَسِيحِ", "قِيَامَةِ رَبِّنَا يَسُوعَ الْمَسِيحِ", "خَلَاصِ رَبِّنَا يَسُوعَ الْمَسِيحِ"], answer: 0},
+            {q: "أكمل: 'إِذْ جَرَّدَ الرِّيَاسَاتِ وَالسَّلاطِينَ أَشْهَرَهُمْ جِهَارًا...' (كو 15:2)", options: ["غَالِبًا إِيَّاهُمْ", "ظَافِرًا بِهِمْ فِيهِ (في الصليب)", "قَاهِرًا قُوَّتَهُمْ", "سَاحِقًا رُؤُوسَهُمْ"], answer: 1},
+            {q: "أكمل: 'إِنْ كَانَ أَحَدٌ يَخْدِمُنِي فَلْيَتْبَعْنِي، وَحَيْثُ أَكُونُ أَنَا هُنَاكَ أَيْضًا...' (يو 26:12)", options: ["يَكُونُ تِلْمِيذِي", "تَكُونُ مَحَبَّتِي", "يَكُونُ خَادِمِي", "تَكُونُ رَاحَتُهُ"], answer: 2},
+            {q: "أكمل: 'أمَّا الرَّبُّ فَسُرِّ بِأَنْ يَسْحَقَهُ بِالْحُزْنِ إِنْ جَعَلَ نَفْسَهُ...' (إش 10:53)", options: ["ذَبِيحَةَ سَلَامَةٍ", "ذَبِيحَةَ مَحَبَّةٍ", "فِدَاءً عَنِ الْبَشَرِ", "ذَبِيحَةَ إِثْمٍ"], answer: 3},
+            {q: "أكمل: 'الَّذِينَ هُمْ لِلْمَسِيحِ قَدْ صَلَبُوا الْجَسَدَ مَعَ...' (غل 24:5)", options: ["الْأَهْوَاءِ وَالشَّهَوَاتِ", "الْأَفْكَارِ الشِّرِّيرَةِ", "الْعَالَمِ كُلِّهِ", "الذَّاتِ الْخَاطِئَةِ"], answer: 0},
+            {q: "أكمل: 'مَلَكُوتُ السَّمَاوَاتِ يُغْصَبُ، وَالْغَاصِبُونَ...' (مت 12:11)", options: ["يَرِثُونَهُ", "يَخْتَطِفُونَهُ", "يَدْخُلُونَهُ", "يَنَالُونَهُ"], answer: 1},
+            {q: "أكمل: 'لا تَدِينُوا لِكَى...' (مت 1:7)", options: ["لا تُحَاكَمُوا", "لا تَهْلِكُوا", "لا تُدَانُوا", "لا تُعَاقَبُوا"], answer: 2},
+            {q: "أكمل: 'لأَنَّ مَنْ لَا يُحِبُّ أَخَاهُ الَّذِي أَبْصَرَهُ، كَيْفَ يَقْدِرُ أَنْ يُحِبُّ...' (1 يو 20:4)", options: ["السَّمَاءَ الَّتِي لَمْ يَرَهَا؟", "الْمَلَائِكَةَ؟", "الرُّوحَ الْقُدُسَ؟", "اللهَ الَّذِي لَمْ يُبْصِرُهُ؟"], answer: 3},
+            {q: "أكمل: 'يَنْبَغِى أَنَّ ذَلِكَ يَزِيدُ وَأَنِّى أَنَا...' (يو 30:3)", options: ["أَنْقُصُ", "أَخْتَفِي", "أَتَوَاضَعُ", "أَضْعُفُ"], answer: 0},
+            {q: "أكمل: 'قُدُّوسٌ بِلا شَرٌ وَلَا دَنَسٍ، قَدِ انْفَصَلَ عَنِ الْخُطَاةِ وَصَارَ أَعْلَى مِنَ...' (عب 26:7)", options: ["الْمَلَائِكَةِ", "السَّمَاوَاتِ", "الْجَمِيعِ", "الأَرْضِيَّاتِ"], answer: 1},
+            {q: "أكمل: 'القداسة التي بدونِهَا لَنْ...' (عب 14:12)", options: ["يَدْخُلَ أَحَدٌ الْمَلَكُوتَ", "يَنَالَ أَحَدٌ الْحَيَاةَ", "يَرَى أَحَدٌ الرَّبِّ", "يُعَايِنَ أَحَدٌ الْمَجْدَ"], answer: 2},
+            {q: "أكمل: 'مَنْ يَغْلِبُ فَسَأَعْطِيهِ أَنْ يَأْكُلَ مِنْ...' (رؤ 7:2)", options: ["الْمَنِّ الْمُخْفَى", "خُبْزِ السَّمَاءِ", "ثِمَارِ الْفِرْدَوْسِ", "شَجَرَةِ الْحَيَاةِ"], answer: 3},
+            {q: "أكمل: 'مَنْ يَغْلِبُ فَلَا يُؤْذِيهِ...' (رؤ 11:2)", options: ["الْمَوْتُ الثَّانِي", "النَّارُ الأَبَدِيَّةُ", "الْعَذَابُ الأَبَدِيُّ", "الْهَلَاكُ"], answer: 0},
+            {q: "أكمل: 'لأَنَّ هَذَا الْفَاسِدَ لَابُدَّ أَنْ يَلْبَسَ...' (1 كو 53:15)", options: ["مَجْدًا سَمَاوِيًّا", "عَدَمَ فَسَادٍ", "حَيَاةً أَبَدِيَّةً", "نُورًا بَائِيًّا"], answer: 1},
+            {q: "أكمل: 'يَبْلَعُ الْمَوْتَ إِلَى الأَبَدِ، وَيَمْسَحُ السِّيدُ الرَّبُّ...' (إش 8:25)", options: ["الْحُزْنَ عَنِ الْبَشَرِ", "الأَلَمَ عَنِ الْجَمِيعِ", "الدُّمُوعَ عَنْ كُلِّ الْوُجُوهِ", "الخَطِيَّةَ عَنِ النَّاسِ"], answer: 2},
+            {q: "أكمل قول اللص: 'اذْكُرْنِي يَارَبُ مَتَى جِئْتَ فِي...' (لو 42:23)", options: ["مَجْدِكَ", "فِرْدَوْسِكَ", "سَمَائِكَ", "مَلَكُوتِكَ"], answer: 3},
+            {q: "أكمل: 'مَنْ يَأْكُلُ جَسَدِي وَيَشْرَبُ دَمِي فَلَهُ...' (يو 54:6)", options: ["حَيَاةٌ أَبَدِيَّةٌ", "مَغْفِرَةُ الْخَطَايَا", "شَرِكَةٌ مَعِي", "خَلَاصٌ"], answer: 0},
+            {q: "أكمل: 'حَيْثُ يَكُونُ كَنْزُكَ هُنَاكَ يَكُونُ...' (مت 21:6)", options: ["فِكْرُكَ أَيْضًا", "قَلْبُكَ أَيْضًا", "رُوحُكَ أَيْضًا", "رَجَاؤُكَ أَيْضًا"], answer: 1},
+            {q: "أكمل: 'أما الصِّدِّيقُ فَوَائِقٌ عِنْدَ...' (أم 32:14)", options: ["تَجْرِبَتِهِ", "ضِيقِهِ", "مَوْتِهِ", "حُزْنِهِ"], answer: 2},
+            {q: "أكمل: 'إنْ عِشْنَا فَلِلرَّبِّ نَعِيشُ، وَإِنْ مُتْنَا...' (رو 8:14)", options: ["فَلِلرَّبِّ نَصِيرُ", "فَالرَّبُّ حَيٌّ", "فَالرَّبُّ يَقْبَلُنَا", "فَلِلرَّبِّ نَمُوتُ"], answer: 3},
+            {q: "أكمل: 'عَظِيمٌ هُوَ سِرُّ التَّقْوَى، اللهُ...' (1 تي 16:3)", options: ["ظَهَرَ فِي الْجَسَدِ", "تَجَسَّدَ لأَجْلِنَا", "صَارَ إِنْسَانًا", "حَلَّ بَيْنَنَا"], answer: 0},
+            {q: "أكمل: 'أَنَّهُ جَعَلَ الَّذِي لَمْ يَعْرِفْ خَطِيَّةً، خَطِيَّةً لأَجْلِنَا لِنَصِيرَ نَحْنُ...' (2 كو 21:5)", options: ["أَبْنَاءَ اللهِ فِيهِ", "بِرَّ الله فِيهِ", "وَرَثَةَ اللهِ", "قِدِّيسِينَ فِيهِ"], answer: 1},
+            {q: "أكمل: 'لأَنَّهُ كَمَا فِي آدَمَ يَمُوتُ الْجَمِيعُ، هَكَذَا فِي الْمَسِيحِ...' (1 كو 22:15)", options: ["يَخْلُصُ الْجَمِيعُ", "يَتَبَرَّرُ الْجَمِيعُ", "سَيُحْيَا الْجَمِيعُ", "يُعْتَقُ الْجَمِيعُ"], answer: 2},
+            {q: "أكمل: 'الْمَحَبَّةَ قَوِيَّةٌ كَالْمَوْتِ.. مِيَاةٌ كَثِيرَةٌ لَا تَسْتَطِيعُ أَنْ تُطْفِئَ الْمَحَبَّةَ، وَ...' (نش 6:8-7)", options: ["الرِّيَاحُ لا تَهْزِمُهَا", "الزَّمَانُ لا يَمْحُوهَا", "النَّارُ لا تُحْرِقُهَا", "السُّيُولُ لا تَغْمُرُهَا"], answer: 3},
+            {q: "أكمل: 'الْمَحَبَّةُ لاَ تَسْقُطُ...' (1 كو 8:13)", options: ["أَبَدًا", "أَخِيرًا", "دَائِمًا", "قَطُّ"], answer: 0},
+            {q: "أكمل: 'تُحِبُّ الرَّبِّ إلهَكَ مِنْ كُلِّ قَلْبِكَ وَمِنْ كُلِّ نَفْسِكَ وَمِنْ كُلِّ...' (تث 5:6)", options: ["فِكْرِكَ", "قُوَّتِكَ", "عَقْلِكَ", "حَيَاتِكَ"], answer: 1},
+            {q: "أكمل: 'يَا ابْنِي أَعْطِنِي...' (أم 26:23)", options: ["حَيَاتَكَ", "فِكْرَكَ", "قَلْبَكَ", "وَقْتَكَ"], answer: 2},
+            {q: "أكمل: 'إِنْ أَحَبَّ أَحَدٌ الْعَالَمَ فَلَيْسَتْ فِيهِ...' (1 يو 15:3)", options: ["رُوحُ اللهِ", "حَيَاةٌ أَبَدِيَّةٌ", "مَخَافَةُ الرَّبِّ", "مَحَبَّةُ الآب"], answer: 3},
+            {q: "أكمل: 'يَنْبَغِى أَنْ يُطَاعَ اللهُ أَكْثَرَ مِنَ...' (أع 29:5)", options: ["النَّاسِ", "الرُّؤَسَاءِ", "الْعَالَمِ", "الأَهْلِ"], answer: 0},
+            {q: "أكمل: 'أَيَسْلُبُ الإِنْسَانُ...' (ملا 8:3)", options: ["أَخَاهُ؟", "اللَّهَ؟", "نَفْسَهُ؟", "عُمْرَهُ؟"], answer: 1},
+            {q: "أكمل: 'كُلُّ مَنْ وُلِدَ مِنَ اللهِ... لا يَسْتَطِيعُ أَنْ...' (1 يو 9:3)", options: ["يَهْلِكَ", "يَكْرَهَ", "يُخْطِئ", "يَخَافَ"], answer: 2},
+            {q: "أكمل: 'حُبِّكَ أَطْيَبُ مِنَ...' (نش 2:1)", options: ["الْعَسَلِ", "الشَّهْدِ", "الْمَاءِ", "الْخَمْرِ"], answer: 3},
+            {q: "أكمل: 'احْسِبُوهُ كُلُّ فَرَحٍ يَا إِخْوَتِي حِينَمَا تَقَعُونَ فِي...' (يع 2:1)", options: ["تَجَارِبَ مُتَنَوِّعَةٍ", "ضِيقَاتٍ كَثِيرَةٍ", "آلَامٍ شَدِيدَةٍ", "أَمْرَاضٍ مُخْتَلِفَةٍ"], answer: 0},
+            {q: "أكمل: 'لَيْسَ أَنَّنَا نَحْنُ أَحْبَبْنَا الله، بَلْ أَنَّهُ...' (1 يو 10:4)", options: ["هُوَ اخْتَارَنَا", "هُوَ أَحَبْنَا", "هُوَ فَدَانَا", "هُوَ رَحِمَنَا"], answer: 1},
+            {q: "أكمل: 'السَّاكِنُ فِي سِتْرِ الْعَلَيَّ فِي ظِلُّ الْقَدِيرِ...' (مز 1:91)", options: ["يَسْتَرِيحُ", "يَفْرَحُ", "يَبِيتُ", "يَطْمَئِنُّ"], answer: 2},
+            {q: "أكمل: 'بِدُونِي لَا تَقْدِرُونَ أَنْ...' (يو 5:15)", options: ["تُثْمِرُوا شَيْئًا", "تَعِيشُوا", "تَنَالُوا خَلَاصًا", "تَفْعَلُوا شَيْئًا"], answer: 3},
+            {q: "أكمل: 'وَمَهُمَا اشْتَهَتْهُ عَيْنَايَ لَمْ أُمْسِكْهُ عَنْهُمَا' قائلها هو: (جا 10:2)", options: ["سليمان", "داود", "أيوب", "إشعياء"], answer: 0},
+            {q: "أكمل: 'مُقَدُمِينَ بَعْضُكُمْ بَعْضًا فِي...' (رو 10:12)", options: ["الْمَحَبَّةِ", "الْكَرَامَة", "الْخِدْمَةِ", "الْعَطَاءِ"], answer: 1},
+            {q: "أكمل: 'هذهِ الآنَ عَظْمٌ مِنْ عِظَامِي وَ...' (تك 23:2)", options: ["رُوحٌ مِنْ رُوحِي", "نَفْسٌ مِنْ نَفْسِي", "لَحْمٌ مِنْ لَحْمِي", "جُزْءٌ مِنْ كِيَانِي"], answer: 2},
+            {q: "أكمل: 'الْمَحَبَّةُ فَلْتَكُنْ بِلا...' (رو 9:12)", options: ["خَوْفٍ", "مَصْلَحَةٍ", "حُدُودٍ", "رِيَاءٍ"], answer: 3},
+            {q: "أكمل: 'كُلُّ مَنْ يُبْغِضُ أَخَاهُ فَهُوَ...' (1 يو 15:3)", options: ["قَاتِلُ نَفْسٍ", "كَانَ فِي الظُّلْمَةِ", "كَذَّابٌ", "أَثِيمٌ"], answer: 0},
+            {q: "أكمل: 'إِنْ جَاعَ عَدُوكَ فَأَطْعِمْهُ. وَإِنْ عَطِشَ فَ...' (رو 17:12-20)", options: ["سَامِحْهُ", "اسْقِهِ", "بَارِكْهُ", "صَلِّ لأَجْلِهِ"], answer: 1},
+            {q: "أكمل: 'لاَ تَنْسَوْا إِضَافَةَ الْغُرَبَاءِ، لَأَنْ بِهَا أَضَافَ أُنَاسٌ...' (عب 2:13)", options: ["قِدِّيسِينَ", "أَنْبِيَاءَ", "مَلَائِكَةً وَهُمْ لَا يَدْرُونَ", "بَرَكَاتٍ مَخْفِيَّةً"], answer: 2},
+            {q: "أكمل: 'يَا أَوْلَادِي، لَا نُحِبَّ بِالْكَلَامِ وَلَا بِاللِّسَانِ، بَلْ...' (1 يو 18:3)", options: ["بِالْفِعْلِ وَالصِّدْقِ", "مِنْ كُلِّ الْقَلْبِ", "بِالرُّوحِ وَالْحَقِّ", "بِالْعَمَلِ وَالْحَقِّ"], answer: 3}
         ];
 
         let currentQuestionIndex = 0, score = 0, firstAttempt = true;
-        function startGame() { document.getElementById('start-screen').classList.remove('active'); document.getElementById('game-screen').classList.add('active'); currentQuestionIndex = 0; score = 0; loadQuestion(); }
+        const alphabet = ['أ', 'ب', 'ج', 'د'];
+        
+        function startGame() { 
+            document.getElementById('start-screen').classList.remove('active'); 
+            document.getElementById('game-screen').classList.add('active'); 
+            currentQuestionIndex = 0; 
+            score = 0; 
+            loadQuestion(); 
+        }
+
         function loadQuestion() {
             firstAttempt = true;
             const q = questions[currentQuestionIndex];
+            
             document.getElementById('progress-ribbon').innerText = `السؤال ${currentQuestionIndex + 1} من ${questions.length}`;
             document.getElementById('question-text').innerText = q.q;
-            const optionsContainer = document.getElementById('options-container'); optionsContainer.innerHTML = '';
+            
+            const optionsContainer = document.getElementById('options-container'); 
+            optionsContainer.innerHTML = '';
+            
             q.options.forEach((opt, index) => {
-                const btn = document.createElement('button'); btn.className = 'option-btn'; btn.innerText = opt; btn.onclick = () => checkAnswer(index, btn); optionsContainer.appendChild(btn);
+                const btn = document.createElement('button'); 
+                btn.className = 'option-btn'; 
+                
+                const letterSpan = document.createElement('span');
+                letterSpan.className = 'option-letter';
+                letterSpan.innerText = `(${alphabet[index]})`;
+                
+                const textSpan = document.createElement('span');
+                textSpan.innerText = ` ${opt}`;
+
+                btn.appendChild(letterSpan);
+                btn.appendChild(textSpan);
+
+                btn.onclick = () => checkAnswer(index, btn); 
+                optionsContainer.appendChild(btn);
             });
         }
+
         function checkAnswer(selectedIndex, button) {
-            if (selectedIndex === questions[currentQuestionIndex].answer) {
+            const currentQ = questions[currentQuestionIndex];
+            if (selectedIndex === currentQ.answer) {
                 button.classList.add('correct');
-                const allButtons = document.querySelectorAll('.option-btn'); allButtons.forEach(btn => btn.style.pointerEvents = 'none');
+                const allButtons = document.querySelectorAll('.option-btn'); 
+                allButtons.forEach(btn => btn.style.pointerEvents = 'none');
+                
                 if (firstAttempt) score++;
                 showStarsEffect(button);
                 document.body.classList.remove('warning');
-                setTimeout(() => { currentQuestionIndex++; currentQuestionIndex < questions.length ? loadQuestion() : showResult(); }, 1500);
+                
+                setTimeout(() => { 
+                    currentQuestionIndex++; 
+                    if(currentQuestionIndex < questions.length) {
+                        loadQuestion();
+                    } else {
+                        showResult();
+                    }
+                }, 1200);
             } else {
-                firstAttempt = false; button.classList.add('wrong'); button.style.pointerEvents = 'none';
-                document.body.classList.add('warning'); setTimeout(() => document.body.classList.remove('warning'), 500);
+                firstAttempt = false; 
+                button.classList.add('wrong'); 
+                button.style.pointerEvents = 'none';
+                document.body.classList.add('warning'); 
+                setTimeout(() => document.body.classList.remove('warning'), 400);
             }
         }
+
         function showStarsEffect(button) {
             const rect = button.getBoundingClientRect();
-            const x = rect.left + rect.width / 2; const y = rect.top + rect.height / 2;
+            const x = rect.left + rect.width / 2; 
+            const y = rect.top + rect.height / 2;
+            
             for (let i = 0; i < 8; i++) {
-                const star = document.createElement('div'); star.className = 'star'; star.innerText = '✨';
-                star.style.left = x + 'px'; star.style.top = y + 'px';
-                const angle = Math.random() * Math.PI * 2; const distance = 80 + Math.random() * 50;
+                const star = document.createElement('div'); 
+                star.className = 'star'; 
+                star.innerText = '✨';
+                star.style.left = x + 'px'; 
+                star.style.top = y + 'px';
+                
+                const angle = Math.random() * Math.PI * 2; 
+                const distance = 80 + Math.random() * 50;
                 star.style.setProperty('--tx', `${Math.cos(angle) * distance}px`);
                 star.style.setProperty('--ty', `${Math.sin(angle) * distance}px`);
+                
                 document.body.appendChild(star);
                 setTimeout(() => star.remove(), 1000);
             }
         }
+
         function showResult() {
-            document.getElementById('game-screen').classList.remove('active'); document.getElementById('result-screen').classList.add('active');
+            document.getElementById('game-screen').classList.remove('active'); 
+            document.getElementById('result-screen').classList.add('active');
+            
             document.getElementById('final-score').innerText = `النتيجة: ${score} من ${questions.length}`;
-            let message = score === questions.length ? "ممتاز! أنت حافظ رائع لكلمة الله." : (score >= 20 ? "رائع! أداء جميل جداً." : "محاولة جيدة، استمر في دراسة الكلمة.");
+            
+            let message = "";
+            let emoji = "";
+            if (score === questions.length) {
+                message = "أنا مبهورة جداً! أنت تحفظ كلمة الله بدقة متناهية وشملت كل الآيات بنجاح ساحق.";
+                emoji = "👑";
+            } else if (score >= questions.length * 0.75) {
+                message = "مجهود رائع وعمل جميل! حفظك للآيات قوي جداً.";
+                emoji = "🌟";
+            } else {
+                message = "بداية جيدة، وتحتاج لقراءة الآيات وشواهدها مرة أخرى لتثبيتها في قلبك.";
+                emoji = "📖";
+            }
+            
             document.getElementById('result-message').innerText = message;
-            document.getElementById('result-emoji').innerText = score === questions.length ? "👑" : "🌟";
+            document.getElementById('result-emoji').innerText = emoji;
         }
-        function resetGame() { document.getElementById('result-screen').classList.remove('active'); document.getElementById('start-screen').classList.add('active'); }
+
+        function resetGame() { 
+            document.getElementById('result-screen').classList.remove('active'); 
+            document.getElementById('start-screen').classList.add('active'); 
+        }
     </script>
 </body>
 </html>
