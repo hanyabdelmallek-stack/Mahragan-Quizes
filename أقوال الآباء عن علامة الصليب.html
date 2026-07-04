@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>أقوال الآباء عن إشارة الصليب</title>
+    <style>
+        body { font-family: sans-serif; background: #f4f4f9; display: flex; justify-content: center; padding: 20px; }
+        #game-container { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); width: 100%; max-width: 600px; text-align: center; }
+        .option-btn { display: block; width: 100%; margin: 10px 0; padding: 15px; border: 1px solid #ccc; border-radius: 8px; cursor: pointer; background: #fff; }
+        .option-btn:hover { background: #eef; }
+        .correct { background: #c8e6c9 !important; border-color: #4caf50; }
+        .wrong { background: #ffcdd2 !important; border-color: #f44336; }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="quiz">
+        <h2 id="question">جاري التحميل...</h2>
+        <div id="options"></div>
+    </div>
+</div>
+
+<script>
+    const questions = [
+        {
+            q: "من هو الأب الذي قال أن الصليب سلاح نافذ ينفذ في النار والهواء والماء والأرض؟",
+            options: ["البابا أثناسيوس", "مار أفرام السرياني", "الأنبا أنطونيوس", "يوحنا ذهبي الفم"],
+            answer: 0
+        },
+        {
+            q: "بحسب البابا أثناسيوس، ماذا تفعل الشياطين عندما تشاهد رسم الصليب؟",
+            options: ["تخضع لقوته وتهرب", "تحاول مقاومته", "تسخر منه", "لا تبالي به"],
+            answer: 0
+        },
+        {
+            q: "من الأب الذي نصحنا بطبع صورة الصليب على أعضائنا وقلوبنا بدلاً من حمل سلاح؟",
+            options: ["مار أفرام السرياني", "القديس كيرلس", "البابا أثناسيوس", "القديس أنطونيوس"],
+            answer: 0
+        }
+    ];
+
+    let current = 0;
+
+    function render() {
+        const q = questions[current];
+        document.getElementById('question').innerText = q.q;
+        const opts = document.getElementById('options');
+        opts.innerHTML = '';
+        q.options.forEach((opt, i) => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerText = opt;
+            btn.onclick = () => {
+                if(i === q.answer) {
+                    btn.className = 'option-btn correct';
+                    setTimeout(() => {
+                        current++;
+                        if(current < questions.length) render();
+                        else alert('انتهت المسابقة!');
+                    }, 1000);
+                } else {
+                    btn.className = 'option-btn wrong';
+                }
+            };
+            opts.appendChild(btn);
+        });
+    }
+
+    render();
+</script>
+
+</body>
+</html>
