@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الاختبار الشامل - المستوى الأساسي</title>
+    <style>
+        body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%); display: flex; justify-content: center; align-items: center; min-height: 100vh; transition: background-color 0.5s; overflow-x: hidden; }
+        body.warning { background: linear-gradient(135deg, #ffe6e6 0%, #ffcccc 100%); }
+        #game-container { background: white; width: 90%; max-width: 850px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); padding: 30px; position: relative; text-align: center; border: 4px solid #2c3e50; }
+        .screen { display: none; } .screen.active { display: block; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        h1 { color: #2c3e50; font-size: 2.2em; margin-bottom: 10px; line-height: 1.3; }
+        p.subtitle { color: #7f8c8d; font-size: 1.2em; margin-bottom: 30px; }
+        .btn-main { background-color: #2c3e50; color: white; border: none; padding: 15px 40px; font-size: 1.5em; border-radius: 50px; cursor: pointer; box-shadow: 0 5px 15px rgba(44, 62, 80, 0.4); transition: transform 0.2s, background-color 0.2s; }
+        .btn-main:hover { transform: scale(1.05); background-color: #1a252f; }
+        #progress-ribbon { background-color: #f1c40f; color: #2c3e50; padding: 10px 20px; border-radius: 20px; font-size: 1.2em; font-weight: bold; margin-bottom: 20px; display: inline-block; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        #question-text { font-size: 1.4em; color: #34495e; margin: 20px 0 30px; line-height: 1.6; font-weight: bold; }
+        #options-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        @media (max-width: 600px) { #options-container { grid-template-columns: 1fr; } }
+        .option-btn { background-color: #ecf0f1; border: 2px solid #bdc3c7; padding: 15px; font-size: 1.15em; border-radius: 15px; cursor: pointer; transition: all 0.3s; color: #2c3e50; font-weight: bold; display: flex; align-items: center; justify-content: center; line-height: 1.4; text-align: center; }
+        .option-btn:hover { background-color: #e0e6ed; border-color: #3498db; transform: translateY(-3px); }
+        .option-btn.correct { background-color: #2ecc71 !important; color: white !important; border-color: #27ae60 !important; box-shadow: 0 0 20px rgba(46, 204, 113, 0.6); transform: scale(1.05); }
+        .option-btn.wrong { background-color: #e74c3c !important; color: white !important; border-color: #c0392b !important; animation: shake 0.4s; }
+        @keyframes shake { 0% { transform: translateX(0); } 25% { transform: translateX(-5px); } 50% { transform: translateX(5px); } 75% { transform: translateX(-5px); } 100% { transform: translateX(0); } }
+        .star { position: absolute; font-size: 2em; pointer-events: none; animation: flyStar 1s ease-out forwards; z-index: 10; }
+        @keyframes flyStar { 0% { opacity: 1; transform: translate(0, 0) scale(1); } 100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(2); } }
+        #final-score { font-size: 2.5em; color: #d35400; font-weight: bold; margin: 20px 0; }
+        .option-letter { margin-left: 10px; color: #e67e22; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="start-screen" class="screen active">
+            <h1>الاختبار الشامل والأساسي</h1>
+            <p class="subtitle">يَعْظُمُ انْتِصَارُنَا بِالَّذِي أَحَبَّنَا (رو 37:8)</p>
+            <p style="font-size: 1.2em; color: #555; margin-bottom: 30px;">يتكون هذا الاختبار من 100 سؤال (إختيار من متعدد وصواب وخطأ) يغطي أساسيات كافة الدروس السابقة المرفقة بدقة متناهية.</p>
+            <button class="btn-main" onclick="startGame()">▶️ ابدأ الـ 100 سؤال</button>
+        </div>
+        <div id="game-screen" class="screen">
+            <div>
+                <span id="progress-ribbon">السؤال ١</span>
+            </div>
+            <div id="question-text"></div>
+            <div id="options-container"></div>
+        </div>
+        <div id="result-screen" class="screen">
+            <div class="result-icon" id="result-emoji">🏆</div>
+            <h1>اكتمل الاختبار الأساسي!</h1>
+            <div id="final-score"></div>
+            <p id="result-message" style="font-size: 1.3em; margin-bottom: 30px; color: #34495e;"></p>
+            <button class="btn-main" onclick="resetGame()">🔄 أعد المحاولة</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {q: "الصلوات الليتورجية والطقسية في كنيستنا الأرثوذكسية هي عبارة عن تدوين لعقائدنا وإيماننا المسيحي.", options: ["صواب", "خطأ"], answer: 0},
+            {q: "في أوشية الراقدين، يُصلي الكاهن قائلاً: 'لأنه لا يكون موت لعبيدك بل هو...'.", options: ["نوم عميق", "عقاب أبدي", "انتقال", "تلاشٍ"], answer: 2},
+            {q: "بحسب أوشية الراقدين، يوجد إنسان طاهر من الدنس لو كانت حياته يوماً واحداً على الأرض.", options: ["صواب", "خطأ"], answer: 1},
+            {q: "في صلاة الصلح بالقداس الباسيلي، دخل الموت إلى العالم بـ...", options: ["حسد إبليس", "ضعف الطبيعة", "الخطية الجدية فقط", "غضب الخالق"], answer: 0},
+            {q: "هدم الرب الموت في القداس الباسيلي بـ... المحيي الذي لابنه الوحيد الجنس.", options: ["بالقانون", "بالظهور", "بالكلام", "بالقضاء"], answer: 1},
+            {q: "في صلاة 'قدوس قدوس' بالقداس الباسيلي، يصلي الكاهن بصيغة...", options: ["المفرد بالنيابة عن ذاته", "المثنى له وللشماس", "الجمع لأنه ومعه الشعب من سلالة آدم", "الغائب عن الأنبياء"], answer: 2},
+            {q: "في صلاة 'قدوس قدوس' بالقداس الباسيلي، سقطنا ونُفينا من فردوس النعيم عندما خالفنا الوصية بغواية...", options: ["الحية", "العالم", "الجسد", "الشهوة"], answer: 0},
+            {q: "في صلاة الصلح بالقداس الغريغوري، ائتمن الله الملاك ورئيس الملائكة ورئيس الآباء على خلاصنا.", options: ["صواب", "خطأ"], answer: 1},
+            {q: "بحسب القداس الغريغوري، تجسد الرب وتأنس وشابهنا في كل شيء ما خلا...", options: ["المرض وحده", "الخطية وحدها", "الموت وحده", "التعب وحده"], answer: 1},
+            {q: "يصرخ الأب الكاهن في القداس الغريغوري قائلاً بالنيابة عن الشعب كله: 'أنا... لي قضية حكم الموت'.", options: ["أحضرتُ", "رفضتُ", "اختطفتُ", "ألغيتُ"], answer: 2},
+            {q: "في صلاة الصلح بالقداس الكيرلسي، يقول الكاهن: 'أنه ليس مولود... يتزكى أمامك'.", options: ["إنسان", "امرأة", "بشر", "قديس"], answer: 1},
+            {q: "نعترف في صلوات الأجبية المقدسة أن قصة الخلق حقيقية وما ذكر في سفر التكوين نأخذه بحرفيته.", options: ["صواب", "خطأ"], answer: 0},
+            {q: "في قطع صلاة باكر، نصلي قائلين: 'أيها النور الحقيقي الذي يضيء لكل إنسان آت إلى العالم... خلصت أبانا آدم من الغواية وعتقت أمنا حواء من...'.", options: ["طلقات الموت", "الفساد", "العذاب", "اللعنة"], answer: 0},
+            {q: "في صلاة الساعة السادسة، سُمر المسيح على الصليب من أجل الخطية التي تجرأ عليها أبونا آدم في الفردوس في اليوم... والساعة...", options: ["الخامس / الخامسة", "السادس / السادسة", "السابع / السابعة", "الثالث / الثالثة"], answer: 1},
+            {q: "في صلاة الساعة السادسة نطلب من المسيح إلهنا قائلاً: '... صك خطايانا'.", options: ["امحُ", "امزقْ", "اغفرْ", "ارفعْ"], answer: 1},
+            {q: "في صلاة الساعة التاسعة، نقر بخطايانا معترفين بألوهية المسيح تشبهاً بـ...", options: ["اللص على الصليب", "بطرس الرسول", "توما الرسول", "آدم في المحاسبة"], answer: 0},
+            {q: "القداس الباسيلي يصف الله في بداية صلاة الصلح بـ 'يا الله العظيم الأبدي'.", options: ["صواب", "خطأ"], answer: 0},
+            {q: "في القداس الغريغوري، يُوصف الابن بأنه 'الذاتي والمساوي والجليس والخالق الشريك مع الآب'.", options: ["صواب", "خطأ"], answer: 0},
+            {q: "في صلاة الصلح بالقداس الكيرلسي، نطلب ألا تطرحنا نحن عبيدك من أجل...", options: ["دنس خطايانا", "ضعف إيماننا", "قلة صلواتنا", "جهلنا بالوصية"], answer: 0},
+            {q: "صيغة الجمع الكهنوتية في القداس تدل على أن الشعب كله كان في صلب آدم لأنه تاج الخليقة.", options: ["صواب", "خطأ"], answer: 0},
+            {q: "في قطع صلاة باكر، يعطينا الرب بمجيئه روح...", options: ["البنوة", "الناموس", "الحكمة", "القوة"], answer: 0},
+            {q: "في صلاة الساعة التاسعة، نصف أنفسنا بأننا مستوجبون حكم... من أجل خطايانا.", options: ["الموت", "العذاب", "النفْي", "القطع"], answer: 0},
+            {q: "صلاة الصلح في القداس الكيرلسي تطلب أن نتقدم برغبة أنفسنا وتهليل قلوبنا لا بفكر غاش.", options: ["صواب", "خطأ"], answer: 0},
+            {q: "العلامة العظيمة الكاملة لمحبة الابن الوحيد ذكرت في صلاة صلح القداس الكيرلسي.", options: ["صواب", "خطأ"], answer: 0},
+            {q: "الصلوات الطقسية تؤكد أن آدم وحواء مجرد قصص رمزية وليست شخصيات حقيقية.", options: ["صواب", "خطأ"], answer: 1},
+            {q: "في مديح القيامة (تين ناف)، من قبلك يا والدة الإله أُرجع آدم إلى...", options: ["الفردوس", "الأرض", "الرئاسة", "الملكوت"], answer: 0},
+            {q: "في مديح القيامة، نالت حواء... عوض حزنها.", options: ["الزينة", "الحرية", "الفرح", "العزاء"], answer: 0},
+            {q: "في مديح القيامة، من الذي بهت عندما رأى المسيح حُسب مع الأموات؟", options: ["الجنود الملائكية", "تلاميذ المسيح", "رؤساء الكهنة", "ملوك الأرض"], answer: 0},
+            {q: "في مديح القيامة، وُصفت العذراء مريم بأنها 'كنز...'.", options: ["القيامة", "النعمة", "الخلاص", "الفداء"], answer: 0},
+            {q: "في ثيؤطوكية يوم الاثنين، بينما آدم حزين القلب، سر الرب أن يرده إلى...", options: ["رئاسته", "فردوسه", "كرامته", "أرضه"], answer: 0},
+            {q: "أشرق المسيح جسدياً من العذراء بغير زرع بشر حتى خلصنا بحسب ثيؤطوكية الاثنين.", options: ["صواب", "خطأ"], answer: 0},
+            {q: "تُوصف مدينة بيت لحم في ثيؤطوكية الاثنين بأنها مدينة...", options: ["الأنبياء", "الملوك", "القديسين", "الآباء"], answer: 0},
+            {q: "وُصف السيد المسيح في ثيؤطوكية الاثنين بأنه... لكي يرد آدم الإنسان الأول الترابي إلى الفردوس.", options: ["آدم الثاني", "ابن الله", "رئيس الخلاص", "ملك المجد"], answer: 0},
+            {q: "أكمل الآية الواردة بثيؤطوكية الاثنين: 'لأنه حيث كثرت الخطية تفاضلت...'", options: ["نعمة المسيح", "أحكام الله", "رحمة الآب", "الدينونة"], answer: 0},
+            {q: "بحسب لبش ثيؤطوكية الاثنين، أكل آدم من ثمرة الشجرة بمشورة...", options: ["حواء أمنا الأولى", "الحية", "إبليس", "ذاته الخاطئة"], answer: 0},
+            {q: "في لبش ثيؤطوكية الاثنين، جاء على جنسنا وكل الخليقة سلطان... والفساد.", options: ["الموت", "اللعنة", "الهلاك", "الخطية"], answer: 0},
+            {q: "في ثيؤطوكية الثلاثاء: 'السلام للتي أعطت الخلاص لآدم وحواء، السلام للتي أرضعت...'.", options: ["عائل كل أحد", "مخلص العالم", "ابن العلي", "ملك المجد"], answer: 0},
+            {q: "في ثيؤطوكية الأربعاء، يُقال: 'السلام للفردوس الناطق للمسيح الذي صار... من أجل آدم الإنسان الأول'.", options: ["آدم الثاني", "فادياً", "وسيطاً", "شريكا"], answer: 0},
+            {q: "في ثيؤطوكية الخميس، من أجل حواء أغلق باب الفردوس، ومن قبل مريم العذراء فتح لنا مرة أخرى.", options: ["صواب", "خطأ"], answer: 0},
+            {q: "استحققنا شجرة الحياة لنأكل منها بحسب ثيؤطوكية الخميس، وهي...", options: ["جسد الله ودمه الحقيقيين", "ثمار الفردوس الجديدة", "كلمة الحياة الأبدية", "الوصية المقدسة"], answer: 0},
+            {q: "في ثيؤطوكية الجمعة، من قبل صليبه و... المقدسة رد الإنسان مرة أخرى إلى الفردوس.", options: ["قيامته", "مونه", "تجسده", "صعوده"], answer: 0},
+            {q: "في ثيؤطوكية السبت، من قبل ثمرتك أدرك الخلاص جنسنا وأصلحنا الله مرة أخرى من قبل...", options: ["صلاحه", "رحمته", "عدله", "قوته"], answer: 0},
+            {q: "في لبش ثيؤطوكية السبت، نعبر قائلين: 'لأننا من أجل ابنك عتقنا من لعنة...'.", options: ["حواء", "الحية", "الموت", "الناموس"], answer: 0},
+            {q: "في ثيؤطوكية الأحد، من قبل مريم ابنة... عرفنا الذبيحة الحقيقية لمغفرة الخطايا.", options: ["يواقيم", "داود", "إبراهيم", "لاوي"], answer: 0},
+            {q: "جاء في الشريعة اليهودية أن الجزء من اليوم يحسب يوماً كاملاً والجزء من السنة يحسب سنة كاملة.", options: ["صواب", "خطأ"], answer: 0},
+            {q: "بناءً على الحسابات اليهودية القديمة، دُفن المسيح ثلاثة أيام بحساب جزء من الجمعة، والسبت كاملاً، وجزء من الأحد.", options: ["صواب", "خطأ"], answer: 0},
+            {q: "سجل لنا العهد الجديد عدد... ظهوراً للسيد المسيح بعد قيامته من الأموات.", options: ["11", "12", "10", "7"], answer: 0},
+            {q: "ظهر السيد المسيح بعد القيامة لأكثر من... أخ مرة واحدة بحسب (1 كو 15: 6).", options: ["500", "300", "120", "70"], answer: 0},
+            {q: "شاهد القبر الفارغ وظهور المسيح لتلميذي عمواس سُجل في إنجيل لوقا (لو 24).", options: ["صواب", "خطأ"], answer: 0},
+            {q: "نهتف كل يوم مرات عديدة في قانون الإيمان بعبارة وننتظر قيامة الأموات وحياة الدهر الآتي.", options: ["صواب", "خطأ"], answer: 0},
+            {q: "يقول الكتاب المقدس: 'المحبة قوية كـ...' (نش 8: 6).", options: ["الموت", "الحياة", "الصخر", "الرعد"], answer: 0},
+            {q: "المحبة قوية من الناحية السلبية في احتمالها لأخطاء من تحبه مهما فعل.", options: ["صواب", "خطأ"], answer: 0},
+            {q: "الإنسان الذي يفقد محبته لصديق بسبب كلمة قيلت أو تصرف مخطئ، يدل على أن محبته...", options: ["ضعيفة", "متعقلة", "مؤقتة", "واقعية"], answer: 0},
+            {q: "المحبة القوية استطاعت أن تصعد على... لكي تخلص وتفدي.", options: ["الصليب", "الجبل", "عرش الملك", "السماء"], answer: 0},
+            {q: "المحبة القوية احتملت إنكار بطرس، وشك توما، وهروب التلاميذ وقت القبض على المعلم الصالح.", options: ["صواب", "خطأ"], answer: 0},
+            {q: "المفروض أن المحبة موجهة أولاً وقبل كل شيء إلى...", options: ["الله", "القريب", "الوالدين", "الذات"], answer: 0},
+            {q: "كتبت وصية 'تحب الرب إلهك من كل قلبك ومن كل نفسك ومن كل قوتك' أولاً في سفر...", options: ["التثنية", "الخروج", "اللاويين", "التكوين"], answer: 0},
+            {q: "الحل الوحيد لكي تكون باقي المحبات صحيحة هو أن تكون محبتنا لكل أحد من داخل محبتنا لله.", options: ["صواب", "خطأ"], answer: 0},
+            {q: "لماذا قال الرب عن وصية 'تحب قريبك كنفسك' أنها (مثلها)؟", options: ["لأنها من داخل محبة الله وجزء منها", "لأنها مساوية لها في الأهمية التاريخية", "لأنها تلغي الوصية الأولى", "لأنها أسهل في التنفيذ"], answer: 0},
+            {q: "كل محبة خارج محبة الله هي محبة خاطئة.", options: ["صواب", "خطأ"], answer: 0},
+            {q: "المحبة التي هي أكثر من محبة الله هي التي تفضل فيها إنساناً أو شيئاً على الله نفسه.", options: ["صواب", "خطأ"], answer: 0},
+            {q: "يقول الرب في سفر الأمثال: 'يا ابني أعطني...' (أم 23: 26).", options: ["قلبك", "حياتك", "سمعك", "عشورك"], answer: 0},
+            {q: "إن كنت لا تحب الله، فأنت لم... بعد.", options: ["تعرفه", "تخدمه", "تطعه", "تفهمه"], answer: 0},
+            {q: "معرفة الله أمر من المفروض أن يكون للمبتدئين، أما الكاملون فالمطلوب منهم هو...", options: ["الثبات في الله", "الصوم الدائم", "المعرفة العقلية", "الوعظ المستمر"], answer: 0},
+            {q: "إن كان الحب الحقيقي لله هو الثبات فيه، فماذا تكون الخطية؟", options: ["انفصال عن الله", "مجرد ضعف جسدي", "جهل بالوصية", "عدم انتباه للطقس"], answer: 0},
+            {q: "مكتوب في الكتاب المقدس: 'محبة العالم... لله' (يع 4: 4).", options: ["عداوة", "بعيدة", "مرفوضة", "مستحيلة"], answer: 0},
+            {q: "تقول الكنيسة لنا في كل قداس نقلاً عن رسالة يوحنا الأولى: 'لا تحبوا العالم ولا الأشياء التي في العالم... والعالم يمضي و...'", options: ["شهوته", "أمجاده", "ناسه", "أمواله"], answer: 0},
+            {q: "ما أعجب قصة ذلك القديس في البرية الذي سار معه ملاكان ولم ينشغل بهما بل قال في فكره: 'من يفصلني عن محبة المسيح'.", options: ["صواب", "خطأ"], answer: 0},
+            {q: "شبهت النفوس المحبة لله في سفر النشيد والإنجيل بـ...", options: ["العذارى", "الجنود", "الحكماء", "الأطفال"], answer: 0},
+            {q: "الذي يحب الله لا يخطئ لأن محبته لله تمنعه، بل يقول عنه يوحنا الحبيب إنه 'لا يستطيع أن يخطئ'.", options: ["صواب", "خطأ"], answer: 0},
+            {q: "الإنسان الذي يحب الله، يمتنع عن الخطية خوفاً من العقوبة ورعباً من جهنم.", options: ["خطأ", "صواب"], answer: 0},
+            {q: "في الخدمة والعطاء، لا يسأل الله كم أعطينا وإنما كم... ويكافئ على ذلك.", options: ["أحببنا", "صلينا", "تعبنا", "جمعنا"], answer: 0},
+            {q: "تعبير 'طيب مسكوب هو اسمك القدوس' مأخوذ في الأصل من سفر...", options: ["نشيد الأنشاد", "المزامير", "إشعياء", "تكوين"], answer: 0},
+            {q: "وصف الرب في مزمور 23 بأنه 'الرب راعيّ فلا يعوزني شيء'.", options: ["صواب", "خطأ"], answer: 0},
+            {q: "الوصية الإلهية ليست قيوداً على إرادة الإنسان بل إن الخطية والعادات السيئة هي التي تقيد حريته.", options: ["صواب", "خطأ"], answer: 0},
+            {q: "هل محبة النفس خطية في حد ذاتها؟", options: ["كلا، بشرط أن تتجه اتجاهاً روحياً في القداسة", "نعم، لأنها أنانية دائماً", "تعتبر خطية للمتقدمين فقط", "لا توجد إجابة"], answer: 0},
+            {q: "المحبة الحقيقية للنفس تظهر في ضبط النفس، ومحاسبة النفس، و... النفس على أخطائها.", options: ["لوم", "تدليل", "ترك", "إخفاء"], answer: 0},
+            {q: "يقول الرب: 'من يرفع نفسه يتضع، ومن يضع نفسه...' (مت 23: 12).", options: ["يرتفع", "يكرم", "يمجد", "يفرح"], answer: 0},
+            {q: "محبة النفس الخاطئة هي التي تقوم على تدليلها وتضيعها، بينما محبة النفس الحقيقية هي التي توصلها إلى... الذات.", options: ["إنكار", "تعظيم", "رفعة", "إظهار"], answer: 0},
+            {q: "مستندين إلى آية 'تحب قريبك كنفسك'، فإن محبة القريب هي محبة لـ... لأن البشر كلهم أقرباؤك.", options: ["كل الناس", "الأقرباء بالدم فقط", "الأصدقاء المقربين", "المسيحيين فقط"], answer: 0},
+            {q: "خلق الله العالم كله من أب واحد وأم واحدة ليكونوا جميعاً أسرة واحدة تربطهم رابطة الدم والـ...", options: ["الحب", "المصلحة", "اللغة", "الوطن"], answer: 0},
+            {q: "أخذ الله الأم الأولى (حواء) من... الرجل الأول لكيما يحبها ويقول عظْم من عظامي.", options: ["أحد أضلاع", "تراب الأرض كـ", "رأس", "قدم"], answer: 0},
+            {q: "أول إيذاء حدثنا عنه الكتاب المقدس كان من وحش افترس إنساناً في البرية.", options: ["خطأ، بل كان من إنسان ضد إنسان", "صواب"], answer: 0},
+            {q: "أي من الشخصيات التالية تسببت الغيرة والتنافس بينهما في صراع حول إنجاب البنين؟", options: ["ليئة وأختها راحيل", "سارة وهاجر", "رفقة وراشيل", "مريم ومرثا"], answer: 0},
+            {q: "قام أبشالوم بحرب ضد أبيه... بسبب غياب المحبة.", options: ["داود", "سليمان", "شاول", "آسا"], answer: 0},
+            {q: "استلزم إصلاح بناء المحبة المنهدم بين البشر أساسين: أحدهما إيجابي وهو مشاعر الود، والآخر سلبي وهو...", options: ["الكف عن الكراهية والاعتداء", "العقوبة الجسدية", "الابتعاد الكامل عن الناس", "الصمت المطبق"], answer: 0},
+            {q: "الكراهية هي المشاعر الكامنة داخل القلب، والاعتداء هو التعبير الظاهر عن تلك المشاعر.", options: ["صواب", "خطأ"], answer: 0},
+            {q: "الأم التي تحب ابنها بأن تدلله وتغطي على أخطائه بحيث لا يعرفها أبوه، محبتها حقيقية ونافعة.", options: ["خطأ، بل هذا تدليل يفسده", "صواب"], answer: 0},
+            {q: "مكتوب في رسالة العبرانيين: 'لأن الذي يحبه الرب...' (عب 12: 6).", options: ["يؤدبه", "يدلله", "يرفعه دائماً", "يعطيه مالاً"], answer: 0},
+            {q: "تصل المحبة الباذلة إلى قمتها عندما تصل إلى بذل...", options: ["الذات", "العشور", "الكلام", "الوقت"], answer: 0},
+            {q: "من هما الزوجان اللذان قال عنهما بولس الرسول إنهما 'وضعا عنقيهما من أجل حياتي'؟", options: ["أكيلا وبريسكلا", "أفودية وسنتيخي", "فليمون وأبفية", "أندرانيكوس ويونياس"], answer: 0},
+            {q: "من شروط المحبة الحقيقية أن تكون طاهرة وليست لإشباع شهوات ذاتية تفسد عفة الآخر.", options: ["صواب", "خطأ"], answer: 0},
+            {q: "عندما ميز يعقوب ابنه يوسف عن باقي إخوته وأعطاه قميصاً ملوناً، تسبب ذلك في...", options: ["حسدهم له وجر الضيقات", "احترامهم ليوسف", "سلام العائلة", "فرح الجميع"], answer: 0},
+            {q: "مكتوب في رسالة رومية: 'المحبة فلتكن بلا...' (رو 12: 9).", options: ["رياء", "خوف", "حزن", "تردد"], answer: 0},
+            {q: "يقول الكتاب المقدس: 'كل من يبغض أخاه فهو...' (1 يو 3: 15).", options: ["قاتل نفس", "مخطئ فقط", "جاهل بالحق", "ضعيف في المحبة"], answer: 0},
+            {q: "القلب المحب لا ينتقم لنفسه لأن الانتقام لون من الكراهية والعداوة والمركزية حول الذات.", options: ["صواب", "خطأ"], answer: 0},
+            {q: "أوصى الله كثيراً بالغرباء في العهدين وقال: 'أحبوا الغريب لأنكم كنتم غرباء في أرض...'", options: ["مصر", "كنعان", "بابل", "أشور"], answer: 0},
+            {q: "مكتوب في العبرانيين: 'لا تنسوا إضافة الغرباء، لأن بها أضاف أناس... وهم لا يدرون'.", options: ["ملائكة", "أنبياء", "قديسين", "رؤساء"], answer: 0},
+            {q: "قال القديس يوحنا الحبيب: 'يا أولادي، لا نحب بالكلام ولا باللسان، بل بـ...'", options: ["العمل والحق", "الروح والقوة", "القلب والنية", "الجهد والصوم"], answer: 0},
+            {q: "من هي الشخصية التي قدمت مثالاً رائعاً للمحبة العملية برفضها ترك حماتها قائلة: شعبك شعبي وإلهك إلهي؟", options: ["راعوث", "أستير", "دبورة", "حنة"], answer: 0}
+        ];
+
+        let currentQuestionIndex = 0, score = 0, firstAttempt = true;
+        const alphabet = ['أ', 'ب', 'ج', 'د'];
+        
+        function startGame() { 
+            document.getElementById('start-screen').classList.remove('active'); 
+            document.getElementById('game-screen').classList.add('active'); 
+            currentQuestionIndex = 0; 
+            score = 0; 
+            loadQuestion(); 
+        }
+
+        function loadQuestion() {
+            firstAttempt = true;
+            const q = questions[currentQuestionIndex];
+            
+            document.getElementById('progress-ribbon').innerText = `السؤال ${currentQuestionIndex + 1} من ${questions.length}`;
+            document.getElementById('question-text').innerText = q.q;
+            
+            const optionsContainer = document.getElementById('options-container'); 
+            optionsContainer.innerHTML = '';
+            
+            q.options.forEach((opt, index) => {
+                const btn = document.createElement('button'); 
+                btn.className = 'option-btn'; 
+                
+                const letterSpan = document.createElement('span');
+                letterSpan.className = 'option-letter';
+                letterSpan.innerText = `(${alphabet[index]})`;
+                
+                const textSpan = document.createElement('span');
+                textSpan.innerText = ` ${opt}`;
+
+                btn.appendChild(letterSpan);
+                btn.appendChild(textSpan);
+
+                btn.onclick = () => checkAnswer(index, btn); 
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(selectedIndex, button) {
+            const currentQ = questions[currentQuestionIndex];
+            if (selectedIndex === currentQ.answer) {
+                button.classList.add('correct');
+                const allButtons = document.querySelectorAll('.option-btn'); 
+                allButtons.forEach(btn => btn.style.pointerEvents = 'none');
+                
+                if (firstAttempt) score++;
+                showStarsEffect(button);
+                document.body.classList.remove('warning');
+                
+                setTimeout(() => { 
+                    currentQuestionIndex++; 
+                    if(currentQuestionIndex < questions.length) {
+                        loadQuestion();
+                    } else {
+                        showResult();
+                    }
+                }, 1200);
+            } else {
+                firstAttempt = false; 
+                button.classList.add('wrong'); 
+                button.style.pointerEvents = 'none';
+                document.body.classList.add('warning'); 
+                setTimeout(() => document.body.classList.remove('warning'), 400);
+            }
+        }
+
+        function showStarsEffect(button) {
+            const rect = button.getBoundingClientRect();
+            const x = rect.left + rect.width / 2; 
+            const y = rect.top + rect.height / 2;
+            
+            for (let i = 0; i < 8; i++) {
+                const star = document.createElement('div'); 
+                star.className = 'star'; 
+                star.innerText = '✨';
+                star.style.left = x + 'px'; 
+                star.style.top = y + 'px';
+                
+                const angle = Math.random() * Math.PI * 2; 
+                const distance = 80 + Math.random() * 50;
+                star.style.setProperty('--tx', `${Math.cos(angle) * distance}px`);
+                star.style.setProperty('--ty', `${Math.sin(angle) * distance}px`);
+                
+                document.body.appendChild(star);
+                setTimeout(() => star.remove(), 1000);
+            }
+        }
+
+        function showResult() {
+            document.getElementById('game-screen').classList.remove('active'); 
+            document.getElementById('result-screen').classList.add('active');
+            
+            document.getElementById('final-score').innerText = `النتيجة: ${score} من ${questions.length}`;
+            
+            let message = "";
+            let emoji = "";
+            if (score === questions.length) {
+                message = "مذهل! لقد أجبت على الـ 100 سؤال كاملة بشكل صحيح وصارت لك ركيزة أساسية متينة جداً!";
+                emoji = "👑";
+            } else if (score >= questions.length * 0.75) {
+                message = "عمل ممتاز ومجهود رائع! لقد تخطيت اختبار المستوى الأساسي بنجاح باهر وجاهز للتحدي القادم.";
+                emoji = "🌟";
+            } else {
+                message = "محاولة طيبة، يفضل مراجعة الدروس والآيات مرة أخرى لتثبيت الأساسيات بشكل أقوى قبل الانتقال للمستوى المتقدم.";
+                emoji = "📖";
+            }
+            
+            document.getElementById('result-message').innerText = message;
+            document.getElementById('result-emoji').innerText = emoji;
+        }
+
+        function resetGame() { 
+            document.getElementById('result-screen').classList.remove('active'); 
+            document.getElementById('start-screen').classList.add('active'); 
+        }
+    </script>
+</body>
+</html>
