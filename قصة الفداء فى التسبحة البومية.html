@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>قصة الفداء فى التسبحة اليومية</title>
+    <style>
+        /* التنسيقات الأساسية */
+        body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%); display: flex; justify-content: center; align-items: center; min-height: 100vh; transition: background-color 0.5s; overflow-x: hidden; }
+        body.warning { background: linear-gradient(135deg, #ffe6e6 0%, #ffcccc 100%); }
+        #game-container { background: white; width: 90%; max-width: 800px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); padding: 30px; position: relative; text-align: center; border: 4px solid #4a90e2; }
+        .screen { display: none; } .screen.active { display: block; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        h1 { color: #2c3e50; font-size: 2.2em; margin-bottom: 10px; line-height: 1.3; }
+        p.subtitle { color: #7f8c8d; font-size: 1.2em; margin-bottom: 30px; }
+        .btn-main { background-color: #4a90e2; color: white; border: none; padding: 15px 40px; font-size: 1.5em; border-radius: 50px; cursor: pointer; box-shadow: 0 5px 15px rgba(74, 144, 226, 0.4); transition: transform 0.2s, background-color 0.2s; }
+        .btn-main:hover { transform: scale(1.05); background-color: #357abd; }
+        #progress-ribbon { background-color: #f1c40f; color: #2c3e50; padding: 10px 20px; border-radius: 20px; font-size: 1.2em; font-weight: bold; margin-bottom: 20px; display: inline-block; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .difficulty-badge { display: inline-block; padding: 5px 15px; border-radius: 15px; color: white; font-size: 0.9em; margin-right: 15px; font-weight: bold; }
+        .diff-easy { background-color: #2ecc71; } .diff-medium { background-color: #f39c12; } .diff-hard { background-color: #e74c3c; }
+        #question-text { font-size: 1.5em; color: #34495e; margin: 20px 0 30px; line-height: 1.5; font-weight: bold; }
+        #options-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        @media (max-width: 600px) { #options-container { grid-template-columns: 1fr; } }
+        .option-btn { background-color: #ecf0f1; border: 2px solid #bdc3c7; padding: 15px; font-size: 1.15em; border-radius: 15px; cursor: pointer; transition: all 0.3s; color: #2c3e50; font-weight: bold; display: flex; align-items: center; justify-content: center; line-height: 1.3; }
+        .option-btn:hover { background-color: #e0e6ed; border-color: #3498db; transform: translateY(-3px); }
+        .option-btn.correct { background-color: #2ecc71 !important; color: white !important; border-color: #27ae60 !important; box-shadow: 0 0 20px rgba(46, 204, 113, 0.6); transform: scale(1.05); }
+        .option-btn.wrong { background-color: #e74c3c !important; color: white !important; border-color: #c0392b !important; animation: shake 0.4s; }
+        @keyframes shake { 0% { transform: translateX(0); } 25% { transform: translateX(-5px); } 50% { transform: translateX(5px); } 75% { transform: translateX(-5px); } 100% { transform: translateX(0); } }
+        .star { position: absolute; font-size: 2em; pointer-events: none; animation: flyStar 1s ease-out forwards; z-index: 10; }
+        @keyframes flyStar { 0% { opacity: 1; transform: translate(0, 0) scale(1); } 100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(2); } }
+        #final-score { font-size: 2.5em; color: #d35400; font-weight: bold; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="start-screen" class="screen active">
+            <h1>قصة الفداء فى التسبحة اليومية</h1>
+            <p class="subtitle">يَعْظُمُ انْتِصَارُنَا بِالَّذِي أَحَبَّنَا (رو 37:8)</p>
+            <p style="font-size: 1.2em; color: #555; margin-bottom: 30px;">اختبر معلوماتك حول إشارات الفداء في التسبحة اليومية والثيؤطوكيات كما وردت في مادتنا العلمية.</p>
+            <button class="btn-main" onclick="startGame()">▶️ ابدأ اللعب الآن</button>
+        </div>
+        <div id="game-screen" class="screen">
+            <div><span id="progress-ribbon">السؤال ١ من ٣٠</span><span id="difficulty-badge" class="difficulty-badge">سهل</span></div>
+            <div id="question-text"></div>
+            <div id="options-container"></div>
+        </div>
+        <div id="result-screen" class="screen">
+            <div class="result-icon" id="result-emoji">🏆</div>
+            <h1>اكتملت المسابقة!</h1>
+            <div id="final-score"></div>
+            <p id="result-message" style="font-size: 1.3em; margin-bottom: 30px; color: #34495e;"></p>
+            <button class="btn-main" onclick="resetGame()">🔄 العب مرة أخرى</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {q: "بحسب مديح القيامة، مَن الذي أُرجع إلى الفردوس؟[cite: 14]", options: ["آدم[cite: 14]", "نوح[cite: 14]", "موسى[cite: 14]", "إبراهيم[cite: 14]"], answer: 0, difficulty: "سهل", diffClass: "diff-easy"},
+            {q: "في مديح القيامة، كيف وُصف الجنود الملائكية عندما رأوا المسيح؟[cite: 14]", options: ["بهتوا[cite: 14]", "فرحوا[cite: 14]", "خافوا[cite: 14]", "غضبوا[cite: 14]"], answer: 0, difficulty: "متوسط", diffClass: "diff-medium"},
+            {q: "في ثيؤطوكية الاثنين، وُصف السيد المسيح بأنه...[cite: 14]", options: ["آدم الثاني[cite: 14]", "آدم الأول[cite: 14]", "الترابي[cite: 14]", "الملاك[cite: 14]"], answer: 0, difficulty: "سهل", diffClass: "diff-easy"},
+            {q: "أين وُلد المسيح 'آدم الثاني'؟[cite: 14]", options: ["بيت لحم[cite: 14]", "أورشليم[cite: 14]", "الناصرة[cite: 14]", "الجليل[cite: 14]"], answer: 0, difficulty: "سهل", diffClass: "diff-easy"},
+            {q: "بحسب لبش ثيؤطوكية الاثنين، ما الذي جاء على جنسنا من قبل مشورة حواء؟[cite: 14]", options: ["سلطان الموت والفساد[cite: 14]", "الحياة الأبدية[cite: 14]", "الغنى[cite: 14]", "السلام[cite: 14]"], answer: 0, difficulty: "متوسط", diffClass: "diff-medium"},
+            {q: "ماذا حدث من قبل مريم العذراء (في ثيؤطوكية الخميس)؟[cite: 14]", options: ["فتح باب الفردوس[cite: 14]", "أغلق باب الفردوس[cite: 14]", "نقضت اللعنة الأولى[cite: 14]", "الخيار الأول والثالث[cite: 14]"], answer: 3, difficulty: "صعب", diffClass: "diff-hard"},
+            {q: "ماذا نأكل من شجرة الحياة (حسب ثيؤطوكية الخميس)؟[cite: 14]", options: ["جسد الله ودمه[cite: 14]", "ثمار الفاكهة[cite: 14]", "منظور الناموس[cite: 14]", "لا شيء[cite: 14]"], answer: 0, difficulty: "متوسط", diffClass: "diff-medium"},
+            {q: "في ثيؤطوكية الأحد، ماذا عرفنا من قبل مريم؟[cite: 14]", options: ["الذبيحة الحقيقية[cite: 14]", "طرق العلم[cite: 14]", "أحكام الناموس[cite: 14]", "الخوف من الموت[cite: 14]"], answer: 0, difficulty: "متوسط", diffClass: "diff-medium"},
+            {q: "كم عدد الظهورات التي سجلها العهد الجديد للسيد المسيح بعد قيامته؟[cite: 14]", options: ["11 ظهورا[cite: 14]", "7 ظهورات[cite: 14]", "12 ظهورا[cite: 14]", "5 ظهورات[cite: 14]"], answer: 0, difficulty: "صعب", diffClass: "diff-hard"},
+            {q: "ما هو الوعد الذي أعطي للتلاميذ وقت صعود المسيح؟[cite: 14]", options: ["سيأتي هكذا كما رأيتموه[cite: 14]", "سيرسل ملاكاً[cite: 14]", "سوف ينسى العالم[cite: 14]", "لا يوجد وعد[cite: 14]"], answer: 0, difficulty: "سهل", diffClass: "diff-easy"},
+            {q: "حسب الشريعة اليهودية، الجزء من اليوم يحسب...[cite: 14]", options: ["يوماً كاملاً[cite: 14]", "ساعة واحدة[cite: 14]", "لا شيء[cite: 14]", "نصف يوم[cite: 14]"], answer: 0, difficulty: "متوسط", diffClass: "diff-medium"},
+            {q: "في ثيؤطوكية الثلاثاء، السلام للتي...[cite: 14]", options: ["أعطت الخلاص لآدم وحواء[cite: 14]", "أكلت من الشجرة[cite: 14]", "خافت من الموت[cite: 14]", "لا شيء[cite: 14]"], answer: 0, difficulty: "سهل", diffClass: "diff-easy"},
+            {q: "بموت المسيح، صار لنا بر...[cite: 14]", options: ["الله فيه[cite: 14]", "الإنسان فقط[cite: 14]", "الناموس[cite: 14]", "الملائكة[cite: 14]"], answer: 0, difficulty: "صعب", diffClass: "diff-hard"},
+            {q: "حسب قانون الإيمان، ماذا ننتظر؟[cite: 14]", options: ["قيامة الأموات وحياة الدهر الآتي[cite: 14]", "مجداً أرضياً[cite: 14]", "الراحة فقط[cite: 14]", "لا شيء[cite: 14]"], answer: 0, difficulty: "سهل", diffClass: "diff-easy"},
+            {q: "حواء نالت... عوض حزنها (من مديح القيامة).[cite: 14]", options: ["الفرح[cite: 14]", "الموت[cite: 14]", "الخوف[cite: 14]", "العقاب[cite: 14]"], answer: 0, difficulty: "سهل", diffClass: "diff-easy"},
+            {q: "مريم العذراء صرت لنا... أمام الله مخلصنا.[cite: 14]", options: ["شفيعة[cite: 14]", "ديانة[cite: 14]", "قاضية[cite: 14]", "لا شيء[cite: 14]"], answer: 0, difficulty: "متوسط", diffClass: "diff-medium"},
+            {q: "في ثيؤطوكية الأربعاء، المسيح صار آدم الثاني من أجل...[cite: 14]", options: ["آدم الإنسان الأول[cite: 14]", "الملائكة[cite: 14]", "الأنبياء[cite: 14]", "لا شيء[cite: 14]"], answer: 0, difficulty: "متوسط", diffClass: "diff-medium"},
+            {q: "من قبل صليبه، رد الإنسان إلى...[cite: 14]", options: ["الفردوس[cite: 14]", "الأرض فقط[cite: 14]", "الهاوية[cite: 14]", "الفساد[cite: 14]"], answer: 0, difficulty: "سهل", diffClass: "diff-easy"},
+            {q: "الثيؤطوكيات واللبش تؤكد حقيقة...[cite: 14]", options: ["خلق آدم وحواء[cite: 14]", "خيال قصة الخلق[cite: 14]", "عدم أهمية الفداء[cite: 14]", "لا شيء[cite: 14]"], answer: 0, difficulty: "سهل", diffClass: "diff-easy"},
+            {q: "المسيح حمل خطايانا في جسده على...[cite: 14]", options: ["الخشبة (الصليب)[cite: 14]", "الماء[cite: 14]", "السماء[cite: 14]", "لا شيء[cite: 14]"], answer: 0, difficulty: "سهل", diffClass: "diff-easy"},
+            {q: "قام المسيح في اليوم الثالث حسب...[cite: 14]", options: ["الكتب[cite: 14]", "الناموس[cite: 14]", "التقليد[cite: 14]", "لا شيء[cite: 14]"], answer: 0, difficulty: "متوسط", diffClass: "diff-medium"},
+            {q: "ظهور المسيح للتلاميذ في العلية هو أحد...[cite: 14]", options: ["الظهورات الـ 11[cite: 14]", "ظهورات الملائكة[cite: 14]", "ظهورات العهد القديم[cite: 14]", "لا شيء[cite: 14]"], answer: 0, difficulty: "متوسط", diffClass: "diff-medium"},
+            {q: "نؤمن أن المسيح مات من أجل...[cite: 14]", options: ["خطايانا[cite: 14]", "ذاته[cite: 14]", "الأبرار فقط[cite: 14]", "لا شيء[cite: 14]"], answer: 0, difficulty: "سهل", diffClass: "diff-easy"},
+            {q: "آدم أبانا المخلوق الأول بيد الله الخالق، أكل من...[cite: 14]", options: ["ثمرة الشجرة[cite: 14]", "الماء[cite: 14]", "لا شيء[cite: 14]", "الحياة[cite: 14]"], answer: 0, difficulty: "سهل", diffClass: "diff-easy"},
+            {q: "الموضع الذي كثرت فيه الخطية...[cite: 14]", options: ["تفاضلت فيه نعمة المسيح[cite: 14]", "زاد فيه الموت[cite: 14]", "انتهى فيه الرجاء[cite: 14]", "لا شيء[cite: 14]"], answer: 0, difficulty: "صعب", diffClass: "diff-hard"},
+            {q: "السيد المسيح وُلد من العذراء...[cite: 14]", options: ["بغير زرع بشر[cite: 14]", "بزرع بشر[cite: 14]", "بالمعجزة الطبيعية[cite: 14]", "لا شيء[cite: 14]"], answer: 0, difficulty: "متوسط", diffClass: "diff-medium"},
+            {q: "اللعنة الأولى نقضت من أجل...[cite: 14]", options: ["مريم العذراء[cite: 14]", "الملائكة[cite: 14]", "الأنبياء[cite: 14]", "لا شيء[cite: 14]"], answer: 0, difficulty: "سهل", diffClass: "diff-easy"},
+            {q: "نحن نؤمن ونعترف أن المسيح مات...[cite: 14]", options: ["حسب الكتب[cite: 14]", "حسب رأي العالم[cite: 14]", "حسب الفلسفة[cite: 14]", "لا شيء[cite: 14]"], answer: 0, difficulty: "متوسط", diffClass: "diff-medium"},
+            {q: "تؤكد التسبحة والصلوات حقيقة...[cite: 14]", options: ["سقوط آدم وحواء بغواية الحية[cite: 14]", "قوة البشر[cite: 14]", "عدم أهمية التجسد[cite: 14]", "لا شيء[cite: 14]"], answer: 0, difficulty: "سهل", diffClass: "diff-easy"},
+            {q: "لأنه كما في آدم يموت الجميع...[cite: 14]", options: ["هكذا في المسيح سيحيا الجميع[cite: 14]", "هكذا في المسيح يموت الجميع[cite: 14]", "لا شيء[cite: 14]", "الجميع يذهبون للهاوية[cite: 14]"], answer: 0, difficulty: "سهل", diffClass: "diff-easy"}
+        ];
+
+        let currentQuestionIndex = 0, score = 0, firstAttempt = true;
+        function startGame() { document.getElementById('start-screen').classList.remove('active'); document.getElementById('game-screen').classList.add('active'); currentQuestionIndex = 0; score = 0; loadQuestion(); }
+        function loadQuestion() {
+            firstAttempt = true;
+            const q = questions[currentQuestionIndex];
+            document.getElementById('progress-ribbon').innerText = `السؤال ${currentQuestionIndex + 1} من ${questions.length}`;
+            const badge = document.getElementById('difficulty-badge'); badge.innerText = q.difficulty; badge.className = `difficulty-badge ${q.diffClass}`;
+            document.getElementById('question-text').innerText = q.q;
+            const optionsContainer = document.getElementById('options-container'); optionsContainer.innerHTML = '';
+            q.options.forEach((opt, index) => {
+                const btn = document.createElement('button'); btn.className = 'option-btn'; btn.innerText = opt; btn.onclick = () => checkAnswer(index, btn); optionsContainer.appendChild(btn);
+            });
+        }
+        function checkAnswer(selectedIndex, button) {
+            if (selectedIndex === questions[currentQuestionIndex].answer) {
+                button.classList.add('correct');
+                const allButtons = document.querySelectorAll('.option-btn'); allButtons.forEach(btn => btn.style.pointerEvents = 'none');
+                if (firstAttempt) score++;
+                showStarsEffect(button);
+                document.body.classList.remove('warning');
+                setTimeout(() => { currentQuestionIndex++; currentQuestionIndex < questions.length ? loadQuestion() : showResult(); }, 1500);
+            } else {
+                firstAttempt = false; button.classList.add('wrong'); button.style.pointerEvents = 'none';
+                document.body.classList.add('warning'); setTimeout(() => document.body.classList.remove('warning'), 500);
+            }
+        }
+        function showStarsEffect(button) {
+            const rect = button.getBoundingClientRect();
+            const x = rect.left + rect.width / 2; const y = rect.top + rect.height / 2;
+            for (let i = 0; i < 8; i++) {
+                const star = document.createElement('div'); star.className = 'star'; star.innerText = '✨';
+                star.style.left = x + 'px'; star.style.top = y + 'px';
+                const angle = Math.random() * Math.PI * 2; const distance = 80 + Math.random() * 50;
+                star.style.setProperty('--tx', `${Math.cos(angle) * distance}px`);
+                star.style.setProperty('--ty', `${Math.sin(angle) * distance}px`);
+                document.body.appendChild(star);
+                setTimeout(() => star.remove(), 1000);
+            }
+        }
+        function showResult() {
+            document.getElementById('game-screen').classList.remove('active'); document.getElementById('result-screen').classList.add('active');
+            document.getElementById('final-score').innerText = `النتيجة: ${score} من ${questions.length}`;
+            let message = score === questions.length ? "ممتاز جداً! أنت ملم بكل تفاصيل هذا الدرس ببراعة." : (score >= 20 ? "رائع! أداء جميل جداً ومجهود مقدر." : "محاولة جيدة! نرجو مراجعة الدرس مرة أخرى.");
+            document.getElementById('result-message').innerText = message;
+            document.getElementById('result-emoji').innerText = score === questions.length ? "👑" : "🌟";
+        }
+        function resetGame() { document.getElementById('result-screen').classList.remove('active'); document.getElementById('start-screen').classList.add('active'); }
+    </script>
+</body>
+</html>
