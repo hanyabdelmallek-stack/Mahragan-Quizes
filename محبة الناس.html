@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>محبة الناس</title>
+    <style>
+        /* التنسيقات الأساسية */
+        body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%); display: flex; justify-content: center; align-items: center; min-height: 100vh; transition: background-color 0.5s; overflow-x: hidden; }
+        body.warning { background: linear-gradient(135deg, #ffe6e6 0%, #ffcccc 100%); }
+        #game-container { background: white; width: 90%; max-width: 800px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); padding: 30px; position: relative; text-align: center; border: 4px solid #4a90e2; }
+        .screen { display: none; } .screen.active { display: block; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        h1 { color: #2c3e50; font-size: 2.2em; margin-bottom: 10px; line-height: 1.3; }
+        p.subtitle { color: #7f8c8d; font-size: 1.2em; margin-bottom: 30px; }
+        .btn-main { background-color: #4a90e2; color: white; border: none; padding: 15px 40px; font-size: 1.5em; border-radius: 50px; cursor: pointer; box-shadow: 0 5px 15px rgba(74, 144, 226, 0.4); transition: transform 0.2s, background-color 0.2s; }
+        .btn-main:hover { transform: scale(1.05); background-color: #357abd; }
+        #progress-ribbon { background-color: #f1c40f; color: #2c3e50; padding: 10px 20px; border-radius: 20px; font-size: 1.2em; font-weight: bold; margin-bottom: 20px; display: inline-block; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .difficulty-badge { display: inline-block; padding: 5px 15px; border-radius: 15px; color: white; font-size: 0.9em; margin-right: 15px; font-weight: bold; }
+        .diff-easy { background-color: #2ecc71; } .diff-medium { background-color: #f39c12; } .diff-hard { background-color: #e74c3c; }
+        #question-text { font-size: 1.5em; color: #34495e; margin: 20px 0 30px; line-height: 1.5; font-weight: bold; }
+        #options-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        @media (max-width: 600px) { #options-container { grid-template-columns: 1fr; } }
+        .option-btn { background-color: #ecf0f1; border: 2px solid #bdc3c7; padding: 15px; font-size: 1.15em; border-radius: 15px; cursor: pointer; transition: all 0.3s; color: #2c3e50; font-weight: bold; display: flex; align-items: center; justify-content: center; line-height: 1.3; }
+        .option-btn:hover { background-color: #e0e6ed; border-color: #3498db; transform: translateY(-3px); }
+        .option-btn.correct { background-color: #2ecc71 !important; color: white !important; border-color: #27ae60 !important; box-shadow: 0 0 20px rgba(46, 204, 113, 0.6); transform: scale(1.05); }
+        .option-btn.wrong { background-color: #e74c3c !important; color: white !important; border-color: #c0392b !important; animation: shake 0.4s; }
+        @keyframes shake { 0% { transform: translateX(0); } 25% { transform: translateX(-5px); } 50% { transform: translateX(5px); } 75% { transform: translateX(-5px); } 100% { transform: translateX(0); } }
+        .star { position: absolute; font-size: 2em; pointer-events: none; animation: flyStar 1s ease-out forwards; z-index: 10; }
+        @keyframes flyStar { 0% { opacity: 1; transform: translate(0, 0) scale(1); } 100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(2); } }
+        #final-score { font-size: 2.5em; color: #d35400; font-weight: bold; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="start-screen" class="screen active">
+            <h1>محبة الناس</h1>
+            <p class="subtitle">يَعْظُمُ انْتِصَارُنَا بِالَّذِي أَحَبَّنَا (رو 37:8)</p>
+            <p style="font-size: 1.2em; color: #555; margin-bottom: 30px;">اختبر معلوماتك حول مفاهيم محبة النفس ومحبة الناس العملية وفقاً للمادة المرفقة.</p>
+            <button class="btn-main" onclick="startGame()">▶️ ابدأ اللعب الآن</button>
+        </div>
+        <div id="game-screen" class="screen">
+            <div><span id="progress-ribbon">السؤال ١ من ٣٠</span><span id="difficulty-badge" class="difficulty-badge">سهل</span></div>
+            <div id="question-text"></div>
+            <div id="options-container"></div>
+        </div>
+        <div id="result-screen" class="screen">
+            <div class="result-icon" id="result-emoji">🏆</div>
+            <h1>اكتملت المسابقة!</h1>
+            <div id="final-score"></div>
+            <p id="result-message" style="font-size: 1.3em; margin-bottom: 30px; color: #34495e;"></p>
+            <button class="btn-main" onclick="resetGame()">🔄 العب مرة أخرى</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {q: "كيف يجب أن تتجه محبتك لنفسك حسب 'محبة الناس'؟[cite: 16]", options: ["اتجاهًا روحياً[cite: 16]", "اتجاهًا مادياً[cite: 16]", "اتجاهًا دنيوياً[cite: 16]", "لا شيء[cite: 16]"], answer: 0, difficulty: "سهل", diffClass: "diff-easy"},
+            {q: "بماذا شبه الكتاب المقدس محبة النفس؟[cite: 16]", options: ["تُحِبُّ قَرِيبَكَ كَنَفْسِكَ[cite: 16]", "أنانيّة مفرطة[cite: 16]", "تفضيل للذات[cite: 16]", "لا شيء[cite: 16]"], answer: 0, difficulty: "سهل", diffClass: "diff-easy"},
+            {q: "ماذا يجب أن نفعل إذا أحببنا أنفسنا حباً حقيقياً؟[cite: 16]", options: ["أصعدها على الصليب[cite: 16]", "أدلها[cite: 16]", "أتركها لهواها[cite: 16]", "لا شيء[cite: 16]"], answer: 0, difficulty: "متوسط", diffClass: "diff-medium"},
+            {q: "ماذا يعني السيد المسيح بقوله: 'مَنْ وَجَدَ حَيَاتَهُ يُضِيعُهَا'؟[cite: 16]", options: ["من أنكر ذاته وجدها[cite: 16]", "من تمسك بذاته أضاعها[cite: 16]", "الخيار الأول والثاني[cite: 16]", "لا شيء[cite: 16]"], answer: 2, difficulty: "صعب", diffClass: "diff-hard"},
+            {q: "بمن يرتبط البشر جميعاً كأسرة واحدة؟[cite: 16]", options: ["رابطة الدم والحب[cite: 16]", "القوانين[cite: 16]", "المكان فقط[cite: 16]", "لا شيء[cite: 16]"], answer: 0, difficulty: "سهل", diffClass: "diff-easy"},
+            {q: "من كان أول إنسان يقتل إنساناً في الكتاب المقدس؟[cite: 16]", options: ["قايين[cite: 16]", "يوسف[cite: 16]", "عيسو[cite: 16]", "أبشالوم[cite: 16]"], answer: 0, difficulty: "سهل", diffClass: "diff-easy"},
+            {q: "لماذا يعد عدم الحب بين البشر غير طبيعي؟[cite: 16]", options: ["لأنه لا يتفق مع مشيئة الله[cite: 16]", "لأنه يؤذي النفس[cite: 16]", "لأنه ضد القانون[cite: 16]", "لا شيء[cite: 16]"], answer: 0, difficulty: "متوسط", diffClass: "diff-medium"},
+            {q: "ما هو العنصر السلبي في ترميم المحبة؟[cite: 16]", options: ["الكف عن الكراهية والاعتداء[cite: 16]", "التعاون[cite: 16]", "التعاطف[cite: 16]", "لا شيء[cite: 16]"], answer: 0, difficulty: "متوسط", diffClass: "diff-medium"},
+            {q: "ماذا يحدث للأم التي تدلل ابنها وتغطي على أخطائه؟[cite: 16]", options: ["تفسده[cite: 16]", "تعلمه[cite: 16]", "تؤدبه[cite: 16]", "لا شيء[cite: 16]"], answer: 0, difficulty: "سهل", diffClass: "diff-easy"},
+            {q: "لماذا يُؤدب الأب ابنه؟[cite: 16]", options: ["لأنه يحبه[cite: 16]", "لأنه يكرهه[cite: 16]", "لكي يطرده[cite: 16]", "لا شيء[cite: 16]"], answer: 0, difficulty: "سهل", diffClass: "diff-easy"},
+            {q: "ما هو شرط المحبة الحقيقية بخصوص الشهوات؟[cite: 16]", options: ["أن تكون طاهرة[cite: 16]", "أن تكون متبادلة[cite: 16]", "أن تكون علنية[cite: 16]", "لا شيء[cite: 16]"], answer: 0, difficulty: "متوسط", diffClass: "diff-medium"},
+            {q: "ما الذي تسبب فيه تمييز يعقوب ليوسف بقميص ملون؟[cite: 16]", options: ["حسد إخوته[cite: 16]", "فرح إخوته[cite: 16]", "سلام العائلة[cite: 16]", "لا شيء[cite: 16]"], answer: 0, difficulty: "سهل", diffClass: "diff-easy"},
+            {q: "ماذا تعني المحبة برياء؟[cite: 16]", options: ["ليست صادقة[cite: 16]", "محبة قوية[cite: 16]", "محبة روحانية[cite: 16]", "لا شيء[cite: 16]"], answer: 0, difficulty: "متوسط", diffClass: "diff-medium"},
+            {q: "ماذا يقول الكتاب عمن يبغض أخاه؟[cite: 16]", options: ["قاتل نفس[cite: 16]", "مجرد غاضب[cite: 16]", "صديق[cite: 16]", "لا شيء[cite: 16]"], answer: 0, difficulty: "سهل", diffClass: "diff-easy"},
+            {q: "ماذا يقول الكتاب عمن يفرح بسقوط عدوه؟[cite: 16]", options: ["لا يبتهج قلبه[cite: 16]", "يفعل خيراً[cite: 16]", "مبارك[cite: 16]", "لا شيء[cite: 16]"], answer: 0, difficulty: "سهل", diffClass: "diff-easy"},
+            {q: "ماذا نفعل إن جاع عدونا؟[cite: 16]", options: ["نطعمه[cite: 16]", "نتركه[cite: 16]", "نتجاهله[cite: 16]", "لا شيء[cite: 16]"], answer: 0, difficulty: "سهل", diffClass: "diff-easy"},
+            {q: "ماذا نكون إن لم نضيف الغرباء؟[cite: 16]", options: ["ننسى أننا كنا غرباء[cite: 16]", "نكون صالحين[cite: 16]", "لا شيء[cite: 16]"], answer: 0, difficulty: "متوسط", diffClass: "diff-medium"},
+            {q: "أعلى قمة في محبة الناس هي...[cite: 16]", options: ["محبة الأعداء[cite: 16]", "محبة الأصدقاء[cite: 16]", "محبة الأهل[cite: 16]", "لا شيء[cite: 16]"], answer: 0, difficulty: "متوسط", diffClass: "diff-medium"},
+            {q: "ماذا نفعل إن لم نستطع حب العدو؟[cite: 16]", options: ["على الأقل لا نبغضه[cite: 16]", "ننتقم منه[cite: 16]", "نبتعد عنه[cite: 16]", "لا شيء[cite: 16]"], answer: 0, difficulty: "سهل", diffClass: "diff-easy"},
+            {q: "كيف نحب 'بالعمل والحق'؟[cite: 16]", options: ["لا بالكلام واللسان[cite: 16]", "بالكلام فقط[cite: 16]", "بالتمني[cite: 16]", "لا شيء[cite: 16]"], answer: 0, difficulty: "متوسط", diffClass: "diff-medium"},
+            {q: "ماذا فعلت راعوث لحماتها؟[cite: 16]", options: ["لم تتركها[cite: 16]", "تركتها[cite: 16]", "أهملتها[cite: 16]", "لا شيء[cite: 16]"], answer: 0, difficulty: "سهل", diffClass: "diff-easy"},
+            {q: "المحبة المسيحية هي...[cite: 16]", options: ["قمة الفضائل[cite: 16]", "شيء عادي[cite: 16]", "اختيارية[cite: 16]", "لا شيء[cite: 16]"], answer: 0, difficulty: "سهل", diffClass: "diff-easy"},
+            {q: "من الذي أنكره التلاميذ وقت القبض على المسيح؟[cite: 16]", options: ["المعلم الصالح[cite: 16]", "الأنبياء[cite: 16]", "الرسل[cite: 16]", "لا شيء[cite: 16]"], answer: 0, difficulty: "سهل", diffClass: "diff-easy"},
+            {q: "محبة الله تجعلنا نحب...[cite: 16]", options: ["كل الناس[cite: 16]", أنفسنا فقط[cite: 16]", "لا شيء[cite: 16]"], answer: 0, difficulty: "متوسط", diffClass: "diff-medium"},
+            {q: "الانتقام هو...[cite: 16]", options: ["محبة للذات[cite: 16]", "عدالة[cite: 16]", "حق[cite: 16]", "لا شيء[cite: 16]"], answer: 0, difficulty: "سهل", diffClass: "diff-easy"},
+            {q: "المحبة للناس تشمل...[cite: 16]", options: ["العالم أجمع[cite: 16]", الأصدقاء فقط[cite: 16]", "لا شيء[cite: 16]"], answer: 0, difficulty: "سهل", diffClass: "diff-easy"},
+            {q: "هل يجب أن نحب الغرباء؟[cite: 16]", options: ["نعم، لأننا كنا غرباء[cite: 16]", "لا[cite: 16]", "فقط إذا عرفناهم[cite: 16]", "لا شيء[cite: 16]"], answer: 0, difficulty: "متوسط", diffClass: "diff-medium"},
+            {q: "ماذا حدث بين ليئة وراحيل؟[cite: 16]", options: ["غيرة وتنافس[cite: 16]", "سلام[cite: 16]", "تعاون[cite: 16]", "لا شيء[cite: 16]"], answer: 0, difficulty: "سهل", diffClass: "diff-easy"},
+            {q: "هل محبة الناس ممكنة بدون الله؟[cite: 16]", options: ["لا، فهي داخل محبة الله[cite: 16]", "نعم[cite: 16]", "أحياناً[cite: 16]", "لا شيء[cite: 16]"], answer: 0, difficulty: "صعب", diffClass: "diff-hard"},
+            {q: "هل المجاملة في الخطأ حب؟[cite: 16]", options: ["لا[cite: 16]", "نعم[cite: 16]", "تعتمد على الشخص[cite: 16]", "لا شيء[cite: 16]"], answer: 0, difficulty: "متوسط", diffClass: "diff-medium"}
+        ];
+
+        // منطق اللعبة
+        let currentQuestionIndex = 0, score = 0, firstAttempt = true;
+        function startGame() { document.getElementById('start-screen').classList.remove('active'); document.getElementById('game-screen').classList.add('active'); currentQuestionIndex = 0; score = 0; loadQuestion(); }
+        function loadQuestion() {
+            firstAttempt = true;
+            const q = questions[currentQuestionIndex];
+            document.getElementById('progress-ribbon').innerText = `السؤال ${currentQuestionIndex + 1} من ${questions.length}`;
+            const badge = document.getElementById('difficulty-badge'); badge.innerText = q.difficulty; badge.className = `difficulty-badge ${q.diffClass}`;
+            document.getElementById('question-text').innerText = q.q;
+            const optionsContainer = document.getElementById('options-container'); optionsContainer.innerHTML = '';
+            q.options.forEach((opt, index) => {
+                const btn = document.createElement('button'); btn.className = 'option-btn'; btn.innerText = opt; btn.onclick = () => checkAnswer(index, btn); optionsContainer.appendChild(btn);
+            });
+        }
+        function checkAnswer(selectedIndex, button) {
+            if (selectedIndex === questions[currentQuestionIndex].answer) {
+                button.classList.add('correct');
+                const allButtons = document.querySelectorAll('.option-btn'); allButtons.forEach(btn => btn.style.pointerEvents = 'none');
+                if (firstAttempt) score++;
+                showStarsEffect(button);
+                document.body.classList.remove('warning');
+                setTimeout(() => { currentQuestionIndex++; currentQuestionIndex < questions.length ? loadQuestion() : showResult(); }, 1500);
+            } else {
+                firstAttempt = false; button.classList.add('wrong'); button.style.pointerEvents = 'none';
+                document.body.classList.add('warning'); setTimeout(() => document.body.classList.remove('warning'), 500);
+            }
+        }
+        function showStarsEffect(button) {
+            const rect = button.getBoundingClientRect();
+            const x = rect.left + rect.width / 2; const y = rect.top + rect.height / 2;
+            for (let i = 0; i < 8; i++) {
+                const star = document.createElement('div'); star.className = 'star'; star.innerText = '✨';
+                star.style.left = x + 'px'; star.style.top = y + 'px';
+                const angle = Math.random() * Math.PI * 2; const distance = 80 + Math.random() * 50;
+                star.style.setProperty('--tx', `${Math.cos(angle) * distance}px`);
+                star.style.setProperty('--ty', `${Math.sin(angle) * distance}px`);
+                document.body.appendChild(star);
+                setTimeout(() => star.remove(), 1000);
+            }
+        }
+        function showResult() {
+            document.getElementById('game-screen').classList.remove('active'); document.getElementById('result-screen').classList.add('active');
+            document.getElementById('final-score').innerText = `النتيجة: ${score} من ${questions.length}`;
+            let message = score === questions.length ? "ممتاز جداً! أنت ملم بكل تفاصيل هذا الدرس ببراعة." : (score >= 20 ? "رائع! أداء جميل جداً ومجهود مقدر." : "محاولة جيدة! نرجو مراجعة الدرس مرة أخرى.");
+            document.getElementById('result-message').innerText = message;
+            document.getElementById('result-emoji').innerText = score === questions.length ? "👑" : "🌟";
+        }
+        function resetGame() { document.getElementById('result-screen').classList.remove('active'); document.getElementById('start-screen').classList.add('active'); }
+    </script>
+</body>
+</html>
