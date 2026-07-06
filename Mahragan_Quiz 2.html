@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maharagan Quiz_2</title>
+    <style>
+        body {
+            margin: 0; padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; transition: background-color 0.5s;
+            color: #2c3e50; overflow-x: hidden;
+        }
+        body.warning { background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); }
+        #game-container {
+            background: white; width: 95%; max-width: 900px;
+            border-radius: 20px; box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+            padding: 35px; position: relative; text-align: center;
+            border: 4px solid #2980b9;
+        }
+        .screen { display: none; }
+        .screen.active { display: block; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        h1 { color: #2c3e50; font-size: 2.2em; margin-bottom: 10px; }
+        p.subtitle { color: #34495e; font-size: 1.2em; margin-bottom: 30px; }
+        .btn-main {
+            background-color: #2980b9; color: white; border: none;
+            padding: 15px 40px; font-size: 1.5em; border-radius: 50px;
+            cursor: pointer; box-shadow: 0 5px 15px rgba(41, 128, 185, 0.4);
+            transition: transform 0.2s, background-color 0.2s; font-weight: bold;
+        }
+        .btn-main:hover { transform: scale(1.05); background-color: #1f618d; }
+        #progress-ribbon {
+            background-color: #f1c40f; color: #2c3e50; padding: 10px 20px;
+            border-radius: 20px; font-size: 1.2em; font-weight: bold;
+            margin-bottom: 20px; display: inline-block;
+        }
+        #question-text {
+            font-size: 1.3em; color: #2c3e50; margin: 20px 0 30px;
+            line-height: 1.5; font-weight: bold; text-align: left;
+        }
+        #options-container {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 15px;
+        }
+        @media (max-width: 768px) {
+            #options-container { grid-template-columns: 1fr; }
+        }
+        .option-btn {
+            background-color: #ecf0f1; border: 2px solid #bdc3c7;
+            padding: 15px; font-size: 1.05em; border-radius: 15px;
+            cursor: pointer; transition: all 0.3s; color: #2c3e50;
+            font-weight: 600; display: flex; align-items: center;
+            line-height: 1.4; text-align: left;
+        }
+        .option-btn:hover { background-color: #d5dbdb; border-color: #7f8c8d; transform: translateY(-3px); }
+        .option-btn.correct {
+            background-color: #27ae60 !important; color: white !important;
+            border-color: #2ecc71 !important; transform: scale(1.05); z-index: 2; position: relative;
+        }
+        .option-btn.wrong {
+            background-color: #c0392b !important; color: white !important;
+            border-color: #e74c3c !important; animation: shake 0.4s;
+        }
+        .option-letter { margin-right: 15px; color: #d35400; font-weight: bold; font-size: 1.2em; }
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+        .star {
+            position: absolute; font-size: 2em; pointer-events: none;
+            animation: flyStar 1s ease-out forwards; z-index: 10;
+        }
+        @keyframes flyStar {
+            0% { opacity: 1; transform: translate(0, 0) scale(1); }
+            100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(2); }
+        }
+        #final-score { font-size: 2.5em; color: #c0392b; font-weight: bold; margin: 20px 0; }
+        .result-icon { font-size: 4em; }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <!-- Start Screen -->
+        <div id="start-screen" class="screen active">
+            <h1>Maharagan Quiz_2: Advanced Edition</h1>
+            <p class="subtitle">"Looking unto Jesus, the author and finisher of our faith..." (Hebrews 12:2)[cite: 21]</p>
+            <p style="font-size: 1.1em; color: #555; margin-bottom: 30px;">
+                This 100-question quiz tests deeper understanding of the Cross, Levitical Sacrifices, the 7 Words, the Procession, St. Shenouda, and Boundaries. All information is cited from the official material.
+            </p>
+            <button class="btn-main" onclick="startGame()">▶️ Begin Advanced Quiz</button>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div id="game-screen" class="screen">
+            <div>
+                <span id="progress-ribbon">Question 1 of 100</span>
+            </div>
+            <div id="question-text">Question goes here...</div>
+            <div id="options-container"></div>
+        </div>
+
+        <!-- Result Screen -->
+        <div id="result-screen" class="screen">
+            <div class="result-icon" id="result-emoji">🏆</div>
+            <h1>Evaluation Complete!</h1>
+            <div id="final-score">0 / 100</div>
+            <p id="result-message" style="font-size: 1.3em; margin-bottom: 30px; color: #2c3e50;"></p>
+            <button class="btn-main" onclick="resetGame()">🔄 Retake Quiz</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            // --- TOPIC: Doctrine of the Cross & Salvation ---
+            { q: "Why could God not simply forgive Adam in His justice without a sacrifice?[cite: 21]", options: ["Because humanity inherited the original sin and the corruption of its nature.[cite: 21]", "Because Adam was a prophet.[cite: 21]", "Because Adam lived for 118 years.[cite: 21]", "Because He wanted to destroy the idol temples.[cite: 21]"], answer: 0 },
+            { q: "According to Hebrews 12:2, what did Jesus despise while enduring the cross?[cite: 21]", options: ["The shame.[cite: 21]", "The physical pain.[cite: 21]", "The right-hand thief.[cite: 21]", "The Old Testament laws.[cite: 21]"], answer: 0 },
+            { q: "Which Old Testament figure is identified as a symbolic person (type of Christ)?[cite: 21]", options: ["Joshua.[cite: 21]", "Nestorius the heretic.[cite: 21]", "St. Longinus.[cite: 21]", "Caesar.[cite: 21]"], answer: 0 },
+            { q: "Why was the Savior required to be unlimited?[cite: 21]", options: ["Because Adam's sin is unlimited, as it is directed against the infinite God.[cite: 21]", "Because the wages of sin is death.[cite: 21]", "Because it is man who sinned.[cite: 21]", "Because without shedding of blood there is no remission.[cite: 21]"], answer: 0 },
+            { q: "Which form of death involves humanity being driven out to a land of misery and humiliation?[cite: 21]", options: ["Moral (relational) death.[cite: 21]", "Physical death.[cite: 21]", "Spiritual death.[cite: 21]", "Eternal death.[cite: 21]"], answer: 0 },
+            { q: "What does the action of signing the cross from the forehead to the chest declare?[cite: 21]", options: ["God the Son coming from heaven and being born of St. Mary.[cite: 21]", "Being transferred from darkness to light.[cite: 21]", "The Consecration of the Church of the Resurrection.[cite: 21]", "The Discovery of the Holy Cross.[cite: 21]"], answer: 0 },
+            { q: "What does the spiritual blessing of 'Sanctification' specifically mean according to the text?[cite: 21]", options: ["Consecration, dedication, and setting the person apart.[cite: 21]", "Forgiveness of past sins.[cite: 21]", "Providing spiritual stability and growth.[cite: 21]", "Opening Paradise again.[cite: 21]"], answer: 0 },
+            { q: "How did Christ defeat Satan and the power of death?[cite: 21]", options: ["Through the Cross.[cite: 21]", "By bringing forth thorns and thistles.[cite: 21]", "By practicing communal monasticism.[cite: 21]", "By writing the Book of Leviticus.[cite: 21]"], answer: 0 },
+            { q: "Which of the following is NOT an aspect of the doctrine of the Holy Trinity declared by the sign of the cross?[cite: 21]", options: ["4 Hypostases, 1 God.[cite: 21]", "3 Hypostases, 1 God.[cite: 21]", "The Father, the Son, and the Holy Spirit.[cite: 21]", "One God. Amen.[cite: 21]"], answer: 0 },
+            { q: "According to 1 Peter 2:24, what did Christ do on the tree?[cite: 21]", options: ["Himself bore our sins in His own body.[cite: 21]", "Set boundaries in dealing with others.[cite: 21]", "Wrote the five books of Moses.[cite: 21]", "Destroyed the idol worshippers.[cite: 21]"], answer: 0 },
+            
+            // --- TOPIC: Sacrifices of the Levitical Law ---
+            { q: "What is the primary concept revolving around the Old Testament sacrifices?[cite: 21]", options: ["An innocent animal dying on behalf of a guilty human.[cite: 21]", "The daily shedding of blood demonstrating its perfection.[cite: 21]", "Rendering to Caesar the things that are Caesar's.[cite: 21]", "Decorating the Holy Cross with flowers.[cite: 21]"], answer: 0 },
+            { q: "What must a guilty individual acknowledge when presenting a sacrifice?[cite: 21]", options: ["That because of his sin, he deserves death.[cite: 21]", "That he is a bondservant of Christ.[cite: 21]", "That he must fight idol worshippers.[cite: 21]", "That his time belongs only to him.[cite: 21]"], answer: 0 },
+            { q: "How is the 'Principle of Redemption' acknowledged during the sacrifice?[cite: 21]", options: ["The individual places his hand upon its head and confesses his sins.[cite: 21]", "The priest eats the blood and fat.[cite: 21]", "The individual brings a cross to the Tabernacle.[cite: 21]", "The individual fasts for a day.[cite: 21]"], answer: 0 },
+            { q: "Why is the daily shedding of blood in the Old Testament described as futile?[cite: 21]", options: ["Because it is not possible that the blood of bulls and goats could take away sins.[cite: 21]", "Because the animals were not innocent.[cite: 21]", "Because they did not use turtledoves.[cite: 21]", "Because the altar was built incorrectly.[cite: 21]"], answer: 0 },
+            { q: "What does the act of presenting sacrifices at the door of the Tabernacle signify?[cite: 21]", options: ["That without blood, there is no entry into the Holy Places.[cite: 21]", "That the worship is founded upon water.[cite: 21]", "That it represents the Incarnation of the Son.[cite: 21]", "That it symbolizes sins directed towards God.[cite: 21]"], answer: 0 },
+            { q: "Which sacrifice is referenced in Leviticus 3?[cite: 21]", options: ["Peace offering.[cite: 21]", "Burnt offering.[cite: 21]", "Sin offering.[cite: 21]", "Grain offering.[cite: 21]"], answer: 0 },
+            { q: "What does the sprinkling of the blood around the Altar of Burnt Offering signify?[cite: 21]", options: ["That the worship to which it points is founded upon blood.[cite: 21]", "That the blood belongs to the sinner.[cite: 21]", "That it represents the Thanksgiving offering.[cite: 21]", "That it represents the Obedience of the Son.[cite: 21]"], answer: 0 },
+            { q: "Which of the following is an animal used for the flock (small livestock) sacrifices?[cite: 21]", options: ["Goats.[cite: 21]", "Bulls.[cite: 21]", "Cows.[cite: 21]", "Young pigeons.[cite: 21]"], answer: 0 },
+            { q: "What does the Trespass offering specifically symbolize?[cite: 21]", options: ["Sins directed towards God.[cite: 21]", "The Incarnation of the Son.[cite: 21]", "Bearing our sins.[cite: 21]", "The Thanksgiving offering.[cite: 21]"], answer: 0 },
+            { q: "Who administers the priestly laws of the Old Covenant?[cite: 21]", options: ["The Levites, descendants of the Tribe of Levi.[cite: 21]", "St. Shenouda and his monks.[cite: 21]", "The seventy apostles.[cite: 21]", "The Jewish kings.[cite: 21]"], answer: 0 },
+
+            // --- TOPIC: The 7 Words on the Cross ---
+            { q: "What was the purpose of Christ praying 'Father, forgive them' for His crucifiers?[cite: 21]", options: ["To give us a practical example to carry out His commandments to love our enemies.[cite: 21]", "To prevent them from being arrested.[cite: 21]", "To show that He was unaware of their actions.[cite: 21]", "To fulfill the law of the priests.[cite: 21]"], answer: 0 },
+            { q: "How does the phrase 'Today you will be with Me in Paradise' demonstrate Christ's authority?[cite: 21]", options: ["It shows He is the Savior and Lord, capable of granting eternal life.[cite: 21]", "It shows He is interceding as a Priest.[cite: 21]", "It shows He is fulfilling the prophecies of Psalm 69.[cite: 21]", "It shows He cares for the Virgin Mary.[cite: 21]"], answer: 0 },
+            { q: "By entrusting St. Mary to St. John, what did the Lord Jesus Christ teach us about the Church?[cite: 21]", options: ["The importance of caring for one another with special love as members of one spiritual family.[cite: 21]", "That St. John was the only faithful disciple.[cite: 21]", "That the Church should be built in Akhmeem.[cite: 21]", "That we should avoid all unbelievers.[cite: 21]"], answer: 0 },
+            { q: "What did the cry 'My God, My God, why have You forsaken Me?' accomplish according to the text?[cite: 21]", options: ["His victorious cry shook the devil and overthrew his kingdom.[cite: 21]", "It separated His divine nature from His human nature.[cite: 21]", "It caused the Roman soldiers to flee.[cite: 21]", "It was a request for physical water.[cite: 21]"], answer: 0 },
+            { q: "In saying 'I thirst', Christ fulfilled the prophecy from which Psalm?[cite: 21]", options: ["Psalm 69:21.[cite: 21]", "Psalm 22.[cite: 21]", "Psalm 104:4.[cite: 21]", "Psalm 87:3.[cite: 21]"], answer: 0 },
+            { q: "What is the theological significance of 'It is finished'?[cite: 21]", options: ["Divine justice was fulfilled, and the Lord achieved complete victory.[cite: 21]", "The Old Testament sacrifices were re-established.[cite: 21]", "The physical pain of crucifixion was over.[cite: 21]", "The time for fasting was concluded.[cite: 21]"], answer: 0 },
+            { q: "When Christ said 'Father, into Your hands I commit My spirit', what did it signify regarding the devil?[cite: 21]", options: ["He places His spirit in the hands of the Father and not in the hand of the evil one.[cite: 21]", "He asked the devil for permission to die.[cite: 21]", "He admitted defeat to the ruler of this world.[cite: 21]", "He allowed the devil to take His body.[cite: 21]"], answer: 0 },
+            { q: "Which of the 7 Words indicates that Christ is a Teacher?[cite: 21]", options: ["Proving that He is the awaited Messiah foretold by the prophets (My God, My God).[cite: 21]", "Granting the right-hand thief a share in His kingdom.[cite: 21]", "Interceding for those who crucified Him.[cite: 21]", "Caring for His Church.[cite: 21]"], answer: 0 },
+            { q: "To whom does the effect of Christ's prayer for forgiveness extend?[cite: 21]", options: ["To every sinner who desires repentance, not only those present during crucifixion.[cite: 21]", "Only to the Roman soldiers who nailed Him.[cite: 21]", "Only to St. Longinus.[cite: 21]", "Only to the seventy apostles.[cite: 21]"], answer: 0 },
+            { q: "The thief confessed Christ as a Savior capable of what?[cite: 21]", options: ["Capable of taking him to Paradise.[cite: 21]", "Capable of coming down from the cross.[cite: 21]", "Capable of turning stones to bread.[cite: 21]", "Capable of destroying the temple.[cite: 21]"], answer: 0 },
+
+            // --- TOPIC: Procession of the Cross ---
+            { q: "Why is the Procession of the Cross conducted?[cite: 21]", options: ["Because the Cross is the means by which heaven and earth were reconciled.[cite: 21]", "Because it is required to memorize the Agpeya.[cite: 21]", "Because St. Shenouda commanded it.[cite: 21]", "Because it replaces the Levitical sacrifices.[cite: 21]"], answer: 0 },
+            { q: "What is chanted at each of the 12 stations of the Procession?[cite: 21]", options: ["A psalm, followed by the Gospel, and the Gospel Response with an additional verse for the Cross.[cite: 21]", "The Book of Leviticus chapters 1 through 7.[cite: 21]", "The Seven Words of Christ on the Cross.[cite: 21]", "The Litanies of the First Watch of the Midnight Hour.[cite: 21]"], answer: 0 },
+            { q: "Group 1 of the Procession stations focuses on:[cite: 21]", options: ["God, the Father, St. Mary, and the Archangels.[cite: 21]", "The Sacrifices of the Levitical Law.[cite: 21]", "The Martyrs and Saints.[cite: 21]", "The Sanctuary of the Church.[cite: 21]"], answer: 0 },
+            { q: "At the station before the Icon of Archangel Michael, what parable from Matthew 13 is read?[cite: 21]", options: ["Parables concerning the kingdom of heaven (treasure hidden in the field).[cite: 21]", "The Parable of the Ten Virgins.[cite: 21]", "The Parable of the Good Samaritan.[cite: 21]", "The Parable of the Sower.[cite: 21]"], answer: 0 },
+            { q: "What does St. Mark the evangelist exemplify at his specific station?[cite: 21]", options: ["An example of those who carried the cross of the ministry to deliver the gospel of salvation.[cite: 21]", "The ascetic struggle and sacrifice of worldly desires.[cite: 21]", "Endurance of persecution unto death.[cite: 21]", "The royal procession and throne of the King.[cite: 21]"], answer: 0 },
+            { q: "What does the Southern Door station represent via the Gospel of Matthew 21?[cite: 21]", options: ["The royal procession and throne of the King, opening the gates of righteousness.[cite: 21]", "The narrow gate of repentance.[cite: 21]", "The baptism of our Lord Jesus Christ.[cite: 21]", "The annunciation to St. Mary.[cite: 21]"], answer: 0 },
+            { q: "At the station of St. John the Baptist, believers are called to do what?[cite: 21]", options: ["Prepare the way of the Lord in our hearts through self-denial and repentance.[cite: 21]", "Strive to enter through the narrow gate.[cite: 21]", "Become monks and nuns like St. Shenouda.[cite: 21]", "Offer the Burnt Sacrifice at the Tabernacle.[cite: 21]"], answer: 0 },
+            { q: "What does the Immersion Font station specifically symbolize?[cite: 21]", options: ["Dying and rising with Christ, being cleansed from sin, and putting on the new man.[cite: 21]", "Enduring persecution and martyrdom.[cite: 21]", "The visitation of St. Mary to St. Elizabeth.[cite: 21]", "Appointing and sending the 70 apostles.[cite: 21]"], answer: 0 },
+            { q: "Which station utilizes Psalm 84:1-2 ('How lovely is Your tabernacle, O Lord of hosts!')?[cite: 21]", options: ["Before the Northern Door.[cite: 21]", "Before the Main Sanctuary.[cite: 21]", "Before the Icon of the Apostles.[cite: 21]", "Before the Southern Door.[cite: 21]"], answer: 0 },
+            { q: "Group 3 of the Procession stations focuses on how the Church guides believers through:[cite: 21]", options: ["Her sacraments, worship, and holy life.[cite: 21]", "Asceticism, monasticism, and solitude.[cite: 21]", "Martyrdom, suffering, and persecution.[cite: 21]", "Prophecies, symbolic persons, and offerings.[cite: 21]"], answer: 0 },
+
+            // --- TOPIC: St. Shenouda the Archimandrite ---
+            { q: "What did the monks hear from heaven regarding St. Shenouda?[cite: 21]", options: ["'Shenouda has become the Archimandrite'.[cite: 21]", "'You will be a father for many people.'[cite: 21]", "'He is the Prophet Saint.'[cite: 21]", "'This is my beloved Son.'[cite: 21]"], answer: 0 },
+            { q: "St. Shenouda was known as one of the most effective monks to practice communal monasticism after whom?[cite: 21]", options: ["St. Pachomius.[cite: 21]", "St. Pigol.[cite: 21]", "St. Anthony.[cite: 21]", "Pope Cyril I.[cite: 21]"], answer: 0 },
+            { q: "How did St. Shenouda actively protect the true faith and his community?[cite: 21]", options: ["He fought idol worshippers, destroyed their temples, and fought evil tricks and magic.[cite: 21]", "He offered Levitical sacrifices at the altar.[cite: 21]", "He wrote the Gospel of St. Mark.[cite: 21]", "He established the boundaries of touch.[cite: 21]"], answer: 0 },
+            { q: "In his care for social justice, what did St. Shenouda do for the oppressed?[cite: 21]", options: ["He accompanied the oppressed to the leaders to help them get their rights.[cite: 21]", "He gave them all the monastery's gold.[cite: 21]", "He made them all monks and nuns.[cite: 21]", "He told them to build new churches.[cite: 21]"], answer: 0 },
+            { q: "On what date does the Church commemorate the consecration of St. Shenouda's church?[cite: 21]", options: ["The 1st day of the Coptic month of Koiahk (December 10).[cite: 21]", "The 7th of the Coptic Month of Epep (July 14).[cite: 21]", "Thoout 17 (September 27).[cite: 21]", "Paremhotep 10 (March 19).[cite: 21]"], answer: 0 },
+            { q: "How did St. Pigol foresee St. Shenouda's future?[cite: 21]", options: ["He placed St. Shenouda's hands on his own head and said, 'You bless me, my child, for you will be a father for many people.'[cite: 21]", "He saw him reading the Book of Leviticus.[cite: 21]", "He saw him fighting Nestorius the heretic.[cite: 21]", "He saw him attending the Council of Ephesus.[cite: 21]"], answer: 0 },
+            { q: "What miraculous sign did many fathers in the monastery observe about young St. Shenouda?[cite: 21]", options: ["They saw his hands illuminating while he was praying.[cite: 21]", "They saw him turning water into wine.[cite: 21]", "They saw him walking on water.[cite: 21]", "They saw him miraculously multiplying bread.[cite: 21]"], answer: 0 },
+            { q: "St. Shenouda's work against Nestorius proved the heretic wrong regarding what theological issue?[cite: 21]", options: ["The nature of our Lord Jesus Christ.[cite: 21]", "The necessity of the Levitical sacrifices.[cite: 21]", "The physical boundary of touch.[cite: 21]", "The validity of the Old Testament.[cite: 21]"], answer: 0 },
+            { q: "What language did St. Shenouda love, becoming very educated and knowledgeable in it?[cite: 21]", options: ["The Coptic language.[cite: 21]", "The Greek language.[cite: 21]", "The Hebrew language.[cite: 21]", "The Latin language.[cite: 21]"], answer: 0 },
+            { q: "How did St. Shenouda's life exemplify carrying the Cross practically?[cite: 21]", options: ["Through fasting, prayer, asceticism, and a life of sacrifice for God and others.[cite: 21]", "By physically carrying a wooden cross through the city.[cite: 21]", "By being crucified by the Roman soldiers.[cite: 21]", "By offering bulls and goats at the altar.[cite: 21]"], answer: 0 },
+
+            // --- TOPIC: Building Healthy Boundaries ---
+            { q: "What are boundaries defined as in the provided text?[cite: 21]", options: ["The rules and principles a person sets that determine what is acceptable and unacceptable in relationships.[cite: 21]", "The physical walls around a monastery.[cite: 21]", "The limits of the Tabernacle of Meeting.[cite: 21]", "The separation between the divine and human nature.[cite: 21]"], answer: 0 },
+            { q: "According to the text, boundaries are vital because they protect against what spiritually?[cite: 21]", options: ["Destructive thoughts/ideas: spiritually and doctrinally.[cite: 21]", "Physical death.[cite: 21]", "The daily shedding of blood.[cite: 21]", "Being assigned chores and household tasks.[cite: 21]"], answer: 0 },
+            { q: "Who is the ONLY person that can set the boundaries in your life?[cite: 21]", options: ["You.[cite: 21]", "Your parents.[cite: 21]", "The Church fathers.[cite: 21]", "The Archimandrite.[cite: 21]"], answer: 0 },
+            { q: "How did God set boundaries in dealing with others in the Old Testament?[cite: 21]", options: ["By giving the Ten Commandments (e.g., 'You shall not steal', 'You shall not kill').[cite: 21]", "By commanding Adam not to eat from the tree of knowledge.[cite: 21]", "By telling Paul to obey God rather than men.[cite: 21]", "By ordering the Procession of the Cross.[cite: 21]"], answer: 0 },
+            { q: "Which scriptural example shows St. Paul setting a boundary regarding the desire to please others?[cite: 21]", options: ["'For if I still pleased men, I would not be a bondservant of Christ.' (Galatians 1:10)[cite: 21]", "'Do not be unequally yoked together with unbelievers.' (2 Cor 6:14)[cite: 21]", "'Render therefore to Caesar the things that are Caesar's.' (Mark 12:17)[cite: 21]", "'We ought to obey God rather than men.' (Acts 5:29)[cite: 21]"], answer: 0 },
+            { q: "If someone 'never helps or does chores and prioritizes their own rest', what type of boundary flaw does this represent?[cite: 21]", options: ["Distancing.[cite: 21]", "Intrusion.[cite: 21]", "Healthy.[cite: 21]", "Persecution.[cite: 21]"], answer: 0 },
+            { q: "What characterizes an 'Intrusion' boundary regarding a depressed mood?[cite: 21]", options: ["Believing people must sympathize with me and share in my feelings.[cite: 21]", "Confiding in someone who is experienced for guidance.[cite: 21]", "Keeping feelings to myself and telling no one.[cite: 21]", "Not allowing myself to feel this emotion at all.[cite: 21]"], answer: 0 },
+            { q: "How does a person with a 'Healthy' boundary handle Trends/Fashion?[cite: 21]", options: ["They choose what suits them and stay away from what does not suit them.[cite: 21]", "They must be like everyone else.[cite: 21]", "They refuse to entertain any new ideas.[cite: 21]", "They let people's opinions decide for them.[cite: 21]"], answer: 0 },
+            { q: "What is the 'sweet spot' when forming boundaries?[cite: 21]", options: ["Healthy boundaries (neither too lenient nor too harsh).[cite: 21]", "Total distancing from all relationships.[cite: 21]", "Accepting all trends and fashions.[cite: 21]", "Focusing entirely on others' needs while forgetting your own.[cite: 21]"], answer: 0 },
+            { q: "What should be considered when setting healthy boundaries?[cite: 21]", options: ["Clarity, expressing feelings, politeness, and a respectful manner.[cite: 21]", "Physical strength and loud commands.[cite: 21]", "Remaining silent to avoid conflict.[cite: 21]", "Sharing every detail with strangers to be transparent.[cite: 21]"], answer: 0 },
+
+            // --- TOPIC: Memorization & Fathers ---
+            { q: "In the Parable of the Ten Virgins, what did the foolish virgins ask the wise virgins for?[cite: 21]", options: ["'Give us of your oil, for our lamps are going out.'[cite: 21]", "'Give us of your water, for we thirst.'[cite: 21]", "'Open to us the gates of righteousness.'[cite: 21]", "'Remember us when You come into Your kingdom.'[cite: 21]"], answer: 0 },
+            { q: "According to the Litanies of the First Watch, what happens to the servant whom the Bridegroom finds sleeping?[cite: 21]", options: ["He is unworthy of going with Him.[cite: 21]", "He is awakened and given rich oil.[cite: 21]", "He is praised for his asceticism.[cite: 21]", "He is given the Holy Eskeem.[cite: 21]"], answer: 0 },
+            { q: "How is the Theotokos described in the third Litany of the First Watch?[cite: 21]", options: ["The rampart of our salvation, the mighty and impregnable fortress.[cite: 21]", "The ruler of this world.[cite: 21]", "The treasury of good things.[cite: 21]", "The green olive tree in the house of God.[cite: 21]"], answer: 0 },
+            { q: "Who is addressed as 'the treasury of good things and the Life-Giver' in the Litanies?[cite: 21]", options: ["The heavenly King, the Comforter, the Spirit of truth.[cite: 21]", "The Lord Jesus Christ, the Savior.[cite: 21]", "St. Mary, the Mother of God.[cite: 21]", "St. Shenouda the Archimandrite.[cite: 21]"], answer: 0 },
+            { q: "What is the concluding message of the Parable of the Ten Virgins?[cite: 21]", options: ["'Watch therefore, for you know neither the day nor the hour in which the Son of Man is coming.'[cite: 21]", "'Whoever eats My flesh and drinks My blood has eternal life.'[cite: 21]", "'Strive to enter through the narrow gate.'[cite: 21]", "'The blood of Jesus Christ His Son cleanses us from all sin.'[cite: 21]"], answer: 0 },
+            { q: "According to St. Jerome, what did Christ do for the human race that had been disturbed?[cite: 21]", options: ["He came and made firm the human race, so that it may not be moved for all eternity.[cite: 21]", "He revealed the sign of His victory by carrying the wood.[cite: 21]", "He destroyed their temples and built new churches.[cite: 21]", "He granted them the right to sit at the right hand of the throne.[cite: 21]"], answer: 0 },
+            { q: "What does the first Litany implore the soul to do to avoid being cast out of the kingdom?[cite: 21]", options: ["Watch and cry out, saying, 'Holy, Holy, Holy are You, O God...'[cite: 21]", "Go rather to those who sell, and buy for yourselves.[cite: 21]", "Deny itself, take up its cross, and follow Him.[cite: 21]", "Render to Caesar the things that are Caesar's.[cite: 21]"], answer: 0 },
+            { q: "What does the second Litany advise the soul to wake up and light its lamp with?[cite: 21]", options: ["The oil of joy.[cite: 21]", "The fire of judgment.[cite: 21]", "The blood of the sacrifices.[cite: 21]", "The incense of the Procession.[cite: 21]"], answer: 0 },
+            { q: "According to the Litanies, whenever we stand in the holy sanctuary, we are considered:[cite: 21]", options: ["Standing in heaven.[cite: 21]", "Standing before Caesar.[cite: 21]", "Standing at the gates of hell.[cite: 21]", "Standing with the seventy apostles.[cite: 21]"], answer: 0 },
+            { q: "Which father stated that Christ revealed the sign of his victory by carrying the wood of his Cross himself?[cite: 21]", options: ["St. Ephrem The Syrian.[cite: 21]", "St. Jerome.[cite: 21]", "St. Shenouda the Archimandrite.[cite: 21]", "Pope Cyril I.[cite: 21]"], answer: 0 },
+
+            // --- TOPIC: Advanced Syntheses (MCQ) ---
+            { q: "How did St. Mary participate in the theme of the Cross according to the Procession text?[cite: 21]", options: ["She endured the cross of submission and obedience.[cite: 21]", "She offered the grain offering at the altar.[cite: 21]", "She rebuked the right-hand thief.[cite: 21]", "She physically carried the wood of the Cross.[cite: 21]"], answer: 0 },
+            { q: "Why was the 'curse' historically associated with the Cross applied to Christ?[cite: 21]", options: ["So He could carry the curse on our behalf and redeem us from the curse of the law. (Galatians 3:13)[cite: 21]", "Because He broke the laws of the Priests.[cite: 21]", "Because He failed to set healthy boundaries.[cite: 21]", "Because He was unequally yoked with unbelievers.[cite: 21]"], answer: 0 },
+            { q: "Which two Sacrifices from Leviticus share the reference of chapters 5 & 7?[cite: 21]", options: ["The Sin offering and the Trespass offering.[cite: 21]", "The Burnt offering and the Grain offering.[cite: 21]", "The Peace offering and the Sin offering.[cite: 21]", "The Grain offering and the Trespass offering.[cite: 21]"], answer: 0 },
+            { q: "What specific distinction does the text make between 'Forgiveness' and 'Purification' as Blessings of the Cross?[cite: 21]", options: ["Forgiveness remits past sins via shed blood, while purification cleanses current hearts.[cite: 21]", "Forgiveness is for adults, purification is for children.[cite: 21]", "Forgiveness happens at the Northern door, purification at the Southern door.[cite: 21]", "Forgiveness requires a peace offering, purification requires a burnt offering.[cite: 21]"], answer: 0 },
+            { q: "What is the common thread between St. Anthony and St. John the Baptist as presented in the Procession stations?[cite: 21]", options: ["Both exemplify self-denial and the ascetic struggle of taking up the cross.[cite: 21]", "Both were martyred by the Roman Empire.[cite: 21]", "Both authored books in the Old Testament.[cite: 21]", "Both attended the Ecumenical Council of Ephesus.[cite: 21]"], answer: 0 },
+            { q: "If someone states 'People's opinions are important, and my decisions depend on them', this indicates an intrusion boundary related to:[cite: 21]", options: ["Obstacles to Decision Making.[cite: 21]", "Trends/Fashion.[cite: 21]", "Distressed or Depressed Mood.[cite: 21]", "Chores & Household Tasks.[cite: 21]"], answer: 0 },
+            { q: "Why did Jesus request water ('I thirst') beyond physical need?[cite: 21]", options: ["To spiritually show He thirsted for the salvation of humanity, like with the Samaritan woman.[cite: 21]", "To delay His death until the ninth hour.[cite: 21]", "To prove He possessed a human nature separate from His divine nature.[cite: 21]", "To initiate the sacrament of Baptism on the cross.[cite: 21]"], answer: 0 },
+            { q: "What does the text imply by saying 'the innocent soul bears the sin and is consequently regarded as the sin-bearer'?[cite: 21]", options: ["It serves as a foreshadowing of the Lord Jesus Christ who bore our sins.[cite: 21]", "It shows that animals have eternal souls like humans.[cite: 21]", "It explains why St. Shenouda tended sheep.[cite: 21]", "It justifies the boundaries of physical touch.[cite: 21]"], answer: 0 },
+            { q: "In the context of boundaries, why did God create humanity with free will?[cite: 21]", options: ["Because in His great love, He never forces Himself upon anyone, but lovingly invites them.[cite: 21]", "To test if they would build idol temples.[cite: 21]", "So they could establish the Levitical priesthood.[cite: 21]", "So they could experience physical, spiritual, moral, and eternal death.[cite: 21]"], answer: 0 },
+            { q: "What makes the sacrifice of Christ fundamentally different from the daily shedding of animal blood?[cite: 21]", options: ["Christ's sacrifice is a Living Sacrifice offered once for all, obtaining eternal redemption.[cite: 21]", "Christ's sacrifice required the approval of Caesar.[cite: 21]", "Christ's sacrifice was performed inside the Tabernacle of Meeting.[cite: 21]", "Christ's sacrifice only removed physical death.[cite: 21]"], answer: 0 },
+
+            // --- TRUE OR FALSE (71-100) ---
+            { q: "True or False: According to the text, the Cross only existed in the mind of God after Adam fell into sin.[cite: 21]", options: ["True", "False"], answer: 1 },
+            { q: "True or False: The prophecy of Genesis 3:15 describes the Seed bruising the serpent's heel.[cite: 21]", options: ["True", "False"], answer: 1 },
+            { q: "True or False: The text states that God could not simply forgive Adam because his corrupted nature would continue to produce sin.[cite: 21]", options: ["True", "False"], answer: 0 },
+            { q: "True or False: The curse of the law was removed from us when Christ became a curse for us on the tree.[cite: 21]", options: ["True", "False"], answer: 0 },
+            { q: "True or False: Moral (relational) death is defined as eternal destruction in hell.[cite: 21]", options: ["True", "False"], answer: 1 },
+            { q: "True or False: The Peace Offering symbolizes the Obedience of the Son.[cite: 21]", options: ["True", "False"], answer: 1 },
+            { q: "True or False: The daily shedding of animal blood demonstrates its futility because it could not take away sins.[cite: 21]", options: ["True", "False"], answer: 0 },
+            { q: "True or False: The right-hand thief was the only one who defended the Lord Jesus Christ while the disciples fled.[cite: 21]", options: ["True", "False"], answer: 0 },
+            { q: "True or False: St. Longinus is given as an example of a persecutor who later believed in Christ, similar to St. Paul.[cite: 21]", options: ["True", "False"], answer: 0 },
+            { q: "True or False: The cry 'My God, My God' indicates the Father forsook the Son permanently.[cite: 21]", options: ["True", "False"], answer: 1 },
+            { q: "True or False: Christ's victorious cry 'It is finished' destroyed the kingdom of Satan, the ruler of this world.[cite: 21]", options: ["True", "False"], answer: 0 },
+            { q: "True or False: By saying 'Father, into Your hands I commit My spirit', Christ surrendered His spirit by His own will and authority.[cite: 21]", options: ["True", "False"], answer: 0 },
+            { q: "True or False: The Procession of the Cross stops at exactly 10 stations.[cite: 21]", options: ["True", "False"], answer: 1 },
+            { q: "True or False: The station before the Main Sanctuary teaches that the Cross is the key to the gate of heaven.[cite: 21]", options: ["True", "False"], answer: 0 },
+            { q: "True or False: Archangel Michael brought the good news of the incarnation to St. Mary.[cite: 21]", options: ["True", "False"], answer: 1 },
+            { q: "True or False: The station for St. Mark is associated with the appointing and sending of the 70 apostles.[cite: 21]", options: ["True", "False"], answer: 0 },
+            { q: "True or False: The Immersion Font (Baptismal Room) station utilizes a Gospel reading from Matthew 3 concerning Christ's baptism.[cite: 21]", options: ["True", "False"], answer: 0 },
+            { q: "True or False: St. Shenouda the Archimandrite was born in Jerusalem in 326 A.D.[cite: 21]", options: ["True", "False"], answer: 1 },
+            { q: "True or False: St. Pigol was St. Shenouda's uncle and the abbot of a monastery.[cite: 21]", options: ["True", "False"], answer: 0 },
+            { q: "True or False: St. Shenouda lived for exactly 66 years.[cite: 21]", options: ["True", "False"], answer: 1 },
+            { q: "True or False: Pope Cyril I called St. Shenouda 'The Prophet Saint'.[cite: 21]", options: ["True", "False"], answer: 0 },
+            { q: "True or False: Boundaries provide protection against destructive spiritual and doctrinal ideas.[cite: 21]", options: ["True", "False"], answer: 0 },
+            { q: "True or False: Jesus setting boundaries of touch is exemplified by Him saying, 'Render therefore to Caesar'.[cite: 21]", options: ["True", "False"], answer: 1 },
+            { q: "True or False: Refusing to entertain any new ideas that are unfamiliar is considered a 'Healthy' boundary in the text.[cite: 21]", options: ["True", "False"], answer: 1 },
+            { q: "True or False: An intrusion boundary regarding love is falling in love at first sight and engaging in romantic fantasies.[cite: 21]", options: ["True", "False"], answer: 0 },
+            { q: "True or False: A healthy boundary for physical touch involves staying silent because you are afraid to speak.[cite: 21]", options: ["True", "False"], answer: 1 },
+            { q: "True or False: In the Parable of the Ten Virgins, the wise virgins told the foolish to go to those who sell and buy oil for themselves.[cite: 21]", options: ["True", "False"], answer: 0 },
+            { q: "True or False: The Litanies of the First Watch implore the Holy Spirit, the Comforter, to come and purify us from all defilement.[cite: 21]", options: ["True", "False"], answer: 0 },
+            { q: "True or False: St. Ephrem The Syrian stated that Christ made firm the human race that had been disturbed.[cite: 21]", options: ["True", "False"], answer: 1 },
+            { q: "True or False: The Church commemorates St. Shenouda's departure on the 7th of the Coptic Month of Epep.[cite: 21]", options: ["True", "False"], answer: 0 }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let firstAttempt = true;
+        const alphabet = ['A', 'B', 'C', 'D'];
+
+        function startGame() {
+            document.getElementById('start-screen').classList.remove('active');
+            document.getElementById('game-screen').classList.add('active');
+            currentQuestionIndex = 0;
+            score = 0;
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            firstAttempt = true;
+            const q = questions[currentQuestionIndex];
+            
+            document.getElementById('progress-ribbon').innerText = `Question ${currentQuestionIndex + 1} of ${questions.length}`;
+            document.getElementById('question-text').innerText = q.q;
+
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+            
+            q.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                
+                // Add letters for multiple-choice questions
+                if (q.options.length > 2) {
+                    const letterSpan = document.createElement('span');
+                    letterSpan.className = 'option-letter';
+                    letterSpan.innerText = `${alphabet[index]}.`;
+                    btn.appendChild(letterSpan);
+                }
+
+                const textSpan = document.createElement('span');
+                textSpan.innerText = opt;
+                btn.appendChild(textSpan);
+
+                btn.onclick = () => checkAnswer(index, btn);
+                optionsContainer.appendChild(btn);
+            });
+
+            // Adjust grid for True/False questions
+            if (q.options.length === 2) {
+                optionsContainer.style.gridTemplateColumns = '1fr 1fr';
+            } else {
+                optionsContainer.style.gridTemplateColumns = window.innerWidth > 768 ? '1fr 1fr' : '1fr';
+            }
+        }
+
+        function checkAnswer(selectedIndex, button) {
+            const q = questions[currentQuestionIndex];
+            
+            if (selectedIndex === q.answer) {
+                button.classList.add('correct');
+                
+                const allButtons = document.querySelectorAll('.option-btn');
+                allButtons.forEach(btn => btn.style.pointerEvents = 'none');
+
+                if (firstAttempt) score++;
+                
+                showStarsEffect(button);
+                document.body.classList.remove('warning');
+
+                setTimeout(() => {
+                    currentQuestionIndex++;
+                    if (currentQuestionIndex < questions.length) {
+                        loadQuestion();
+                    } else {
+                        showResult();
+                    }
+                }, 1200);
+
+            } else {
+                firstAttempt = false;
+                button.classList.add('wrong');
+                button.style.pointerEvents = 'none';
+                
+                document.body.classList.add('warning');
+                setTimeout(() => document.body.classList.remove('warning'), 400);
+            }
+        }
+
+        function showStarsEffect(button) {
+            const rect = button.getBoundingClientRect();
+            const x = rect.left + rect.width / 2;
+            const y = rect.top + rect.height / 2;
+
+            for (let i = 0; i < 8; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.innerText = '✨';
+                star.style.left = x + 'px';
+                star.style.top = y + 'px';
+                
+                const angle = Math.random() * Math.PI * 2;
+                const distance = 80 + Math.random() * 50;
+                star.style.setProperty('--tx', `${Math.cos(angle) * distance}px`);
+                star.style.setProperty('--ty', `${Math.sin(angle) * distance}px`);
+                
+                document.body.appendChild(star);
+                setTimeout(() => star.remove(), 1000);
+            }
+        }
+
+        function showResult() {
+            document.getElementById('game-screen').classList.remove('active');
+            document.getElementById('result-screen').classList.add('active');
+            
+            document.getElementById('final-score').innerText = `${score} / ${questions.length}`;
+            
+            let message = "";
+            let emoji = "";
+            
+            if (score === questions.length) {
+                message = "Flawless! You've demonstrated a profound theological understanding![cite: 21]";
+                emoji = "👑";
+            } else if (score >= 80) {
+                message = "Exceptional work! Your grasp of the advanced material is excellent.[cite: 21]";
+                emoji = "🌟";
+            } else if (score >= 60) {
+                message = "Well done, though reviewing the intricacies of the text will help you master it![cite: 21]";
+                emoji = "📖";
+            } else {
+                message = "A challenging quiz! Revisit the Mahragan text to solidify these deep concepts.[cite: 21]";
+                emoji = "💪";
+            }
+            
+            document.getElementById('result-message').innerText = message;
+            document.getElementById('result-emoji').innerText = emoji;
+        }
+
+        function resetGame() {
+            document.getElementById('result-screen').classList.remove('active');
+            document.getElementById('start-screen').classList.add('active');
+        }
+    </script>
+</body>
+</html>
