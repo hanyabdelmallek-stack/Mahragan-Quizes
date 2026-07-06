@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mahragan 2026 Interactive Quiz</title>
+    <style>
+        body {
+            margin: 0; padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; transition: background-color 0.5s;
+            color: #333; overflow-x: hidden;
+        }
+        body.warning { background: linear-gradient(135deg, #ffe6e6 0%, #ffcccc 100%); }
+        #game-container {
+            background: white; width: 95%; max-width: 900px;
+            border-radius: 20px; box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+            padding: 35px; position: relative; text-align: center;
+            border: 4px solid #334e68;
+        }
+        .screen { display: none; }
+        .screen.active { display: block; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        h1 { color: #102a43; font-size: 2.2em; margin-bottom: 10px; }
+        p.subtitle { color: #627d98; font-size: 1.2em; margin-bottom: 30px; }
+        .btn-main {
+            background-color: #334e68; color: white; border: none;
+            padding: 15px 40px; font-size: 1.5em; border-radius: 50px;
+            cursor: pointer; box-shadow: 0 5px 15px rgba(51, 78, 104, 0.4);
+            transition: transform 0.2s, background-color 0.2s; font-weight: bold;
+        }
+        .btn-main:hover { transform: scale(1.05); background-color: #243b53; }
+        #progress-ribbon {
+            background-color: #fce588; color: #102a43; padding: 10px 20px;
+            border-radius: 20px; font-size: 1.2em; font-weight: bold;
+            margin-bottom: 20px; display: inline-block;
+        }
+        #question-text {
+            font-size: 1.5em; color: #102a43; margin: 20px 0 30px;
+            line-height: 1.5; font-weight: bold;
+        }
+        #options-container {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 15px;
+        }
+        @media (max-width: 600px) {
+            #options-container { grid-template-columns: 1fr; }
+        }
+        .option-btn {
+            background-color: #f0f4f8; border: 2px solid #bcccdc;
+            padding: 15px; font-size: 1.15em; border-radius: 15px;
+            cursor: pointer; transition: all 0.3s; color: #102a43;
+            font-weight: bold; display: flex; align-items: center;
+            line-height: 1.4; text-align: left;
+        }
+        .option-btn:hover { background-color: #d9e2ec; border-color: #627d98; transform: translateY(-3px); }
+        .option-btn.correct {
+            background-color: #2ecc71 !important; color: white !important;
+            border-color: #27ae60 !important; transform: scale(1.05); z-index: 2; position: relative;
+        }
+        .option-btn.wrong {
+            background-color: #e74c3c !important; color: white !important;
+            border-color: #c0392b !important; animation: shake 0.4s;
+        }
+        .option-letter { margin-right: 15px; color: #f39c12; font-weight: bold; font-size: 1.2em; }
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+        .star {
+            position: absolute; font-size: 2em; pointer-events: none;
+            animation: flyStar 1s ease-out forwards; z-index: 10;
+        }
+        @keyframes flyStar {
+            0% { opacity: 1; transform: translate(0, 0) scale(1); }
+            100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(2); }
+        }
+        #final-score { font-size: 2.5em; color: #d35400; font-weight: bold; margin: 20px 0; }
+        .result-icon { font-size: 4em; }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <!-- Start Screen -->
+        <div id="start-screen" class="screen active">
+            <h1>Mahragan 2026: Comprehensive Quiz</h1>
+            <p class="subtitle">"Yet in all these things we are more than conquerors through Him who loved us." (Romans 8:37)</p>
+            <p style="font-size: 1.1em; color: #555; margin-bottom: 30px;">
+                Get ready for the ultimate 100-question challenge! Test your knowledge on the Cross, Sacrifices, the 7 Words, St. Shenouda, and Healthy Boundaries.
+            </p>
+            <button class="btn-main" onclick="startGame()">▶️ Start the Quiz</button>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div id="game-screen" class="screen">
+            <div>
+                <span id="progress-ribbon">Question 1 of 100</span>
+            </div>
+            <div id="question-text">Question goes here...</div>
+            <div id="options-container"></div>
+        </div>
+
+        <!-- Result Screen -->
+        <div id="result-screen" class="screen">
+            <div class="result-icon" id="result-emoji">🏆</div>
+            <h1>Quiz Completed!</h1>
+            <div id="final-score">0 / 100</div>
+            <p id="result-message" style="font-size: 1.3em; margin-bottom: 30px; color: #334e68;"></p>
+            <button class="btn-main" onclick="resetGame()">🔄 Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            // --- TOPIC 1: The Cross in Christianity ---
+            { q: "What are the two aspects of the Cross in Christianity?", options: ["Joy and Suffering", "Wealth and Health", "Fasting and Feasting", "Life and Logic"], answer: 0 },
+            { q: "According to Hebrews 12:2, why did Jesus endure the cross?", options: ["To prove a point", "For the joy that was set before Him", "Because He was forced", "To become an earthly king"], answer: 1 },
+            { q: "Which verse gave the first promise of redemption, saying the Seed will bruise the serpent's head?", options: ["John 3:16", "Romans 8:37", "Genesis 3:15", "Luke 23:34"], answer: 2 },
+            { q: "Which of the following figures from the Old Testament is considered a type of Christ?", options: ["Pharaoh", "Melchizedek", "Nebuchadnezzar", "Pilate"], answer: 1 },
+            { q: "According to Hebrews 10:10, how many times does the sacrifice on the Cross need to be repeated?", options: ["Every year", "Seven times", "Once for all", "Every day"], answer: 2 },
+            
+            // --- TOPIC 2: Doctrine of the Church & Fall ---
+            { q: "What was the result of Adam and Eve disobeying God?", options: ["They received a new garden", "Their nature became corrupt", "They became angels", "Nothing happened"], answer: 1 },
+            { q: "What is the wages of sin according to Romans 6:23?", options: ["Death", "Suffering", "Poverty", "Hard work"], answer: 0 },
+            { q: "Which of these is a required characteristic of the Savior?", options: ["He must be human", "He must be an angel", "He must have sinned once", "He must be limited"], answer: 0 },
+            { q: "Why did the Savior have to be unlimited?", options: ["Because humans are unlimited", "Because Adam's sin was directed against the infinite God", "Because He lived a long life", "Because He performed miracles"], answer: 1 },
+            { q: "What type of death is defined as eternal destruction in hell?", options: ["Physical death", "Spiritual death", "Moral death", "Eternal death"], answer: 3 },
+            
+            // --- TOPIC 3: Why the Cross & Sacrifices ---
+            { q: "Historically, crucifixion was considered a method of death that was...", options: ["Honorable", "Painless", "Cursed", "Royal"], answer: 2 },
+            { q: "What type of death means separation from God?", options: ["Physical death", "Spiritual death", "Moral death", "Eternal death"], answer: 1 },
+            { q: "Which book of the Old Testament is known as the 'Law of the Priests'?", options: ["Genesis", "Exodus", "Leviticus", "Numbers"], answer: 2 },
+            { q: "Who authored the Book of Leviticus?", options: ["Joshua", "Aaron", "Moses", "Abraham"], answer: 2 },
+            { q: "What is the main idea behind the Old Testament sacrifices?", options: ["A guilty animal dying for an innocent human", "An innocent animal dying on behalf of a guilty human", "Burning crops to please God", "Giving money to the priests"], answer: 1 },
+            
+            // --- TOPIC 4: Types of Sacrifices ---
+            { q: "Which sacrifice symbolizes the Obedience of the Son?", options: ["Burnt Offering", "Grain Offering", "Peace Offering", "Sin Offering"], answer: 0 },
+            { q: "Which sacrifice symbolizes the Incarnation of the Son?", options: ["Burnt Offering", "Grain Offering", "Peace Offering", "Trespass Offering"], answer: 1 },
+            { q: "Which sacrifice is considered a Thanksgiving offering?", options: ["Sin Offering", "Burnt Offering", "Peace Offering", "Trespass Offering"], answer: 2 },
+            { q: "Which sacrifice symbolizes Bearing our sins?", options: ["Grain Offering", "Trespass Offering", "Peace Offering", "Sin Offering"], answer: 3 },
+            { q: "Which sacrifice symbolizes sins directed towards God?", options: ["Trespass Offering", "Burnt Offering", "Sin Offering", "Grain Offering"], answer: 0 },
+            
+            // --- TOPIC 5: Animal Sacrifices & Rites ---
+            { q: "Which animals were considered 'herd animals' for sacrifices?", options: ["Sheep and goats", "Bulls and cows", "Turtledoves and pigeons", "Camels and horses"], answer: 1 },
+            { q: "Which animals were offered by those who could not afford livestock?", options: ["Sheep and goats", "Bulls and cows", "Turtledoves and young pigeons", "Fish"], answer: 2 },
+            { q: "Where must all sacrifices be offered to the Lord?", options: ["Inside the Holy of Holies", "At the entrance door of the Tabernacle of Meeting", "On top of a mountain", "In the person's home"], answer: 1 },
+            { q: "What parts of the sacrifices were strictly forbidden to be eaten because they belong to the Lord?", options: ["The meat and skin", "The blood and fat", "The bones and horns", "The head and hooves"], answer: 1 },
+            { q: "What does the priest do with the blood of the sacrifice?", options: ["He drinks it", "He throws it away", "He sprinkles it around the Altar", "He gives it to the sinner"], answer: 2 },
+            
+            // --- TOPIC 6: Sign of the Cross & Feasts ---
+            { q: "When making the sign of the cross from forehead to chest, what does it symbolize?", options: ["Transferred from darkness to light", "God the Son coming from heaven and being born of St. Mary", "The Holy Spirit", "The Trinity"], answer: 1 },
+            { q: "When making the sign of the cross from left to right, what does it symbolize?", options: ["Being transferred from darkness to light", "God the Son coming from heaven", "The forgiveness of sins", "The Resurrection"], answer: 0 },
+            { q: "When does the Coptic Orthodox Church celebrate the Consecration of the Church of the Resurrection?", options: ["Thoout 17 (Sept 27)", "Paremhotep 10 (March 19)", "Epep 7 (July 14)", "Koiahk 1 (Dec 10)"], answer: 0 },
+            { q: "Who discovered the Holy Cross in 326 AD?", options: ["St. Mary", "St. Queen Helen", "St. Shenouda", "St. Longinus"], answer: 1 },
+            { q: "Which blessing of the Cross grants us spiritual stability and growth to overcome sin?", options: ["Forgiveness", "Purification", "Sanctification", "Abiding in Him"], answer: 3 },
+            
+            // --- TOPIC 7: The Seven Words (1 to 4) ---
+            { q: "What was Christ's first word on the Cross?", options: ["I thirst", "Father, forgive them", "It is finished", "My God, My God"], answer: 1 },
+            { q: "Who pierced the side of Christ and later believed in Him?", options: ["St. Paul", "St. Peter", "St. Longinus", "St. Mark"], answer: 2 },
+            { q: "To whom did Jesus say: 'Today you will be with Me in Paradise'?", options: ["The left-hand thief", "The right-hand thief", "St. John", "St. Peter"], answer: 1 },
+            { q: "What did the right-hand thief do that made him deserve the kingdom?", options: ["He defended Jesus while disciples fled", "He offered a sacrifice", "He freed Jesus", "He gave Jesus water"], answer: 0 },
+            { q: "Who did Jesus entrust to care for St. Mary?", options: ["St. Peter", "St. Paul", "St. Mark", "St. John the Beloved"], answer: 3 },
+            { q: "What did the phrase 'My God, My God, why have You forsaken Me?' mean?", options: ["Jesus lost His divinity", "The Father permitted Him to bear the consequences of sin", "Jesus forgot who He was", "The Father left Him alone forever"], answer: 1 },
+            { q: "Which role of Christ is shown when He prayed for His crucifiers?", options: ["King", "Teacher", "Priest", "Shepherd"], answer: 2 },
+            
+            // --- TOPIC 8: The Seven Words (5 to 7) ---
+            { q: "What did Jesus mean spiritually when He said 'I thirst'?", options: ["He was dehydrated", "He thirsted for the salvation of humanity", "He wanted vinegar", "He wanted wine"], answer: 1 },
+            { q: "Which Psalm prophesied: 'And for My thirst they gave Me vinegar to drink'?", options: ["Psalm 22", "Psalm 50", "Psalm 69", "Psalm 150"], answer: 2 },
+            { q: "What does the word 'It is finished' declare?", options: ["He gave up", "The completion of His mission of salvation", "His life was over", "The Romans won"], answer: 1 },
+            { q: "What is the final (7th) word spoken by Jesus on the Cross?", options: ["It is finished", "Father, into Your hands I commit My spirit", "I thirst", "Woman, behold your son"], answer: 1 },
+            { q: "Which role of Christ is shown when He promised the thief Paradise?", options: ["King", "Shepherd", "Priest", "Teacher"], answer: 0 },
+            { q: "Which role of Christ is shown when He cared for His mother and St. John?", options: ["King", "Shepherd", "Priest", "Teacher"], answer: 1 },
+            
+            // --- TOPIC 9: Procession of the Cross ---
+            { q: "How many stations are in the Procession of the Cross?", options: ["7", "10", "12", "14"], answer: 2 },
+            { q: "Where does the first stop of the Procession take place?", options: ["Before the Northern Door", "Before the Icon of St. Mary", "Before the Main Sanctuary", "Before the Immersion Font"], answer: 2 },
+            { q: "Who brought the good news to St. Mary?", options: ["Archangel Michael", "Archangel Gabriel", "St. John the Baptist", "St. Mark"], answer: 1 },
+            { q: "Who proclaimed the holy Resurrection of the Lord when the stone was rolled away?", options: ["Archangel Gabriel", "Archangel Michael", "St. Peter", "St. John"], answer: 1 },
+            { q: "Which saint represents those who carried the cross of the ministry to deliver the gospel?", options: ["St. George", "St. Anthony", "St. Shenouda", "St. Mark"], answer: 3 },
+            { q: "At the station of any Martyr (like St. George), what does the Cross represent?", options: ["Self-denial in the desert", "Sacrifice, suffering, and persecution", "Preaching the gospel", "The annunciation"], answer: 1 },
+            { q: "What does the Northern Door station symbolize?", options: ["The gates of righteousness", "The royal procession", "The narrow gate", "The immersion font"], answer: 2 },
+            
+            // --- TOPIC 10: St. Shenouda the Archimandrite ---
+            { q: "In what year was St. Shenouda born?", options: ["333 A.D.", "383 A.D.", "431 A.D.", "451 A.D."], answer: 0 },
+            { q: "What was St. Shenouda's uncle's name?", options: ["St. Pachomius", "St. Pigol", "St. Anthony", "St. Cyril"], answer: 1 },
+            { q: "What is the Holy Eskeem?", options: ["A priest's hat", "A string of plaited leather with crosses", "A type of sacrifice", "A staff"], answer: 1 },
+            { q: "Why was St. Shenouda given the title 'Archimandrite'?", options: ["He was a great prophet", "He built the first church", "He lived in solitude and was a great help/leader to monks", "He was a martyr"], answer: 2 },
+            { q: "How many monks and nuns did St. Shenouda serve as a father to?", options: ["400 monks, 180 nuns", "4,000 monks, 1,800 nuns", "1,800 monks, 4,000 nuns", "100 monks, 50 nuns"], answer: 1 },
+            { q: "Which council did St. Shenouda attend with Pope Cyril I?", options: ["Council of Nicaea", "Council of Constantinople", "Council of Ephesus", "Council of Chalcedon"], answer: 2 },
+            { q: "What title did Pope Cyril I give to St. Shenouda?", options: ["The Prophet Saint", "The First Martyr", "The Defender of Faith", "The Great Teacher"], answer: 0 },
+            
+            // --- TOPIC 11: Boundaries (Intro & Biblical) ---
+            { q: "What is the definition of boundaries?", options: ["Walls around a church", "Rules determining what is acceptable and unacceptable", "Rules for animal sacrifices", "The steps of a procession"], answer: 1 },
+            { q: "What was the boundary God set for Adam and Eve in Genesis 2?", options: ["Not to speak to the serpent", "Not to eat from the tree of knowledge", "Not to leave the garden", "Not to touch the animals"], answer: 1 },
+            { q: "How did Jesus set a boundary against violence?", options: ["'Somebody touched Me'", "'We ought to obey God rather than men'", "'Put your sword in its place'", "'Do not cling to Me'"], answer: 2 },
+            { q: "What boundary did St. Paul set regarding unbelievers?", options: ["Do not speak to them", "Do not be unequally yoked together with them", "Fight them", "Ignore them"], answer: 1 },
+            { q: "When setting boundaries, what happens if one is too lenient?", options: ["They distance themselves from others", "They risk people intruding and overstepping", "They achieve the 'sweet spot'", "They gain respect"], answer: 1 },
+            
+            // --- TOPIC 12: Types of Boundaries ---
+            { q: "Which of the following is a 'Healthy' boundary regarding Privacy?", options: ["Discussing every detail with a stranger", "Not sharing anything with a close friend", "Building trust gradually with a friend", "Posting everything online"], answer: 2 },
+            { q: "Which of the following describes an 'Intrusion' boundary in Helping Others?", options: ["I do not think about serving others", "I help others while considering my own needs", "I prioritize others' needs and forget my own", "I only help my family"], answer: 2 },
+            { q: "What is a healthy boundary for Time?", options: ["My time belongs only to me", "I organize my time according to my priorities", "I spend all my time with friends", "I never plan anything"], answer: 1 },
+            { q: "Which of the following is a 'Distancing' boundary in Communication?", options: ["Answering communication as I see it", "Talking for hours whenever friends want", "Never answering a phone call or taking days to respond", "Setting clear limits"], answer: 2 },
+            { q: "What is a healthy boundary regarding Decisions?", options: ["People's opinions dictate my choices", "I seek advice from trustworthy people and decide for myself", "I am afraid to make any decision", "I let others decide for me"], answer: 1 },
+            
+            // --- TOPIC 13: Memorization & Agpeya ---
+            { q: "According to the Parable of the Ten Virgins, how many were wise?", options: ["Three", "Five", "Seven", "Ten"], answer: 1 },
+            { q: "What did the wise virgins take with them that the foolish did not?", options: ["Extra money", "Swords", "Oil in their vessels", "Food"], answer: 2 },
+            { q: "At what time was the cry made: 'Behold, the bridegroom is coming'?", options: ["Dawn", "Noon", "Midnight", "Sunset"], answer: 2 },
+            { q: "What did the Lord say to the foolish virgins when they knocked on the door?", options: ["Welcome in", "I do not know you", "Wait a moment", "Go buy oil"], answer: 1 },
+            { q: "Who said: 'By carrying the wood of his Cross himself, Christ revealed the sign of his victory'?", options: ["St. Jerome", "St. Shenouda", "St. Ephrem The Syrian", "St. Pachomius"], answer: 2 },
+            
+            // --- TOPIC 14: True or False (Cross & Sacrifices) ---
+            { q: "True or False: Christianity and the Cross are inseparable.", options: ["True", "False"], answer: 0 },
+            { q: "True or False: The Cross was only a momentary concept that God thought of at the time of crucifixion.", options: ["True", "False"], answer: 1 },
+            { q: "True or False: Adam's nature remained pure even after he sinned.", options: ["True", "False"], answer: 1 },
+            { q: "True or False: Christ had to be human because it is man who sinned.", options: ["True", "False"], answer: 0 },
+            { q: "True or False: We make the sign of the cross using our first 3 fingers to represent the Holy Trinity.", options: ["True", "False"], answer: 0 },
+            { q: "True or False: The Book of Leviticus is considered the fourth book of Moses.", options: ["True", "False"], answer: 1 },
+            { q: "True or False: The Levites are descendants of Levi, the son of Jacob.", options: ["True", "False"], answer: 0 },
+            { q: "True or False: The Grain Offering symbolizes the Obedience of the Son.", options: ["True", "False"], answer: 1 },
+            { q: "True or False: In sacrifices, the blood and fat belonged to the Lord and must not be eaten.", options: ["True", "False"], answer: 0 },
+            { q: "True or False: The daily shedding of animal blood in the Old Testament could take away sins forever.", options: ["True", "False"], answer: 1 },
+            
+            // --- TOPIC 15: True or False (7 Words, Rites, Shenouda, Boundaries) ---
+            { q: "True or False: The Lord Jesus Christ spoke nine words (phrases) while on the Cross.", options: ["True", "False"], answer: 1 },
+            { q: "True or False: The phrase 'It is finished' is a cry of joy and victory.", options: ["True", "False"], answer: 0 },
+            { q: "True or False: The thief on the left confessed Jesus as King and Lord.", options: ["True", "False"], answer: 1 },
+            { q: "True or False: The Procession of the Cross stops at exactly 12 stations.", options: ["True", "False"], answer: 0 },
+            { q: "True or False: The station before the Immersion Font reminds us of Christ's baptism by John the Baptist.", options: ["True", "False"], answer: 0 },
+            { q: "True or False: The Southern Door represents the narrow gate of repentance.", options: ["True", "False"], answer: 1 },
+            { q: "True or False: St. Shenouda the Archimandrite lived for 118 years.", options: ["True", "False"], answer: 0 },
+            { q: "True or False: St. Shenouda fought against magic and idol worshippers in his city.", options: ["True", "False"], answer: 0 },
+            { q: "True or False: God forces humanity to come to Him against their free will.", options: ["True", "False"], answer: 1 },
+            { q: "True or False: Setting healthy boundaries includes expressing feelings politely and respectfully.", options: ["True", "False"], answer: 0 },
+            
+            // --- TOPIC 16: Extra Mix (Final 10) ---
+            { q: "Which Old Testament figure is NOT explicitly listed as a type of Christ in the material?", options: ["Melchizedek", "Jonah", "Job", "Elijah"], answer: 3 },
+            { q: "Which of these is NOT one of the 4 types of death resulting from the fall?", options: ["Physical", "Spiritual", "Mental", "Eternal"], answer: 2 },
+            { q: "Who said: 'In truth, Christ came and made firm the human race that had been disturbed'?", options: ["St. Jerome", "St. Ephrem", "St. Paul", "St. Shenouda"], answer: 0 },
+            { q: "True or False: The 7 Words on the Cross were characterized by taking rather than giving.", options: ["True", "False"], answer: 1 },
+            { q: "True or False: St. Anthony represents taking up the cross of self-denial and ascetic struggle.", options: ["True", "False"], answer: 0 },
+            { q: "True or False: St. Mary endured the cross of submission and obedience.", options: ["True", "False"], answer: 0 },
+            { q: "True or False: The Peace Offering symbolizes bearing our sins.", options: ["True", "False"], answer: 1 },
+            { q: "True or False: Turtledoves and young pigeons were offered by those who could not afford livestock.", options: ["True", "False"], answer: 0 },
+            { q: "True or False: When Jesus said 'Woman, behold your son', He taught us to neglect our own family.", options: ["True", "False"], answer: 1 },
+            { q: "True or False: 'Render therefore to Caesar the things that are Caesar's' is an example of Jesus respecting laws.", options: ["True", "False"], answer: 0 }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let firstAttempt = true;
+        const alphabet = ['A', 'B', 'C', 'D'];
+
+        function startGame() {
+            document.getElementById('start-screen').classList.remove('active');
+            document.getElementById('game-screen').classList.add('active');
+            currentQuestionIndex = 0;
+            score = 0;
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            firstAttempt = true;
+            const q = questions[currentQuestionIndex];
+            
+            document.getElementById('progress-ribbon').innerText = `Question ${currentQuestionIndex + 1} of ${questions.length}`;
+            document.getElementById('question-text').innerText = q.q;
+
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+            
+            q.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                
+                // Add letters (A, B, C, D) for multiple-choice questions
+                if (q.options.length > 2) {
+                    const letterSpan = document.createElement('span');
+                    letterSpan.className = 'option-letter';
+                    letterSpan.innerText = `${alphabet[index]}.`;
+                    btn.appendChild(letterSpan);
+                }
+
+                const textSpan = document.createElement('span');
+                textSpan.innerText = opt;
+                btn.appendChild(textSpan);
+
+                btn.onclick = () => checkAnswer(index, btn);
+                optionsContainer.appendChild(btn);
+            });
+
+            // Adjust grid for True/False questions
+            if (q.options.length === 2) {
+                optionsContainer.style.gridTemplateColumns = '1fr 1fr';
+            } else {
+                optionsContainer.style.gridTemplateColumns = window.innerWidth > 600 ? '1fr 1fr' : '1fr';
+            }
+        }
+
+        function checkAnswer(selectedIndex, button) {
+            const q = questions[currentQuestionIndex];
+            
+            if (selectedIndex === q.answer) {
+                button.classList.add('correct');
+                
+                const allButtons = document.querySelectorAll('.option-btn');
+                allButtons.forEach(btn => btn.style.pointerEvents = 'none');
+
+                if (firstAttempt) score++;
+                
+                showStarsEffect(button);
+                document.body.classList.remove('warning');
+
+                setTimeout(() => {
+                    currentQuestionIndex++;
+                    if (currentQuestionIndex < questions.length) {
+                        loadQuestion();
+                    } else {
+                        showResult();
+                    }
+                }, 1200);
+
+            } else {
+                firstAttempt = false;
+                button.classList.add('wrong');
+                button.style.pointerEvents = 'none';
+                
+                document.body.classList.add('warning');
+                setTimeout(() => document.body.classList.remove('warning'), 400);
+            }
+        }
+
+        function showStarsEffect(button) {
+            const rect = button.getBoundingClientRect();
+            const x = rect.left + rect.width / 2;
+            const y = rect.top + rect.height / 2;
+
+            for (let i = 0; i < 8; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.innerText = '✨';
+                star.style.left = x + 'px';
+                star.style.top = y + 'px';
+                
+                const angle = Math.random() * Math.PI * 2;
+                const distance = 80 + Math.random() * 50;
+                star.style.setProperty('--tx', `${Math.cos(angle) * distance}px`);
+                star.style.setProperty('--ty', `${Math.sin(angle) * distance}px`);
+                
+                document.body.appendChild(star);
+                setTimeout(() => star.remove(), 1000);
+            }
+        }
+
+        function showResult() {
+            document.getElementById('game-screen').classList.remove('active');
+            document.getElementById('result-screen').classList.add('active');
+            
+            document.getElementById('final-score').innerText = `${score} / ${questions.length}`;
+            
+            let message = "";
+            let emoji = "";
+            
+            if (score === questions.length) {
+                message = "Absolutely Perfect! You have mastered the Mahragan material!";
+                emoji = "👑";
+            } else if (score >= 80) {
+                message = "Excellent job! You have a great understanding of the curriculum.";
+                emoji = "🌟";
+            } else if (score >= 60) {
+                message = "Good effort! Review the material to strengthen your knowledge.";
+                emoji = "📖";
+            } else {
+                message = "Keep studying! Try reading the Mahragan book again and retake the quiz.";
+                emoji = "💪";
+            }
+            
+            document.getElementById('result-message').innerText = message;
+            document.getElementById('result-emoji').innerText = emoji;
+        }
+
+        function resetGame() {
+            document.getElementById('result-screen').classList.remove('active');
+            document.getElementById('start-screen').classList.add('active');
+        }
+    </script>
+</body>
+</html>
