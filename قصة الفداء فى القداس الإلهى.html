@@ -3,51 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>قصة الفداء فى القداس الإلهى</title>
+    <title>مسابقة المهرجان - أمجاد الصليب والفداء</title>
     <style>
-        /* التنسيقات الأساسية */
-        body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%); display: flex; justify-content: center; align-items: center; min-height: 100vh; transition: background-color 0.5s; overflow-x: hidden; }
+        body {
+            margin: 0; padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; transition: background-color 0.5s;
+            color: #2c3e50; overflow-x: hidden;
+        }
         body.warning { background: linear-gradient(135deg, #ffe6e6 0%, #ffcccc 100%); }
-        #game-container { background: white; width: 90%; max-width: 800px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); padding: 30px; position: relative; text-align: center; border: 4px solid #4a90e2; }
-        .screen { display: none; } .screen.active { display: block; animation: fadeIn 0.5s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        h1 { color: #2c3e50; font-size: 2.2em; margin-bottom: 10px; line-height: 1.3; }
+        #game-container {
+            background: white; width: 95%; max-width: 900px;
+            border-radius: 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 30px; position: relative; text-align: center;
+            border: 4px solid #8e44ad;
+        }
+        .screen { display: none; }
+        .screen.active { display: block; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        h1 { color: #2c3e50; font-size: 2.2em; margin-bottom: 10px; }
         p.subtitle { color: #7f8c8d; font-size: 1.2em; margin-bottom: 30px; }
-        .btn-main { background-color: #4a90e2; color: white; border: none; padding: 15px 40px; font-size: 1.5em; border-radius: 50px; cursor: pointer; box-shadow: 0 5px 15px rgba(74, 144, 226, 0.4); transition: transform 0.2s, background-color 0.2s; }
-        .btn-main:hover { transform: scale(1.05); background-color: #357abd; }
-        #progress-ribbon { background-color: #f1c40f; color: #2c3e50; padding: 10px 20px; border-radius: 20px; font-size: 1.2em; font-weight: bold; margin-bottom: 20px; display: inline-block; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .difficulty-badge { display: inline-block; padding: 5px 15px; border-radius: 15px; color: white; font-size: 0.9em; margin-right: 15px; font-weight: bold; }
-        .diff-easy { background-color: #2ecc71; } .diff-medium { background-color: #f39c12; } .diff-hard { background-color: #e74c3c; }
-        #question-text { font-size: 1.5em; color: #34495e; margin: 20px 0 30px; line-height: 1.5; font-weight: bold; }
-        #options-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        @media (max-width: 600px) { #options-container { grid-template-columns: 1fr; } }
-        .option-btn { background-color: #ecf0f1; border: 2px solid #bdc3c7; padding: 15px; font-size: 1.15em; border-radius: 15px; cursor: pointer; transition: all 0.3s; color: #2c3e50; font-weight: bold; display: flex; align-items: center; justify-content: center; line-height: 1.3; }
-        .option-btn:hover { background-color: #e0e6ed; border-color: #3498db; transform: translateY(-3px); }
-        .option-btn.correct { background-color: #2ecc71 !important; color: white !important; border-color: #27ae60 !important; box-shadow: 0 0 20px rgba(46, 204, 113, 0.6); transform: scale(1.05); }
-        .option-btn.wrong { background-color: #e74c3c !important; color: white !important; border-color: #c0392b !important; animation: shake 0.4s; }
-        @keyframes shake { 0% { transform: translateX(0); } 25% { transform: translateX(-5px); } 50% { transform: translateX(5px); } 75% { transform: translateX(-5px); } 100% { transform: translateX(0); } }
-        .star { position: absolute; font-size: 2em; pointer-events: none; animation: flyStar 1s ease-out forwards; z-index: 10; }
-        @keyframes flyStar { 0% { opacity: 1; transform: translate(0, 0) scale(1); } 100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(2); } }
-        #final-score { font-size: 2.5em; color: #d35400; font-weight: bold; margin: 20px 0; }
+        .btn-main {
+            background-color: #8e44ad; color: white; border: none;
+            padding: 15px 40px; font-size: 1.5em; border-radius: 50px;
+            cursor: pointer; box-shadow: 0 5px 15px rgba(142, 68, 173, 0.4);
+            transition: transform 0.2s, background-color 0.2s; font-weight: bold;
+        }
+        .btn-main:hover { transform: scale(1.05); background-color: #732d91; }
+        #progress-ribbon {
+            background-color: #f1c40f; color: #2c3e50; padding: 10px 20px;
+            border-radius: 20px; font-size: 1.2em; font-weight: bold;
+            margin-bottom: 20px; display: inline-block; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        #question-text {
+            font-size: 1.4em; color: #34495e; margin: 20px 0 30px;
+            line-height: 1.6; font-weight: bold; text-align: right;
+        }
+        #options-container {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 15px;
+        }
+        @media (max-width: 600px) {
+            #options-container { grid-template-columns: 1fr; }
+        }
+        .option-btn {
+            background-color: #ecf0f1; border: 2px solid #bdc3c7;
+            padding: 15px; font-size: 1.1em; border-radius: 15px;
+            cursor: pointer; transition: all 0.3s; color: #2c3e50;
+            font-weight: 600; display: flex; align-items: center;
+            line-height: 1.4; text-align: right;
+        }
+        .option-btn:hover { background-color: #e0e6ed; border-color: #9b59b6; transform: translateY(-3px); }
+        .option-btn.correct {
+            background-color: #2ecc71 !important; color: white !important;
+            border-color: #27ae60 !important; transform: scale(1.05); z-index: 2; position: relative;
+        }
+        .option-btn.wrong {
+            background-color: #e74c3c !important; color: white !important;
+            border-color: #c0392b !important; animation: shake 0.4s;
+        }
+        .option-letter { margin-left: 15px; color: #e67e22; font-weight: bold; font-size: 1.2em; }
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+        .star {
+            position: absolute; font-size: 2em; pointer-events: none;
+            animation: flyStar 1s ease-out forwards; z-index: 10;
+        }
+        @keyframes flyStar {
+            0% { opacity: 1; transform: translate(0, 0) scale(1); }
+            100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(2); }
+        }
+        #final-score { font-size: 2.5em; color: #8e44ad; font-weight: bold; margin: 20px 0; }
+        .result-icon { font-size: 4em; }
     </style>
 </head>
 <body>
+
     <div id="game-container">
+        <!-- شاشة البداية -->
         <div id="start-screen" class="screen active">
-            <h1>قصة الفداء فى القداس الإلهى</h1>
-            <p class="subtitle">يَعْظُمُ انْتِصَارُنَا بِالَّذِي أَحَبَّنَا (رو 37:8)</p>
-            <p style="font-size: 1.2em; color: #555; margin-bottom: 30px;">اختبر معلوماتك حول كيفية تدوين عقيدة الفداء والسقوط في صلوات الكنيسة القبطية الأرثوذكسية.</p>
-            <button class="btn-main" onclick="startGame()">▶️ ابدأ اللعب الآن</button>
+            <h1>مسابقة المهرجان - ثانياً: الأمجاد</h1>
+            <p class="subtitle">"يَعْظُمُ انْتِصَارُنَا بِالَّذِي أَحَبَّنَا" (رو 37:8)[cite: 10]</p>
+            <p style="font-size: 1.1em; color: #555; margin-bottom: 30px;">
+                اختبر معلوماتك في 30 سؤالاً حول أمجاد القداسة، السعادة، الشركة، الخلود، التجديد، التقديس، والسكنى بناءً على المنهج.
+            </p>
+            <button class="btn-main" onclick="startGame()">▶️ ابدأ الاختبار</button>
         </div>
+
+        <!-- شاشة الأسئلة -->
         <div id="game-screen" class="screen">
-            <div><span id="progress-ribbon">السؤال ١ من ٣٠</span><span id="difficulty-badge" class="difficulty-badge">سهل</span></div>
+            <div>
+                <span id="progress-ribbon">السؤال 1 من 30</span>
+            </div>
             <div id="question-text"></div>
             <div id="options-container"></div>
         </div>
+
+        <!-- شاشة النتيجة -->
         <div id="result-screen" class="screen">
             <div class="result-icon" id="result-emoji">🏆</div>
             <h1>اكتملت المسابقة!</h1>
-            <div id="final-score"></div>
+            <div id="final-score">0 / 30</div>
             <p id="result-message" style="font-size: 1.3em; margin-bottom: 30px; color: #34495e;"></p>
             <button class="btn-main" onclick="resetGame()">🔄 العب مرة أخرى</button>
         </div>
@@ -55,85 +120,165 @@
 
     <script>
         const questions = [
-            {q: "ماذا تعتبر الصلوات الليتورجية والطقسية في الكنيسة القبطية؟[cite: 13]", options: ["تدويناً لعقائدنا وإيماننا المسيحي[cite: 13]", "مجرد كلمات قديمة[cite: 13]", "طقوساً إضافية[cite: 13]", "أشعاراً فقط[cite: 13]"], answer: 0, difficulty: "سهل", diffClass: "diff-easy"},
-            {q: "في أوشية الراقدين، لماذا لا نعتبر موت المؤمنين موتاً؟[cite: 13]", options: ["لأنه انتقال[cite: 13]", "لأن الجسد لا يموت[cite: 13]", "لأن الروح تبقى في العالم[cite: 13]", "لا يوجد سبب[cite: 13]"], answer: 0, difficulty: "سهل", diffClass: "diff-easy"},
-            {q: "في صلاة الصلح بالقداس الباسيلي، كيف دخل الموت إلى العالم؟[cite: 13]", options: ["بحسد إبليس[cite: 13]", "بسبب آدم فقط[cite: 13]", "بسبب طبيعتنا[cite: 13]", "لا يوجد سبب[cite: 13]"], answer: 0, difficulty: "متوسط", diffClass: "diff-medium"},
-            {q: "كيف هدم الله الموت الذي دخل للعالم؟[cite: 13]", options: ["بالظهور المحيي لابنه الوحيد[cite: 13]", "بإرسال الملائكة[cite: 13]", "بموت الأنبياء[cite: 13]", "بصيام الشعب[cite: 13]"], answer: 0, difficulty: "متوسط", diffClass: "diff-medium"},
-            {q: "لماذا يصلي الكاهن بصيغة الجمع في صلاة 'قدوس قدوس'؟[cite: 13]", options: ["لأن الجميع من سلالة آدم[cite: 13]", "بسبب كثرة الحضور[cite: 13]", "بسبب التقاليد الكنسية[cite: 13]", "لا يوجد سبب[cite: 13]"], answer: 0, difficulty: "متوسط", diffClass: "diff-medium"},
-            {q: "في القداس الغريغوري، مَن الذي ائتمنه الله على خلاصنا؟[cite: 13]", options: ["أنت (الله) بذاتك بغير استحالة تجسدت[cite: 13]", "الأنبياء والملائكة[cite: 13]", "رئيس الآباء[cite: 13]", "لا أحد[cite: 13]"], answer: 0, difficulty: "صعب", diffClass: "diff-hard"},
-            {q: "في القداس الغريغوري، ماذا يصرخ الكاهن بالنيابة عن الشعب؟[cite: 13]", options: ["أنا اختطفت لي قضية الموت[cite: 13]", "نحن أبرياء[cite: 13]", "نحن نسجد لك[cite: 13]", "نطلب المعونة[cite: 13]"], answer: 0, difficulty: "صعب", diffClass: "diff-hard"},
-            {q: "في صلاة الصلح بالقداس الكيرلسي، بماذا نعترف؟[cite: 13]", options: ["أنه ليس مولود امرأة يتزكى أمام الله[cite: 13]", "أننا طاهرون[cite: 13]", "أننا بلا خطية[cite: 13]", "لا نعترف بشيء[cite: 13]"], answer: 0, difficulty: "متوسط", diffClass: "diff-medium"},
-            {q: "ماذا تعلمنا صلوات الأجبية عن قصة الخلق في سفر التكوين؟[cite: 13]", options: ["أننا نأخذها بحرفيتها[cite: 13]", "أنها رمز فقط[cite: 13]", "أنها قصة خيالية[cite: 13]", "لا يوجد سبب[cite: 13]"], answer: 0, difficulty: "سهل", diffClass: "diff-easy"},
-            {q: "في قطع صلاة باكر، ما الذي فعله المسيح لأمنا حواء؟[cite: 13]", options: ["عتّقها من طلقات الموت[cite: 13]", "تركها في الموت[cite: 13]", "أعطاها الناموس[cite: 13]", "أهملها[cite: 13]"], answer: 0, difficulty: "متوسط", diffClass: "diff-medium"},
-            {q: "في الساعة السادسة، لماذا سُمر المسيح على الصليب؟[cite: 13]", options: ["من أجل الخطية التي تجرأ عليها أبونا آدم[cite: 13]", "بسبب اليهود[cite: 13]", "لأنه أراد ذلك[cite: 13]", "لا يوجد سبب[cite: 13]"], answer: 0, difficulty: "سهل", diffClass: "diff-easy"},
-            {q: "في الساعة التاسعة، ماذا طلب اللص على الصليب؟[cite: 13]", options: ["أن يقبله الرب[cite: 13]", "أن ينزل من الصليب[cite: 13]", "أن يغفر للآخرين[cite: 13]", "لا شيء[cite: 13]"], answer: 0, difficulty: "سهل", diffClass: "diff-easy"},
-            {q: "في القداس الغريغوري، مَن شابهنا في كل شيء ما خلا الخطية؟[cite: 13]", options: ["يسوع المسيح[cite: 13]", "الأنبياء[cite: 13]", "الملائكة[cite: 13]", "الرسل[cite: 13]"], answer: 0, difficulty: "سهل", diffClass: "diff-easy"},
-            {q: "في الأجبية، المسيح مزق صك...[cite: 13]", options: ["خطايانا[cite: 13]", "الناموس[cite: 13]", "الدين[cite: 13]", "الملائكة[cite: 13]"], answer: 0, difficulty: "متوسط", diffClass: "diff-medium"},
-            {q: "يقول القداس الباسيلي أن الله جبل الإنسان على...[cite: 13]", options: ["غير فساد[cite: 13]", "فساد[cite: 13]", "موت[cite: 13]", "خطيئة[cite: 13]"], answer: 0, difficulty: "سهل", diffClass: "diff-easy"},
-            {q: "في صلاة الساعة التاسعة، بماذا نقر مع اللص؟[cite: 13]", options: ["بخطايانا ومعترفين بألوهية المسيح[cite: 13]", "بأننا أبرار[cite: 13]", "بأننا لا نحتاج للمغفرة[cite: 13]", "لا نقر بشيء[cite: 13]"], answer: 0, difficulty: "متوسط", diffClass: "diff-medium"},
-            {q: "القداس الإلهي هو تدوين لـ...[cite: 13]", options: ["عقائدنا وإيماننا[cite: 13]", "قصص القديسين[cite: 13]", "التاريخ القديم[cite: 13]", "تقاليد البشر[cite: 13]"], answer: 0, difficulty: "سهل", diffClass: "diff-easy"},
-            {q: "في صلاة باكر، أي نور الذي يضئ لكل إنسان آت إلى العالم؟[cite: 13]", options: ["النور الحقيقي[cite: 13]", "شمس البر[cite: 13]", "نور المعرفة[cite: 13]", "نور الناموس[cite: 13]"], answer: 0, difficulty: "سهل", diffClass: "diff-easy"},
-            {q: "في صلاة الصلح للقداس الكيرلسي، يقول الكاهن أن الله عارف أنه ليس مولود...[cite: 13]", options: ["امرأة يتزكى أمامك[cite: 13]", "بشر يستطيع ذلك[cite: 13]", "إنسان يتزكى[cite: 13]", "لا أحد[cite: 13]"], answer: 0, difficulty: "صعب", diffClass: "diff-hard"},
-            {q: "صلاة الصلح في القداس الباسيلي تصف الله بأنه...[cite: 13]", options: ["العظيم الأبدي[cite: 13]", "الخالق فقط[cite: 13]", "الديان[cite: 13]", "القدوس فقط[cite: 13]"], answer: 0, difficulty: "متوسط", diffClass: "diff-medium"},
-            {q: "في قطع صلاة باكر، ما الذي أعطانا المسيح؟[cite: 13]", options: ["روح البنوة[cite: 13]", "الناموس[cite: 13]", "المجد الأرضي[cite: 13]", "الخوف[cite: 13]"], answer: 0, difficulty: "متوسط", diffClass: "diff-medium"},
-            {q: "يقول القداس الغريغوري أن الله جعل الإنسان في...[cite: 13]", options: ["فردوس النعيم[cite: 13]", "العالم الحزين[cite: 13]", "موضع بعيد[cite: 13]", "لا شيء[cite: 13]"], answer: 0, difficulty: "سهل", diffClass: "diff-easy"},
-            {q: "صلاة باكر تشهد بأن كل الخليقة تهللت بـ...[cite: 13]", options: ["مجيء المسيح[cite: 13]", "خلق آدم[cite: 13]", "قيامة المسيح[cite: 13]", "صعود المسيح[cite: 13]"], answer: 0, difficulty: "متوسط", diffClass: "diff-medium"},
-            {q: "ماذا فعل الله بآدم في صلاة باكر؟[cite: 13]", options: ["خلصه من الغواية[cite: 13]", "تركه للغواية[cite: 13]", "أهمله[cite: 13]", "أدانه[cite: 13]"], answer: 0, difficulty: "سهل", diffClass: "diff-easy"},
-            {q: "صلوات الأجبية شاهد على...[cite: 13]", options: ["قصة الخلق[cite: 13]", "التاريخ الروماني[cite: 13]", "تاريخ الفلاسفة[cite: 13]", "لا شيء[cite: 13]"], answer: 0, difficulty: "سهل", diffClass: "diff-easy"},
-            {q: "في القداس الغريغوري، الله هو...[cite: 13]", options: ["الكائن الدائم إلى الأبد[cite: 13]", "الملاك فقط[cite: 13]", "النبي فقط[cite: 13]", "لا شيء[cite: 13]"], answer: 0, difficulty: "متوسط", diffClass: "diff-medium"},
-            {q: "الكاهن يصلي في صلاة الصلح بصيغة...[cite: 13]", options: ["الجمع[cite: 13]", "المفرد[cite: 13]", "المثنى[cite: 13]", "لا شيء[cite: 13]"], answer: 0, difficulty: "سهل", diffClass: "diff-easy"},
-            {q: "القداس الغريغوري يصف الله بأنه الشريك مع...[cite: 13]", options: ["الآب[cite: 13]", "الملائكة[cite: 13]", "الأنبياء[cite: 13]", "الناس[cite: 13]"], answer: 0, difficulty: "سهل", diffClass: "diff-easy"},
-            {q: "الكاهن والشعب في القداس هم من سلالة...[cite: 13]", options: ["آدم[cite: 13]", "إبراهيم[cite: 13]", "موسى[cite: 13]", "لا أحد[cite: 13]"], answer: 0, difficulty: "سهل", diffClass: "diff-easy"},
-            {q: "صلوات القداس تدوين لـ...[cite: 13]", options: ["إيماننا المسيحي[cite: 13]", "آراء البشر[cite: 13]", "فلسفة العالم[cite: 13]", "لا شيء[cite: 13]"], answer: 0, difficulty: "سهل", diffClass: "diff-easy"}
+            { q: "ما هي ثمار الروح القدس المذكورة في غلاطية 5؟[cite: 10]", options: ["مَحَبَّةٌ، فَرَحٌ، سَلَامٌ، طُولُ أَنَاةٍ، لُطْفٌ، صَلَاحٌ، إِيمَانٌ، وَدَاعَةٌ، تَعَفُّفٌ.[cite: 10]", "معرفة، حكمة، معجزات، نبوات.[cite: 10]", "غنى، صحة، سعادة أرضية، نجاح.[cite: 10]", "صوم، صلاة، مطانيات، تسبيح.[cite: 10]"], answer: 0 },
+            { q: "لماذا نجهد في سبيل الوصول إلى القداسة؟[cite: 10]", options: ["لكي نصبح ملائكة.[cite: 10]", "لكي نتحدث بنفس اللغة التي يتحدث بها القديسون مع الله القدوس.[cite: 10]", "لنتجنب العقاب الأرضي.[cite: 10]", "لكي نصنع معجزات.[cite: 10]"], answer: 1 },
+            { q: "إلى ماذا ترمز الثياب البيضاء التي يلبسها المفديون؟[cite: 10]", options: ["إلى الملائكة.[cite: 10]", "إلى المعمودية.[cite: 10]", "إلى الطهارة والنقاوة والقداسة.[cite: 10]", "إلى القيامة من الأموات.[cite: 10]"], answer: 2 },
+            { q: "إلى ماذا يرمز حمل سعف النخل في السماء؟[cite: 10]", options: ["الاحتفال بأحد الشعانين.[cite: 10]", "دخول أورشليم.[cite: 10]", "السلام مع كل البشر.[cite: 10]", "علامة الظفر والانتصار على الشر والشيطان.[cite: 10]"], answer: 3 },
+            { q: "ما هو الوعد لمن يغلب حسب رؤيا 2: 11؟[cite: 10]", options: ["أن يأكل من شجرة الحياة.[cite: 10]", "فَلَا يُؤْذِيهِ الْمَوْتُ الثَّانِي.[cite: 10]", "سيجلس معي في عرشي.[cite: 10]", "أجعله عموداً في هيكل إلهي.[cite: 10]"], answer: 1 },
+            { q: "ما هي الكلمات التي سيسمعها كل مؤمن يصل إلى مشارف العالم الآخر؟[cite: 10]", options: ["نِعِمَّا أَيُّهَا الْعَبْدُ الصَّالِحُ الأَمِينُ كُنْتَ أَمِينًا فِي الْقَلِيلِ فَأَقِيمُكَ عَلَى الْكَثِيرِ.[cite: 10]", "ادخل إلى أورشليم السمائية.[cite: 10]", "أعطوا كل واحد ثياباً بيضاً.[cite: 10]", "أنا الرب مقدسهم.[cite: 10]"], answer: 0 },
+            { q: "ماذا يعني التعبير 'شركاء الطبيعة الإلهية' في عقيدتنا الأرثوذكسية؟[cite: 10]", options: ["أن نصبح آلهة نملك جوهر الله.[cite: 10]", "أن نتحد بلاهوت المسيح.[cite: 10]", "شركة في العمل والمواهب والمحبة والميراث.[cite: 10]", "أن نصبح بلا خطية تماماً كالمسيح.[cite: 10]"], answer: 2 },
+            { q: "لماذا تعتبر عبارة 'شركاء في الطبيعة الإلهية' (بإضافة حرف الجر) خاطئة؟[cite: 10]", options: ["لأنها كلمة صعبة الفهم.[cite: 10]", "لأنها غير موجودة في الكتاب المقدس.[cite: 10]", "لأنها تعني شركة في المعجزات فقط.[cite: 10]", "لأن معناها أنه ستصير لنا نفس الطبيعة الإلهية في جوهر اللاهوت وهذا غير حقيقي.[cite: 10]"], answer: 3 },
+            { q: "ما هو الفرق بين بنوتنا للمسيح وبنوة المسيح للآب؟[cite: 10]", options: ["بنوتنا هي 'بالتبني' أما بنوة المسيح فهي بالطبيعة أزلية أبدية.[cite: 10]", "لا يوجد فرق، كلاهما بالتبني.[cite: 10]", "بنوتنا بالطبيعة وبنوة المسيح بالتبني.[cite: 10]", "بنوتنا روحية وبنوة المسيح جسدية فقط.[cite: 10]"], answer: 0 },
+            { q: "كيف تصدى البابا شنودة الثالث لتعليم 'تأليه الإنسان'؟[cite: 10]", options: ["بقبوله كتعليم حديث.[cite: 10]", "برفضه موضحاً أننا صرنا أبناء متبنين نأخذ من مواهبه وميراثه وليس جوهره.[cite: 10]", "بإلغائه من كل الكتب.[cite: 10]", "بمنع التناول لمن يؤمن به.[cite: 10]"], answer: 1 },
+            { q: "هل الكنيسة هي 'ناسوت المسيح' الذي اتحد باللاهوت؟[cite: 10]", options: ["نعم، الكنيسة وُلدت في بيت لحم.[cite: 10]", "نعم، الكنيسة خالية من أي خطية مثل الناسوت.[cite: 10]", "لا، إنسانيتنا الخاطئة تتحد بالرب اتحاد شركة عمل ومحبة منتظرة تطهيره لنا.[cite: 10]", "لا أحد يعرف الإجابة الدقيقة.[cite: 10]"], answer: 2 },
+            { q: "ماذا سيحدث للجسد الفاسد والمائت حسب 1 كورنثوس 15؟[cite: 10]", options: ["يتحول إلى روح نقية.[cite: 10]", "يُفنى ولا يعود.[cite: 10]", "يبقى في القبر إلى الأبد.[cite: 10]", "لابُدَّ أَنْ يَلْبَسَ عَدَمَ فَسَادٍ وعَدَمَ مَوْتٍ.[cite: 10]"], answer: 3 },
+            { q: "من الذي نزل مع السيد المسيح إلى الجحيم وتم إنقاذه؟[cite: 10]", options: ["نفس اللص اليمين.[cite: 10]", "نفس اللص الشمال.[cite: 10]", "يهوذا الإسخريوطي.[cite: 10]", "بيلاطس البنطي.[cite: 10]"], answer: 0 },
+            { q: "ماذا فعل السيد المسيح بالشيطان في الجحيم؟[cite: 10]", options: ["تركه يحكم هناك.[cite: 10]", "صعقه وسحقه وفتح المتاريس المغلقة.[cite: 10]", "أعطاه فرصة للتوبة.[cite: 10]", "تجاهله وصعد.[cite: 10]"], answer: 1 },
+            { q: "إلى أين دخل اللص اليمين مع السيد المسيح انتظاراً للقيامة العامة؟[cite: 10]", options: ["إلى الملكوت الإلهي.[cite: 10]", "إلى السماء الثالثة.[cite: 10]", "إلى الفردوس.[cite: 10]", "إلى أورشليم الأرضية.[cite: 10]"], answer: 2 },
+            { q: "بماذا يوصف الميراث في الملكوت في 'مجد الخلود الأبدي'؟[cite: 10]", options: ["أنه مليء بالراحة الجسدية المادية.[cite: 10]", "أنه مؤقت لمدة ألف سنة.[cite: 10]", "أنه مثل الفردوس الأرضي.[cite: 10]", "أنه لا يفنى ولا يتدنس ولا يضمحل.[cite: 10]"], answer: 3 },
+            { q: "ما الذي يميز المسيحية عن مجرد كونها وصايا وتعاليم؟[cite: 10]", options: ["أنها ديانة الفلاسفة والمفكرين.[cite: 10]", "أنها ثورة داخلية وتغيير من الأعماق وموت وقيامة مع المسيح.[cite: 10]", "أنها أسهل ديانة.[cite: 10]", "أن تعاليمها أقدم التعاليم.[cite: 10]"], answer: 1 },
+            { q: "أين تُبنى حجرة المعمودية عادة في الكنيسة حسب الطقس؟[cite: 10]", options: ["في الجهة الغربية الشمالية.[cite: 10]", "في شرقية الهيكل.[cite: 10]", "في منتصف الكنيسة.[cite: 10]", "بجوار الباب الرئيسي مباشرة.[cite: 10]"], answer: 0 },
+            { q: "لماذا تنظر الأم الحاملة لطفلها إلى الغرب في بداية طقس المعمودية؟[cite: 10]", options: ["لانتظار مجيء المسيح.[cite: 10]", "احتراماً للكهنة.[cite: 10]", "لتجحد الشيطان وترفض عبادته المرذولة حيث موضع الظلمة.[cite: 10]", "لكي يرى الشعب الطفل.[cite: 10]"], answer: 2 },
+            { q: "ماذا يمثل نقل الطفل من الكتف الأيسر إلى الكتف الأيمن ومن الغرب إلى الشرق؟[cite: 10]", options: ["راحة للأم المتعبة.[cite: 10]", "طقس شكلي لا معنى له.[cite: 10]", "إشارة إلى حمله الصليب.[cite: 10]", "نقله من الشمال لليمين ومن الظلمة إلى نور إشراق شمس البر.[cite: 10]"], answer: 3 },
+            { q: "كم مرة تجيب الأم مؤكدة إيمانها عن الطفل: 'آمنت'؟[cite: 10]", options: ["ثلاث مرات.[cite: 10]", "مرة واحدة.[cite: 10]", "سبع مرات.[cite: 10]", "لا تجيب، الكاهن هو من يجيب.[cite: 10]"], answer: 0 },
+            { q: "لماذا تعمد الكنيسة الأطفال وهم لم يخطئوا بعد؟[cite: 10]", options: ["لأنها عادة قديمة.[cite: 10]", "لأن والديهم طلبوا ذلك.[cite: 10]", "لأنهم ولدوا بالخطية الجدية محمولين بالإثم كما قال داود.[cite: 10]", "لكي يحصلوا على شهادة ميلاد كنسية.[cite: 10]"], answer: 2 },
+            { q: "كم عدد الرشومات بزيت الميرون لتقديس الكيان بالكامل؟[cite: 10]", options: ["7 رشومات.[cite: 10]", "36 رشماً.[cite: 10]", "12 رشماً.[cite: 10]", "8 رشومات.[cite: 10]"], answer: 1 },
+            { q: "ما الهدف من الثمانية صلبان الأولى المشمولة على الرأس والوجه؟[cite: 10]", options: ["لتقديس خطوات الإنسان.[cite: 10]", "لتقديس إرادة الإنسان.[cite: 10]", "لتقديس أعمال الإنسان.[cite: 10]", "لتقديس الحواس (الفكر، الشم، السمع، البصر، الكلام).[cite: 10]"], answer: 3 },
+            { q: "أين يُرشم الطفل لتقديس قلبه؟[cite: 10]", options: ["صليبان على الصدر.[cite: 10]", "صليبان على الظهر.[cite: 10]", "على الجبهة.[cite: 10]", "على اليدين.[cite: 10]"], answer: 0 },
+            { q: "أين يُرشم الطفل لتقديس إرادته؟[cite: 10]", options: ["على الجبهة.[cite: 10]", "صليبان على الظهر.[cite: 10]", "على الركبتين.[cite: 10]", "على الأذنين.[cite: 10]"], answer: 1 },
+            { q: "ماذا يعني 'التقديس' بالميرون كما ورد في النص؟[cite: 10]", options: ["أن يصبح الإنسان قادراً على صنع المعجزات.[cite: 10]", "أن يسامح الآخرين دائماً.[cite: 10]", "التخصيص والتكريس ليصير الإنسان هيكلاً لله ومدشناً له.[cite: 10]", "أن لا يخطئ أبداً بعد المعمودية.[cite: 10]"], answer: 2 },
+            { q: "إلى ماذا يرمز الزنار الأحمر الذي يوضع حول الطفل بعد الميرون؟[cite: 10]", options: ["علامة الفرح.[cite: 10]", "زينة جميلة.[cite: 10]", "لا شيء محدد.[cite: 10]", "أنه دخل في عهد مع المسيح الذي دمه أسس العهد الجديد.[cite: 10]"], answer: 3 },
+            { q: "كيف يتحقق 'مجد السكنى' (سكنى المسيح في داخلنا) بشكل كامل؟[cite: 10]", options: ["بالتناول من جسد الرب ودمه وحين نصلي ونقرأ كلمته.[cite: 10]", "بسماع الترانيم فقط.[cite: 10]", "بالذهاب للكنيسة في الأعياد.[cite: 10]", "بمعمودية الماء فقط.[cite: 10]"], answer: 0 },
+            { q: "من الذي يعطينا حرية الإرادة لنقبل العطية أو نرفضها؟[cite: 10]", options: ["رؤساء الكهنة.[cite: 10]", "الله المحب المبادر والمعطاء دائماً.[cite: 10]", "المجتمع.[cite: 10]", "الوالدين.[cite: 10]"], answer: 1 }
         ];
 
-        let currentQuestionIndex = 0, score = 0, firstAttempt = true;
-        function startGame() { document.getElementById('start-screen').classList.remove('active'); document.getElementById('game-screen').classList.add('active'); currentQuestionIndex = 0; score = 0; loadQuestion(); }
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let firstAttempt = true;
+        const alphabet = ['أ', 'ب', 'ج', 'د'];
+
+        function startGame() {
+            document.getElementById('start-screen').classList.remove('active');
+            document.getElementById('game-screen').classList.add('active');
+            currentQuestionIndex = 0;
+            score = 0;
+            loadQuestion();
+        }
+
         function loadQuestion() {
             firstAttempt = true;
             const q = questions[currentQuestionIndex];
+            
             document.getElementById('progress-ribbon').innerText = `السؤال ${currentQuestionIndex + 1} من ${questions.length}`;
-            const badge = document.getElementById('difficulty-badge'); badge.innerText = q.difficulty; badge.className = `difficulty-badge ${q.diffClass}`;
             document.getElementById('question-text').innerText = q.q;
-            const optionsContainer = document.getElementById('options-container'); optionsContainer.innerHTML = '';
+
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+            
             q.options.forEach((opt, index) => {
-                const btn = document.createElement('button'); btn.className = 'option-btn'; btn.innerText = opt; btn.onclick = () => checkAnswer(index, btn); optionsContainer.appendChild(btn);
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                
+                const letterSpan = document.createElement('span');
+                letterSpan.className = 'option-letter';
+                letterSpan.innerText = `${alphabet[index]}.`;
+                btn.appendChild(letterSpan);
+
+                const textSpan = document.createElement('span');
+                textSpan.innerText = opt;
+                btn.appendChild(textSpan);
+
+                btn.onclick = () => checkAnswer(index, btn);
+                optionsContainer.appendChild(btn);
             });
         }
+
         function checkAnswer(selectedIndex, button) {
-            if (selectedIndex === questions[currentQuestionIndex].answer) {
+            const q = questions[currentQuestionIndex];
+            
+            if (selectedIndex === q.answer) {
                 button.classList.add('correct');
-                const allButtons = document.querySelectorAll('.option-btn'); allButtons.forEach(btn => btn.style.pointerEvents = 'none');
+                
+                const allButtons = document.querySelectorAll('.option-btn');
+                allButtons.forEach(btn => btn.style.pointerEvents = 'none');
+
                 if (firstAttempt) score++;
+                
                 showStarsEffect(button);
                 document.body.classList.remove('warning');
-                setTimeout(() => { currentQuestionIndex++; currentQuestionIndex < questions.length ? loadQuestion() : showResult(); }, 1500);
+
+                setTimeout(() => {
+                    currentQuestionIndex++;
+                    if (currentQuestionIndex < questions.length) {
+                        loadQuestion();
+                    } else {
+                        showResult();
+                    }
+                }, 1200);
+
             } else {
-                firstAttempt = false; button.classList.add('wrong'); button.style.pointerEvents = 'none';
-                document.body.classList.add('warning'); setTimeout(() => document.body.classList.remove('warning'), 500);
+                firstAttempt = false;
+                button.classList.add('wrong');
+                button.style.pointerEvents = 'none';
+                
+                document.body.classList.add('warning');
+                setTimeout(() => document.body.classList.remove('warning'), 400);
             }
         }
+
         function showStarsEffect(button) {
             const rect = button.getBoundingClientRect();
-            const x = rect.left + rect.width / 2; const y = rect.top + rect.height / 2;
+            const x = rect.left + rect.width / 2;
+            const y = rect.top + rect.height / 2;
+
             for (let i = 0; i < 8; i++) {
-                const star = document.createElement('div'); star.className = 'star'; star.innerText = '✨';
-                star.style.left = x + 'px'; star.style.top = y + 'px';
-                const angle = Math.random() * Math.PI * 2; const distance = 80 + Math.random() * 50;
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.innerText = '✨';
+                star.style.left = x + 'px';
+                star.style.top = y + 'px';
+                
+                const angle = Math.random() * Math.PI * 2;
+                const distance = 80 + Math.random() * 50;
                 star.style.setProperty('--tx', `${Math.cos(angle) * distance}px`);
                 star.style.setProperty('--ty', `${Math.sin(angle) * distance}px`);
+                
                 document.body.appendChild(star);
                 setTimeout(() => star.remove(), 1000);
             }
         }
+
         function showResult() {
-            document.getElementById('game-screen').classList.remove('active'); document.getElementById('result-screen').classList.add('active');
-            document.getElementById('final-score').innerText = `النتيجة: ${score} من ${questions.length}`;
-            let message = score === questions.length ? "ممتاز جداً! أنت ملم بكل تفاصيل هذا الدرس ببراعة." : (score >= 20 ? "رائع! أداء جميل جداً ومجهود مقدر." : "محاولة جيدة! نرجو مراجعة الدرس مرة أخرى.");
+            document.getElementById('game-screen').classList.remove('active');
+            document.getElementById('result-screen').classList.add('active');
+            
+            document.getElementById('final-score').innerText = `${score} / ${questions.length}`;
+            
+            let message = "";
+            let emoji = "";
+            
+            if (score === questions.length) {
+                message = "ممتاز جداً! لقد أتقنت فهم أمجاد الصليب والفداء بالكامل.";
+                emoji = "👑";
+            } else if (score >= 24) {
+                message = "عمل رائع! معلوماتك ممتازة جداً.";
+                emoji = "🌟";
+            } else if (score >= 15) {
+                message = "محاولة جيدة! راجع النص لتعزيز معرفتك.";
+                emoji = "📖";
+            } else {
+                message = "تحتاج للمزيد من التركيز! اقرأ الدرس جيداً وحاول مرة أخرى.";
+                emoji = "💪";
+            }
+            
             document.getElementById('result-message').innerText = message;
-            document.getElementById('result-emoji').innerText = score === questions.length ? "👑" : "🌟";
+            document.getElementById('result-emoji').innerText = emoji;
         }
-        function resetGame() { document.getElementById('result-screen').classList.remove('active'); document.getElementById('start-screen').classList.add('active'); }
+
+        function resetGame() {
+            document.getElementById('result-screen').classList.remove('active');
+            document.getElementById('start-screen').classList.add('active');
+        }
     </script>
 </body>
 </html>
