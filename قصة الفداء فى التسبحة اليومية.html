@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مسابقة المهرجان - التسبحة اليومية وقصة الفداء</title>
+    <style>
+        body {
+            margin: 0; padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; transition: background-color 0.5s;
+            color: #2c3e50; overflow-x: hidden;
+        }
+        body.warning { background: linear-gradient(135deg, #ffe6e6 0%, #ffcccc 100%); }
+        #game-container {
+            background: white; width: 95%; max-width: 900px;
+            border-radius: 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 30px; position: relative; text-align: center;
+            border: 4px solid #e67e22;
+        }
+        .screen { display: none; }
+        .screen.active { display: block; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        h1 { color: #2c3e50; font-size: 2.2em; margin-bottom: 10px; }
+        p.subtitle { color: #7f8c8d; font-size: 1.2em; margin-bottom: 30px; }
+        .btn-main {
+            background-color: #e67e22; color: white; border: none;
+            padding: 15px 40px; font-size: 1.5em; border-radius: 50px;
+            cursor: pointer; box-shadow: 0 5px 15px rgba(230, 126, 34, 0.4);
+            transition: transform 0.2s, background-color 0.2s; font-weight: bold;
+        }
+        .btn-main:hover { transform: scale(1.05); background-color: #d35400; }
+        #progress-ribbon {
+            background-color: #f1c40f; color: #2c3e50; padding: 10px 20px;
+            border-radius: 20px; font-size: 1.2em; font-weight: bold;
+            margin-bottom: 20px; display: inline-block; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        #question-text {
+            font-size: 1.4em; color: #34495e; margin: 20px 0 30px;
+            line-height: 1.6; font-weight: bold; text-align: right;
+        }
+        #options-container {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 15px;
+        }
+        @media (max-width: 600px) {
+            #options-container { grid-template-columns: 1fr; }
+        }
+        .option-btn {
+            background-color: #ecf0f1; border: 2px solid #bdc3c7;
+            padding: 15px; font-size: 1.1em; border-radius: 15px;
+            cursor: pointer; transition: all 0.3s; color: #2c3e50;
+            font-weight: 600; display: flex; align-items: center;
+            line-height: 1.4; text-align: right;
+        }
+        .option-btn:hover { background-color: #f9e79f; border-color: #f1c40f; transform: translateY(-3px); }
+        .option-btn.correct {
+            background-color: #2ecc71 !important; color: white !important;
+            border-color: #27ae60 !important; transform: scale(1.05); z-index: 2; position: relative;
+        }
+        .option-btn.wrong {
+            background-color: #e74c3c !important; color: white !important;
+            border-color: #c0392b !important; animation: shake 0.4s;
+        }
+        .option-letter { margin-left: 15px; color: #d35400; font-weight: bold; font-size: 1.2em; }
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+        .star {
+            position: absolute; font-size: 2em; pointer-events: none;
+            animation: flyStar 1s ease-out forwards; z-index: 10;
+        }
+        @keyframes flyStar {
+            0% { opacity: 1; transform: translate(0, 0) scale(1); }
+            100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(2); }
+        }
+        #final-score { font-size: 2.5em; color: #e67e22; font-weight: bold; margin: 20px 0; }
+        .result-icon { font-size: 4em; }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <!-- شاشة البداية -->
+        <div id="start-screen" class="screen active">
+            <h1>التسبحة اليومية وقصة الفداء</h1>
+            <p class="subtitle">مسابقة منهج المهرجان</p>
+            <p style="font-size: 1.1em; color: #555; margin-bottom: 30px;">
+                اختبر معلوماتك في 30 سؤالاً حول دور السيدة العذراء، الفداء، وظهورات السيد المسيح بعد القيامة بناءً على التسبحة.
+            </p>
+            <button class="btn-main" onclick="startGame()">▶️ ابدأ الاختبار</button>
+        </div>
+
+        <!-- شاشة الأسئلة -->
+        <div id="game-screen" class="screen">
+            <div>
+                <span id="progress-ribbon">السؤال 1 من 30</span>
+            </div>
+            <div id="question-text"></div>
+            <div id="options-container"></div>
+        </div>
+
+        <!-- شاشة النتيجة -->
+        <div id="result-screen" class="screen">
+            <div class="result-icon" id="result-emoji">🏆</div>
+            <h1>اكتملت المسابقة!</h1>
+            <div id="final-score">0 / 30</div>
+            <p id="result-message" style="font-size: 1.3em; margin-bottom: 30px; color: #34495e;"></p>
+            <button class="btn-main" onclick="resetGame()">🔄 العب مرة أخرى</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            { q: "ما الذي حل بحواء عوض حزنها كما جاء في مديح القيامة؟[cite: 10]", options: ["طردت من الفردوس[cite: 10]", "نالت الزينة[cite: 10]", "بقيت في الجحيم[cite: 10]", "فقدت حريتها[cite: 10]"], answer: 1 },
+            { q: "كيف وُصفت السيدة العذراء مريم في مديح القيامة بسبب امتلائنا بالحياة من قبلها؟[cite: 10]", options: ["مدينة الأنبياء[cite: 10]", "الفردوس الناطق[cite: 10]", "الكنز المختوم[cite: 10]", "شجرة الحياة[cite: 10]"], answer: 2 },
+            { q: "من الذي بهت عندما رُئي المخلص محسوباً مع الأموات حسب مديح القيامة؟[cite: 10]", options: ["الأنبياء[cite: 10]", "الرسل[cite: 10]", "الفريسيون[cite: 10]", "الجنود الملائكية[cite: 10]"], answer: 3 },
+            { q: "في ثيؤطوكية يوم الاثنين، كيف أشرق السيد المسيح ليخلصنا؟[cite: 10]", options: ["جسدياً من العذراء بغير زرع بشر[cite: 10]", "كروح فقط[cite: 10]", "من خلال الملائكة[cite: 10]", "من السماء في سحابة[cite: 10]"], answer: 0 },
+            { q: "ما هي المدينة التي وُصفت بأنها 'مدينة الأنبياء' في ثيؤطوكية الاثنين؟[cite: 10]", options: ["الناصرة[cite: 10]", "بيت لحم[cite: 10]", "الجليل[cite: 10]", "أورشليم[cite: 10]"], answer: 1 },
+            { q: "حسب لبش ثيؤطوكية الاثنين، بسبب مَن أكل آدم من ثمرة الشجرة؟[cite: 10]", options: ["بغواية الملاك[cite: 10]", "بمفرده[cite: 10]", "بمشورة حواء أمنا الأولى[cite: 10]", "بسبب الجوع[cite: 10]"], answer: 2 },
+            { q: "من التي وُصفت في ثيؤطوكية الثلاثاء بأنها 'أرضعت عائل كل أحد'؟[cite: 10]", options: ["حواء[cite: 10]", "الكنيسة[cite: 10]", "أليصابات[cite: 10]", "السيدة العذراء مريم[cite: 10]"], answer: 3 },
+            { q: "بماذا تُلقب العذراء مريم في ثيؤطوكية الأربعاء لكونها ولدت المسيح الذي صار آدم الثاني؟[cite: 10]", options: ["الفردوس الناطق للمسيح[cite: 10]", "الكنز المختوم[cite: 10]", "فخر جميع العذارى[cite: 10]", "ابنة يواقيم[cite: 10]"], answer: 0 },
+            { q: "من هو 'آدم الثاني' الذي جاء من أجل آدم الإنسان الأول حسب ثيؤطوكية الأربعاء؟[cite: 10]", options: ["يوحنا المعمدان[cite: 10]", "السيد المسيح[cite: 10]", "إبراهيم[cite: 10]", "بطرس الرسول[cite: 10]"], answer: 1 },
+            { q: "ما هو اللقب الذي أُطلق على مريم والدة الإله في ثيؤطوكية الخميس؟[cite: 10]", options: ["الكنز المختوم[cite: 10]", "مدينة الأنبياء[cite: 10]", "فخر جميع العذراى[cite: 10]", "الفردوس الناطق[cite: 10]"], answer: 2 },
+            { q: "كيف أُغلق باب الفردوس وكيف فُتح مرة أخرى حسب ثيؤطوكية الخميس؟[cite: 10]", options: ["أغلق بسبب الحية، وفتح بسبب الملائكة[cite: 10]", "أغلق بخطية قايين، وفتح بصلاة نوح[cite: 10]", "أغلق من أجل آدم، وفتح من قبل بطرس[cite: 10]", "أغلق من أجل حواء، وفتح من قبل مريم العذراء[cite: 10]"], answer: 3 },
+            { q: "ما هي 'شجرة الحياة' التي استحققنا أن نأكل منها حسب ثيؤطوكية الخميس؟[cite: 10]", options: ["جسد الله ودمه الحقيقيين[cite: 10]", "شجرة معرفة الخير والشر[cite: 10]", "شجرة التين[cite: 10]", "شجرة الزيتون[cite: 10]"], answer: 0 },
+            { q: "حسب ثيؤطوكية الجمعة، كيف رُد الإنسان مرة أخرى إلى الفردوس؟[cite: 10]", options: ["بالأعمال الصالحة فقط[cite: 10]", "من قبل صليبه وقيامته المقدسة[cite: 10]", "بتقديم الذبائح الحيوانية[cite: 10]", "بالصوم والصلاة[cite: 10]"], answer: 1 },
+            { q: "ماذا عرفنا من قبل مريم، ابنة يواقيم، حسب ثيؤطوكية الأحد؟[cite: 10]", options: ["شجرة معرفة الخير والشر[cite: 10]", "عقوبة الموت[cite: 10]", "الذبيحة الحقيقية، لمغفرة الخطايا[cite: 10]", "غواية الحية[cite: 10]"], answer: 2 },
+            { q: "تؤكد الليتورجيات التي نصلي بها حقيقة سقوط آدم وحواء بسبب ماذا؟[cite: 10]", options: ["بحسد إخوتهم[cite: 10]", "بمرض مفاجئ[cite: 10]", "بسبب الجوع[cite: 10]", "بغواية الحية[cite: 10]"], answer: 3 },
+            { q: "ما هي أجرة الخطية كما جاء في الشواهد الكتابية المذكورة (رو 23:6)؟[cite: 10]", options: ["موت[cite: 10]", "فقر[cite: 10]", "حزن[cite: 10]", "مرض[cite: 10]"], answer: 0 },
+            { q: "في قول الكتاب 'عظيم هو سر التقوى'، كيف ظهر الله؟[cite: 10]", options: ["ظهر في سحابة[cite: 10]", "ظهر في الجسد[cite: 10]", "ظهر في نار[cite: 10]", "ظهر كخيال[cite: 10]"], answer: 1 },
+            { q: "كيف تُحسب الأيام في الشريعة اليهودية كما جاء في النص لتفسير بقاء المسيح ثلاثة أيام في القبر؟[cite: 10]", options: ["اليوم يحسب بأربعة وعشرين ساعة دقيقة[cite: 10]", "لا تحسب الأيام بدقة[cite: 10]", "الجزء من اليوم يحسب يوماً كاملاً[cite: 10]", "اليوم يحسب كألف سنة[cite: 10]"], answer: 2 },
+            { q: "كم عدد الظهورات التي سجلها العهد الجديد للمسيح بعد قيامته حسب النص؟[cite: 10]", options: ["7 ظهورات[cite: 10]", "12 ظهوراً[cite: 10]", "3 ظهورات[cite: 10]", "11 ظهوراً[cite: 10]"], answer: 3 },
+            { q: "لمن ظهر السيد المسيح في العلية كما ذُكر في (يو 19:20-23)؟[cite: 10]", options: ["للتلاميذ[cite: 10]", "لبيلاطس البنطي[cite: 10]", "لمريم المجدلية وحدها[cite: 10]", "لرؤساء الكهنة[cite: 10]"], answer: 0 },
+            { q: "من هما التلميذان اللذان ظهر لهما السيد المسيح كما ذُكر في إنجيل لوقا؟[cite: 10]", options: ["بطرس ويوحنا[cite: 10]", "تلميذي عمواس[cite: 10]", "يعقوب ويهوذا[cite: 10]", "بولس وبرنابا[cite: 10]"], answer: 1 },
+            { q: "ما هو العدد الأكبر من الإخوة الذين ظهر لهم المسيح دفعة واحدة بعد قيامته؟[cite: 10]", options: ["70 أخاً[cite: 10]", "12 أخاً[cite: 10]", "أكثر من 500 أخ مرة واحدة[cite: 10]", "3000 أخ[cite: 10]"], answer: 2 },
+            { q: "متى كان الظهور الذي ارتفع فيه السيد المسيح وهم ينظرون وأخذته سحابة؟[cite: 10]", options: ["يوم القيامة[cite: 10]", "يوم الخمسين[cite: 10]", "التجلي[cite: 10]", "يوم الصعود[cite: 10]"], answer: 3 },
+            { q: "ماذا قال الرجلان بلباس أبيض للرجال الجليليين يوم الصعود؟[cite: 10]", options: ["إن يسوع سيأتي هكذا كما رأيتموه منطلقاً إلى السماء[cite: 10]", "إنه لن يعود مرة أخرى[cite: 10]", "اذهبوا واصطادوا سمكاً[cite: 10]", "ابقوا في أورشليم إلى الأبد[cite: 10]"], answer: 0 },
+            { q: "نهتف كل يوم في قانون الإيمان قائلين: 'وننتظر قيامة الأموات...' وماذا أيضاً؟[cite: 10]", options: ["والمجيء الأول[cite: 10]", "وحياة الدهر الآتي[cite: 10]", "ونهاية العالم فوراً[cite: 10]", "وعقاب الخطاة[cite: 10]"], answer: 1 },
+            { q: "حسب النص (2 كو 21:5)، لماذا جُعل الذي لم يعرف خطية، خطية لأجلنا؟[cite: 10]", options: ["لنعاقب بدلاً منه[cite: 10]", "ليظهر قوته للملائكة[cite: 10]", "لنصير نحن بر الله فيه[cite: 10]", "لكي يهدم الهيكل[cite: 10]"], answer: 2 },
+            { q: "أين ظهر السيد المسيح للتلاميذ ومعهم توما؟[cite: 10]", options: ["على بحيرة طبرية[cite: 10]", "في الجليل[cite: 10]", "في عمواس[cite: 10]", "في العلية[cite: 10]"], answer: 3 },
+            { q: "في لبش ثيؤطوكية السبت، من الذي عُتقنا من لعنتها من أجل الابن؟[cite: 10]", options: ["حواء[cite: 10]", "الحية[cite: 10]", "الموت[cite: 10]", "الخطيئة[cite: 10]"], answer: 0 },
+            { q: "أين حمل السيد المسيح خطايانا حسب (1 بط 24:2) المذكورة في النص؟[cite: 10]", options: ["في الهيكل[cite: 10]", "في جسده على الخشبة[cite: 10]", "في الفردوس[cite: 10]", "في الجحيم[cite: 10]"], answer: 1 },
+            { q: "لأنه كما في آدم يموت الجميع، هكذا في المسيح ماذا سيحدث للجميع (1 كو 22:15)؟[cite: 10]", options: ["سيدان الجميع[cite: 10]", "سيبكي الجميع[cite: 10]", "سيحيا الجميع[cite: 10]", "سيهلك الجميع[cite: 10]"], answer: 2 }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let firstAttempt = true;
+        const alphabet = ['أ', 'ب', 'ج', 'د'];
+
+        function startGame() {
+            document.getElementById('start-screen').classList.remove('active');
+            document.getElementById('game-screen').classList.add('active');
+            currentQuestionIndex = 0;
+            score = 0;
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            firstAttempt = true;
+            const q = questions[currentQuestionIndex];
+            
+            document.getElementById('progress-ribbon').innerText = `السؤال ${currentQuestionIndex + 1} من ${questions.length}`;
+            document.getElementById('question-text').innerText = q.q;
+
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+            
+            q.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                
+                const letterSpan = document.createElement('span');
+                letterSpan.className = 'option-letter';
+                letterSpan.innerText = `${alphabet[index]}.`;
+                btn.appendChild(letterSpan);
+
+                const textSpan = document.createElement('span');
+                textSpan.innerText = opt;
+                btn.appendChild(textSpan);
+
+                btn.onclick = () => checkAnswer(index, btn);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(selectedIndex, button) {
+            const q = questions[currentQuestionIndex];
+            
+            if (selectedIndex === q.answer) {
+                button.classList.add('correct');
+                
+                const allButtons = document.querySelectorAll('.option-btn');
+                allButtons.forEach(btn => btn.style.pointerEvents = 'none');
+
+                if (firstAttempt) score++;
+                
+                showStarsEffect(button);
+                document.body.classList.remove('warning');
+
+                setTimeout(() => {
+                    currentQuestionIndex++;
+                    if (currentQuestionIndex < questions.length) {
+                        loadQuestion();
+                    } else {
+                        showResult();
+                    }
+                }, 1200);
+
+            } else {
+                firstAttempt = false;
+                button.classList.add('wrong');
+                button.style.pointerEvents = 'none';
+                
+                document.body.classList.add('warning');
+                setTimeout(() => document.body.classList.remove('warning'), 400);
+            }
+        }
+
+        function showStarsEffect(button) {
+            const rect = button.getBoundingClientRect();
+            const x = rect.left + rect.width / 2;
+            const y = rect.top + rect.height / 2;
+
+            for (let i = 0; i < 8; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.innerText = '✨';
+                star.style.left = x + 'px';
+                star.style.top = y + 'px';
+                
+                const angle = Math.random() * Math.PI * 2;
+                const distance = 80 + Math.random() * 50;
+                star.style.setProperty('--tx', `${Math.cos(angle) * distance}px`);
+                star.style.setProperty('--ty', `${Math.sin(angle) * distance}px`);
+                
+                document.body.appendChild(star);
+                setTimeout(() => star.remove(), 1000);
+            }
+        }
+
+        function showResult() {
+            document.getElementById('game-screen').classList.remove('active');
+            document.getElementById('result-screen').classList.add('active');
+            
+            document.getElementById('final-score').innerText = `${score} / ${questions.length}`;
+            
+            let message = "";
+            let emoji = "";
+            
+            if (score === questions.length) {
+                message = "مذهل! لقد أتممت الاختبار بنجاح باهر وفهمت قصة الفداء تماماً.";
+                emoji = "👑";
+            } else if (score >= 24) {
+                message = "عمل ممتاز! معلوماتك قوية ودقيقة.";
+                emoji = "🌟";
+            } else if (score >= 15) {
+                message = "مجهود طيب، ولكن يمكنك قراءة النص مرة أخرى للمزيد من التأكيد.";
+                emoji = "📖";
+            } else {
+                message = "حاول مرة أخرى! قراءة الدرس بتركيز ستساعدك بالتأكيد.";
+                emoji = "💪";
+            }
+            
+            document.getElementById('result-message').innerText = message;
+            document.getElementById('result-emoji').innerText = emoji;
+        }
+
+        function resetGame() {
+            document.getElementById('result-screen').classList.remove('active');
+            document.getElementById('start-screen').classList.add('active');
+        }
+    </script>
+</body>
+</html>
