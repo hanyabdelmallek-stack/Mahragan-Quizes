@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إختبار شامل على الدروس 5-8</title>
+    <style>
+        body {
+            margin: 0; padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; transition: background-color 0.5s;
+            color: #2c3e50; overflow-x: hidden;
+        }
+        body.warning { background: linear-gradient(135deg, #ffe6e6 0%, #ffcccc 100%); }
+        #game-container {
+            background: white; width: 95%; max-width: 900px;
+            border-radius: 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 30px; position: relative; text-align: center;
+            border: 4px solid #16a085;
+        }
+        .screen { display: none; }
+        .screen.active { display: block; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        h1 { color: #16a085; font-size: 2.2em; margin-bottom: 10px; }
+        p.subtitle { color: #7f8c8d; font-size: 1.2em; margin-bottom: 30px; }
+        .btn-main {
+            background-color: #16a085; color: white; border: none;
+            padding: 15px 40px; font-size: 1.5em; border-radius: 50px;
+            cursor: pointer; box-shadow: 0 5px 15px rgba(22, 160, 133, 0.4);
+            transition: transform 0.2s, background-color 0.2s; font-weight: bold;
+        }
+        .btn-main:hover { transform: scale(1.05); background-color: #117a65; }
+        #progress-ribbon {
+            background-color: #f1c40f; color: #2c3e50; padding: 10px 20px;
+            border-radius: 20px; font-size: 1.2em; font-weight: bold;
+            margin-bottom: 20px; display: inline-block; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        #question-text {
+            font-size: 1.3em; color: #34495e; margin: 20px 0 30px;
+            line-height: 1.6; font-weight: bold; text-align: right;
+        }
+        #options-container {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 15px;
+        }
+        @media (max-width: 600px) {
+            #options-container { grid-template-columns: 1fr; }
+        }
+        .option-btn {
+            background-color: #ecf0f1; border: 2px solid #bdc3c7;
+            padding: 15px; font-size: 1.1em; border-radius: 15px;
+            cursor: pointer; transition: all 0.3s; color: #2c3e50;
+            font-weight: 600; display: flex; align-items: center;
+            line-height: 1.4; text-align: right;
+        }
+        .option-btn:hover { background-color: #d1f2eb; border-color: #1abc9c; transform: translateY(-3px); }
+        .option-btn.correct {
+            background-color: #2ecc71 !important; color: white !important;
+            border-color: #27ae60 !important; transform: scale(1.05); z-index: 2; position: relative;
+        }
+        .option-btn.wrong {
+            background-color: #e74c3c !important; color: white !important;
+            border-color: #c0392b !important; animation: shake 0.4s;
+        }
+        .option-letter { margin-left: 15px; color: #16a085; font-weight: bold; font-size: 1.2em; }
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+        .star {
+            position: absolute; font-size: 2em; pointer-events: none;
+            animation: flyStar 1s ease-out forwards; z-index: 10;
+        }
+        @keyframes flyStar {
+            0% { opacity: 1; transform: translate(0, 0) scale(1); }
+            100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(2); }
+        }
+        #final-score { font-size: 2.5em; color: #16a085; font-weight: bold; margin: 20px 0; }
+        .result-icon { font-size: 4em; }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <!-- شاشة البداية -->
+        <div id="start-screen" class="screen active">
+            <h1>إختبار شامل على الدروس 5-8</h1>
+            <p class="subtitle">رموز وشخصيات العهد القديم المشيرة للصليب</p>
+            <p style="font-size: 1.1em; color: #555; margin-bottom: 30px;">
+                يتكون هذا الاختبار من 40 سؤالاً حول هابيل، نوح، يعقوب، يوسف، الفصح، البحر الأحمر، والأنبياء كرموز للمسيح.
+            </p>
+            <button class="btn-main" onclick="startGame()">▶️ ابدأ الاختبار</button>
+        </div>
+
+        <!-- شاشة الأسئلة -->
+        <div id="game-screen" class="screen">
+            <div>
+                <span id="progress-ribbon">السؤال 1 من 40</span>
+            </div>
+            <div id="question-text"></div>
+            <div id="options-container"></div>
+        </div>
+
+        <!-- شاشة النتيجة -->
+        <div id="result-screen" class="screen">
+            <div class="result-icon" id="result-emoji">🏆</div>
+            <h1>اكتملت المسابقة!</h1>
+            <div id="final-score">0 / 40</div>
+            <p id="result-message" style="font-size: 1.3em; margin-bottom: 30px; color: #34495e;"></p>
+            <button class="btn-main" onclick="resetGame()">🔄 العب مرة أخرى</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            // [source: 17] - هابيل، نوح، أيوب، إسحق (10 أسئلة)
+            { q: "ماذا قدّم هابيل قرباناً للرب؟[cite: 17]", options: ["قدم هابيل أيضاً من أبكار غنمه ومن سمانها[cite: 17]", "قدم من أثمار الأرض[cite: 17]", "قدم أقمصة من جلد[cite: 17]", "قدم حطباً وناراً[cite: 17]"], answer: 0 },
+            { q: "لماذا رُفضت تقدمة قايين ولم ينظر إليها الرب؟[cite: 17]", options: ["لأنها كانت قليلة وغير كافية[cite: 17]", "لأن قايين خالف أباه ولم يسر على نفس الدرب وقدم من ثمار الأرض التي لعنها الله[cite: 17]", "لأنه لم يبنِ مذبحاً عالياً[cite: 17]", "لأنه نسي الصلاة[cite: 17]"], answer: 1 },
+            { q: "كيف نال هابيل الوعد بالنجاة والحياة الأبدية رغم كونه إنساناً خاطئاً؟[cite: 17]", options: ["لأنه كان طيب القلب فقط[cite: 17]", "لأنه تقدم بإيمان مستتراً في دم الذبيحة فنال الوعد[cite: 17]", "لأنه هرب من قايين[cite: 17]", "لأنه أطاع آدم[cite: 17]"], answer: 1 },
+            { q: "إلى ماذا يرمز فلك نوح المصنوع من خشب الجفر؟[cite: 17]", options: ["إلى سفينة الكنيسة العادية[cite: 17]", "إلى خشبة الصليب التي عن طريقها صلب السيد المسيح ونالت البشرية النجاة[cite: 17]", "إلى الغوص في البحر[cite: 17]", "إلى جبل أرارات[cite: 17]"], answer: 1 },
+            { q: "من هو الشخص الذي اشتكى عليه الشيطان واجتاز التجربة ليكون رمزاً للسيد المسيح الذي جاز المعصرة وقام؟[cite: 17]", options: ["هابيل الصديق[cite: 17]", "نوح البار[cite: 17]", "أيوب البار[cite: 17]", "إسحق ابن الموعد[cite: 17]"], answer: 2 },
+            { q: "في قصة إسحق، إلى ماذا تشير الشجرة التي أمسكت بالكبش في الغابة بقرنيه؟[cite: 17]", options: ["إلى شجرة معرفة الخير والشر[cite: 17]", "إلى شجرة التين[cite: 17]", "إلى خشبة الصليب التي سمر عليها مخلصنا الصالح[cite: 17]", "إلى عصا موسى[cite: 17]"], answer: 2 },
+            { q: "كم يوماً مكث إسحق في الطريق محكوماً عليه بالموت كرمز للسيد المسيح في القبر؟[cite: 17]", options: ["يوماً واحداً[cite: 17]", "سبعة أيام[cite: 17]", "أربعين يوماً[cite: 17]", "ثلاثة أيام[cite: 17]"], answer: 3 },
+            { q: "في أي قداس اختارت الكنيسة موضوع ذبح إسحق للقسمة بسبب كثرة أوجه الشبه بينه وبين الصلب؟[cite: 17]", options: ["قداس عيد الميلاد[cite: 17]", "قداس خميس العهد[cite: 17]", "قداس عيد الغطاس[cite: 17]", "قداس رأس السنة[cite: 17]"], answer: 1 },
+            { q: "ماذا تعكس عبارة 'ذَهَبَا كِلاهُمَا مَعاً' في رحلة إبراهيم وإسحق إلى الجبل؟[cite: 17]", options: ["ذبيحة الآب الذي بذل ابنه وذبيحة الابن الذي أطاع حتى الموت[cite: 17]", "الخوف من الأعداء في الطريق[cite: 17]", "رغبة إبراهيم في مرافقة ابنه للحماية[cite: 17]", "أن الجبل كان بعيداً جداً[cite: 17]"], answer: 0 },
+            { q: "ماذا كان يحمل إسحق على كتفه عندما ذهب ليكون محرقة؟[cite: 17]", options: ["حمل السكين والنار[cite: 17]", "حمل الكبش[cite: 17]", "حمل حطب المحرقة إشارة لربنا يسوع الذي حمل خشبة الصليب[cite: 17]", "لم يحمل شيئاً[cite: 17]"], answer: 2 },
+
+            // [source: 14] - سلم يعقوب، بركة يعقوب، يوسف الصديق، خروف الفصح (10 أسئلة)
+            { q: "إلى ماذا يشير سلم يعقوب المنصوب على الأرض ورأسه يمس السماء؟[cite: 14]", options: ["للملائكة التي تصلي لأجلنا[cite: 14]", "لخشبة الصليب التي علق عليها السيد المسيح فصالح السمائيين بالأرضيين[cite: 14]", "للصوم والصلاة[cite: 14]", "لبناء الكنائس العالية[cite: 14]"], answer: 1 },
+            { q: "كيف صنع يعقوب مثال الصليب عندما بارك ابني يوسف؟[cite: 14]", options: ["برسم الصليب في الهواء[cite: 14]", "برشمهم بالزيت المقدس[cite: 14]", "بوضع يديه متقاطعتين على أفرايم ومنسى[cite: 14]", "بالسجود أمامهم[cite: 14]"], answer: 2 },
+            { q: "إلى من يشير سبط أفرايم الصغير الذي نال البركة الكبرى بيد يعقوب اليمنى؟[cite: 14]", options: ["للأمم الذين قبلوا الإيمان بالمصلوب فتزايد عددهم[cite: 14]", "للشعب اليهودي[cite: 14]", "للكهنة واللاويين[cite: 14]", "للملائكة[cite: 14]"], answer: 0 },
+            { q: "بكم من الفضة بيع يوسف الصديق للإسماعيليين كرمز لبيع يهوذا للمسيح؟[cite: 14]", options: ["بثلاثين من الفضة[cite: 14]", "بعشرين من الفضة[cite: 14]", "بخمسين من الفضة[cite: 14]", "بمئة من الفضة[cite: 14]"], answer: 1 },
+            { q: "ما هي الحكمة من إحضار حمل الفصح في اليوم العاشر وإبقائه تحت الحفظ للرابع عشر؟[cite: 14]", options: ["لتسمينه قبل الذبح[cite: 14]", "رمز للمسيح الذي دخل أورشليم في العاشر وظل يُفحص ليثبت أنه بلا عيب[cite: 14]", "ليتعود عليه الأطفال[cite: 14]", "لعدم وجود مكان في الهيكل[cite: 14]"], answer: 1 },
+            { q: "إلى ماذا يشير الدم على العتبة العليا والقائمتين حسب القديس هيبوليتس الروماني؟[cite: 14]", options: ["إلى السماء والأرض[cite: 14]", "العتبة العليا تشير للكنيسة والقائمتين يشيران إلى اليهود والأمم[cite: 14]", "للآب والابن والروح القدس[cite: 14]", "للجسد والروح والنفس[cite: 14]"], answer: 1 },
+            { q: "لماذا كان خروف الفصح يُشوى على سفودين (سيخين) متعامدين؟[cite: 14]", options: ["لتسريع عملية الشواء[cite: 14]", "إشارة للسيد المسيح الذي سُمر على الصليب الذي هو عارضتين متعامدتين[cite: 14]", "لمنعه من السقوط في النار[cite: 14]", "لأنه تقليد فرعوني[cite: 14]"], answer: 1 },
+            { q: "ما هي الوصية التي أعطاها يوسف لإخوته وتشبه وصية المسيح: 'تحبوا بعضكم بعضاً'؟[cite: 14]", options: ["لا تتغاضبوا في الطريق[cite: 14]", "لا تعودوا لمصر[cite: 14]", "لا تخافوا من الجوع[cite: 14]", "لا تبيعوا أنفسكم[cite: 14]"], answer: 0 },
+            { q: "لماذا كان خروف الفصح ذكراً ابن سنة؟[cite: 14]", options: ["ليكون سعره أقل[cite: 14]", "ليكون لحمه طرياً[cite: 14]", "إشارة للسيد المسيح الذي قدم ذاته في عنفوان شبابه[cite: 14]", "ليكون صغيراً في الحجم[cite: 14]"], answer: 2 },
+            { q: "ماذا يمثل أكل خروف الفصح بالكامل في الكنيسة اليوم؟[cite: 14]", options: ["وجبة أغابي بعد القداس[cite: 14]", "أكل جسد ربنا يسوع ودمه للاتحاد بالفادي في سر الإفخارستيا[cite: 14]", "ذبيحة تقدم في عيد القيامة[cite: 14]", "الصوم الانقطاعي[cite: 14]"], answer: 1 },
+
+            // [source: 16] - عبور البحر الأحمر، ماء مارة، صخرة حوريب، حرب عماليق (10 أسئلة)
+            { q: "إلى ماذا كانت ترمز عصا موسى التي هزم بها وأدب فرعون وشق بها البحر؟[cite: 16]", options: ["للقوة الجسدية[cite: 16]", "لصليب ربنا يسوع المسيح الذي هزم وأدب به الشيطان وكل جنوده[cite: 16]", "لسلطان الكهنة[cite: 16]", "للحية النحاسية[cite: 16]"], answer: 1 },
+            { q: "ما هو الرمز في قول موسى لفرعون: 'نَذْهَبُ سَفَرَ ثَلَاثَةِ أَيَّامٍ فِي الْبَرِّيَّةِ وَنَذْبَحُ لِلرَّبِّ'؟[cite: 16]", options: ["الأيام الثلاثة التي أمضاها ربنا يسوع في جوف القبر[cite: 16]", "أيام صوم نينوى[cite: 16]", "أيام الظلام في مصر[cite: 16]", "رحلة العائلة المقدسة[cite: 16]"], answer: 0 },
+            { q: "إلى ماذا يشير عمود السحاب الذي يفصل بين المفديين وعدو الخير؟[cite: 16]", options: ["إلى صليب ربنا يسوع المسيح الذي يفصل بين المؤمنين والهالكين[cite: 16]", "إلى غضب الله على المصريين فقط[cite: 16]", "إلى نهاية العالم[cite: 16]", "إلى الناموس[cite: 16]"], answer: 0 },
+            { q: "في قصة ماء مارة، إلى ماذا تشير الشجرة التي طُرحت في الماء فصار عذباً؟[cite: 16]", options: ["لشجرة التين[cite: 16]", "لصليب ربنا يسوع الذي أنقذنا من مرارة الموت وفتح لنا باب الملكوت[cite: 16]", "لخشب الجفر[cite: 16]", "لعصا هارون التي أفرخت[cite: 16]"], answer: 1 },
+            { q: "إلى من كان يرمز فرعون القاسي القلب الذي اندفع للبحر فهلك مع جنوده؟[cite: 16]", options: ["ليهوذا الإسخريوطي[cite: 16]", "لإبليس القاسي القلب الذي اندفع للقبض على روح المسيح فهلك ونال عقابه[cite: 16]", "للإمبراطور الروماني[cite: 16]", "لبيلاطس البنطي[cite: 16]"], answer: 1 },
+            { q: "إلى ماذا ترمز صخرة حوريب التي ضُربت فخرج منها ماء للشعب؟[cite: 16]", options: ["للمسيح المصلوب الذي طُعن بالحربة ففاضت منه الحياة (ماء ودم)[cite: 16]", "لقساوة قلوب اليهود[cite: 16]", "لجبل سيناء[cite: 16]", "للوحي الإلهي[cite: 16]"], answer: 0 },
+            { q: "لماذا عاقب الله موسى وحرمه من دخول أرض الموعد عند الصخرة؟[cite: 16]", options: ["لأنه هرب من الشعب[cite: 16]", "لأنه انفعل وضرب الصخرة في المرة الثانية بدلاً من أن يكلمها (الصخرة تُضرب مرة واحدة)[cite: 16]", "لأنه كسر اللوحين[cite: 16]", "لأنه خاف من عماليق[cite: 16]"], answer: 1 },
+            { q: "أثناء حرب عماليق، إلى من كان يرمز موسى وهو على رأس التل؟[cite: 16]", options: ["لربنا يسوع وهو مصلوب على جبل الجلجثة[cite: 16]", "لله الآب في السماء[cite: 16]", "للملاك ميخائيل[cite: 16]", "ليشوع بن نون[cite: 16]"], answer: 0 },
+            { q: "كيف كان يشوع يغلب عماليق في المعركة؟[cite: 16]", options: ["باستخدام السيوف القوية[cite: 16]", "بخدعة عسكرية[cite: 16]", "عندما كان يبسط موسى يديه على مثال الصليب كان يشوع يغلب[cite: 16]", "بسبب كثرة عدد الإسرائيليين[cite: 16]"], answer: 2 },
+            { q: "مَن هما اللذان دعما يدي موسى لتظلا ثابتتين إلى غروب الشمس؟[cite: 16]", options: ["يشوع وكالب[cite: 16]", "هارون وحور[cite: 16]", "إبراهيم وإسحق[cite: 16]", "ناداب وأبيهو[cite: 16]"], answer: 1 },
+
+            // [source: 15] - تطهير الأبرص، الحية النحاسية، مدن الملجأ، يونان (10 أسئلة)
+            { q: "في طقس تطهير الأبرص، إلى ماذا يرمز العصفوران (المذبوح والحي)؟[cite: 15]", options: ["للخطية والتوبة[cite: 15]", "للملائكة والشياطين[cite: 15]", "للفداء بالصليب، ذبح أحدهما للصلب وإطلاق الآخر لقيامة المسيح[cite: 15]", "للروح والجسد[cite: 15]"], answer: 2 },
+            { q: "ماذا تمثل خشبة الأرز المستخدمة في طقس تطهير الأبرص؟[cite: 15]", options: ["شجرة معرفة الخير والشر[cite: 15]", "خشبة الصليب التي تلطخت بدم مخلصنا الصالح[cite: 15]", "عصا موسى[cite: 15]", "شجرة الحياة[cite: 15]"], answer: 1 },
+            { q: "إلى ماذا يشير 'الإناء الخزفي' الذي ذُبح فيه العصفور؟[cite: 15]", options: ["لناسوِت ربنا يسوع الذي اتخذه ليتمم به الفداء[cite: 15]", "لقلب الإنسان الضعيف[cite: 15]", "للأرض التي نعيش عليها[cite: 15]", "للكنيسة المبنية من طين[cite: 15]"], answer: 0 },
+            { q: "إلى ماذا يشير 'الزوفا' الذي يُغمس في دم العصفور؟[cite: 15]", options: ["للملوك والعظماء[cite: 15]", "للملائكة[cite: 15]", "للبسطاء الذين هم في حاجة إلى الخلاص والتطهير[cite: 15]", "للخطاة غير التائبين[cite: 15]"], answer: 2 },
+            { q: "كيف نجا شعب إسرائيل من لدغات الحيات المحرقة في البرية؟[cite: 15]", options: ["بهروبهم من المكان[cite: 15]", "كل من لُدغ ونظر إلى حية النحاس التي صنعها موسى يحيا[cite: 15]", "بالصوم[cite: 15]", "بذبح الكثير من الخراف[cite: 15]"], answer: 1 },
+            { q: "ماذا قال ربنا يسوع في (يو 14:3) عن الحية النحاسية؟[cite: 15]", options: ["أنها كانت مجرد قصة قديمة[cite: 15]", "كما رفع موسى الحية في البرية هكذا ينبغي أن يرفع ابن الإنسان لكي لا يهلك كل من يؤمن به[cite: 15]", "أنه سيهدمها[cite: 15]", "أنها رمز للشيطان المرفوع[cite: 15]"], answer: 1 },
+            { q: "لمن كانت مدن الملجأ تُستخدم في العهد القديم؟[cite: 15]", options: ["للأغنياء فقط[cite: 15]", "للكهنة[cite: 15]", "يلجأ إليها القاتل من غير قصد ولا عمد لينجو من الموت[cite: 15]", "للمرضى[cite: 15]"], answer: 2 },
+            { q: "متى كان أسرى مدن الملجأ ينطلقون ويعودون إلى بيوتهم بأمان؟[cite: 15]", options: ["بعد موت رئيس الكهنة الأعظم كرمز لعودة آدم بموت المسيح[cite: 15]", "بعد دفع فدية[cite: 15]", "بعد سنة واحدة[cite: 15]", "بعد مرور 40 يوماً[cite: 15]"], answer: 0 },
+            { q: "ما هي الآية (العلامة) الوحيدة التي وافق ربنا يسوع أن يعطيها للجيل الشرير؟[cite: 15]", options: ["آية المن[cite: 15]", "آية يونان النبي[cite: 15]", "آية الحية النحاسية[cite: 15]", "آية فلك نوح[cite: 15]"], answer: 1 },
+            { q: "ما هو وجه الشبه بين مكث يونان في الحوت ومكث السيد المسيح في القبر؟[cite: 15]", options: ["كلاهما مكث يوماً واحداً[cite: 15]", "كلاهما مكث ثلاثة أيام وثلاث ليال، وخرجا حيين ولم يعاين جسدهما فساداً[cite: 15]", "كلاهما هرب من الله[cite: 15]", "لا يوجد شبه بينهما[cite: 15]"], answer: 1 }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let firstAttempt = true;
+        const alphabet = ['أ', 'ب', 'ج', 'د'];
+
+        function startGame() {
+            document.getElementById('start-screen').classList.remove('active');
+            document.getElementById('game-screen').classList.add('active');
+            currentQuestionIndex = 0;
+            score = 0;
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            firstAttempt = true;
+            const q = questions[currentQuestionIndex];
+            
+            document.getElementById('progress-ribbon').innerText = `السؤال ${currentQuestionIndex + 1} من ${questions.length}`;
+            document.getElementById('question-text').innerText = q.q;
+
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+            
+            q.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                
+                const letterSpan = document.createElement('span');
+                letterSpan.className = 'option-letter';
+                letterSpan.innerText = `${alphabet[index]}.`;
+                btn.appendChild(letterSpan);
+
+                const textSpan = document.createElement('span');
+                textSpan.innerText = opt;
+                btn.appendChild(textSpan);
+
+                btn.onclick = () => checkAnswer(index, btn);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(selectedIndex, button) {
+            const q = questions[currentQuestionIndex];
+            
+            if (selectedIndex === q.answer) {
+                button.classList.add('correct');
+                
+                const allButtons = document.querySelectorAll('.option-btn');
+                allButtons.forEach(btn => btn.style.pointerEvents = 'none');
+
+                if (firstAttempt) score++;
+                
+                showStarsEffect(button);
+                document.body.classList.remove('warning');
+
+                setTimeout(() => {
+                    currentQuestionIndex++;
+                    if (currentQuestionIndex < questions.length) {
+                        loadQuestion();
+                    } else {
+                        showResult();
+                    }
+                }, 1200);
+
+            } else {
+                firstAttempt = false;
+                button.classList.add('wrong');
+                button.style.pointerEvents = 'none';
+                
+                document.body.classList.add('warning');
+                setTimeout(() => document.body.classList.remove('warning'), 400);
+            }
+        }
+
+        function showStarsEffect(button) {
+            const rect = button.getBoundingClientRect();
+            const x = rect.left + rect.width / 2;
+            const y = rect.top + rect.height / 2;
+
+            for (let i = 0; i < 8; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.innerText = '✨';
+                star.style.left = x + 'px';
+                star.style.top = y + 'px';
+                
+                const angle = Math.random() * Math.PI * 2;
+                const distance = 80 + Math.random() * 50;
+                star.style.setProperty('--tx', `${Math.cos(angle) * distance}px`);
+                star.style.setProperty('--ty', `${Math.sin(angle) * distance}px`);
+                
+                document.body.appendChild(star);
+                setTimeout(() => star.remove(), 1000);
+            }
+        }
+
+        function showResult() {
+            document.getElementById('game-screen').classList.remove('active');
+            document.getElementById('result-screen').classList.add('active');
+            
+            document.getElementById('final-score').innerText = `${score} / ${questions.length}`;
+            
+            let message = "";
+            let emoji = "";
+            
+            if (score === questions.length) {
+                message = "علامة كاملة! لقد أثبتت جدارة وفهم عميق للدروس.";
+                emoji = "👑";
+            } else if (score >= 32) {
+                message = "ممتاز جداً! لديك حصيلة معرفية رائعة وشاملة.";
+                emoji = "🌟";
+            } else if (score >= 20) {
+                message = "محاولة جيدة، لكنك بحاجة لمراجعة بعض الرموز مرة أخرى.";
+                emoji = "📖";
+            } else {
+                message = "تحتاج إلى دراسة أعمق للمنهج.. لا تيأس وحاول من جديد!";
+                emoji = "💪";
+            }
+            
+            document.getElementById('result-message').innerText = message;
+            document.getElementById('result-emoji').innerText = emoji;
+        }
+
+        function resetGame() {
+            document.getElementById('result-screen').classList.remove('active');
+            document.getElementById('start-screen').classList.add('active');
+        }
+    </script>
+</body>
+</html>
