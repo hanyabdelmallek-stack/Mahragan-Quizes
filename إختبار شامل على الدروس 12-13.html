@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إختبار شامل على الدروس 12-13</title>
+    <style>
+        body {
+            margin: 0; padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; transition: background-color 0.5s;
+            color: #2c3e50; overflow-x: hidden;
+        }
+        body.warning { background: linear-gradient(135deg, #ffe6e6 0%, #ffcccc 100%); }
+        #game-container {
+            background: white; width: 95%; max-width: 900px;
+            border-radius: 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 30px; position: relative; text-align: center;
+            border: 4px solid #c0392b;
+        }
+        .screen { display: none; }
+        .screen.active { display: block; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        h1 { color: #c0392b; font-size: 2.2em; margin-bottom: 10px; }
+        p.subtitle { color: #7f8c8d; font-size: 1.2em; margin-bottom: 30px; }
+        .btn-main {
+            background-color: #c0392b; color: white; border: none;
+            padding: 15px 40px; font-size: 1.5em; border-radius: 50px;
+            cursor: pointer; box-shadow: 0 5px 15px rgba(192, 57, 43, 0.4);
+            transition: transform 0.2s, background-color 0.2s; font-weight: bold;
+        }
+        .btn-main:hover { transform: scale(1.05); background-color: #922b21; }
+        #progress-ribbon {
+            background-color: #f1c40f; color: #2c3e50; padding: 10px 20px;
+            border-radius: 20px; font-size: 1.2em; font-weight: bold;
+            margin-bottom: 20px; display: inline-block; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        #question-text {
+            font-size: 1.3em; color: #34495e; margin: 20px 0 30px;
+            line-height: 1.6; font-weight: bold; text-align: right;
+        }
+        #options-container {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 15px;
+        }
+        @media (max-width: 600px) {
+            #options-container { grid-template-columns: 1fr; }
+        }
+        .option-btn {
+            background-color: #ecf0f1; border: 2px solid #bdc3c7;
+            padding: 15px; font-size: 1.1em; border-radius: 15px;
+            cursor: pointer; transition: all 0.3s; color: #2c3e50;
+            font-weight: 600; display: flex; align-items: center;
+            line-height: 1.4; text-align: right;
+        }
+        .option-btn:hover { background-color: #fadbd8; border-color: #e74c3c; transform: translateY(-3px); }
+        .option-btn.correct {
+            background-color: #2ecc71 !important; color: white !important;
+            border-color: #27ae60 !important; transform: scale(1.05); z-index: 2; position: relative;
+        }
+        .option-btn.wrong {
+            background-color: #e74c3c !important; color: white !important;
+            border-color: #c0392b !important; animation: shake 0.4s;
+        }
+        .option-letter { margin-left: 15px; color: #c0392b; font-weight: bold; font-size: 1.2em; }
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+        .star {
+            position: absolute; font-size: 2em; pointer-events: none;
+            animation: flyStar 1s ease-out forwards; z-index: 10;
+        }
+        @keyframes flyStar {
+            0% { opacity: 1; transform: translate(0, 0) scale(1); }
+            100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(2); }
+        }
+        #final-score { font-size: 2.5em; color: #c0392b; font-weight: bold; margin: 20px 0; }
+        .result-icon { font-size: 4em; }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <!-- شاشة البداية -->
+        <div id="start-screen" class="screen active">
+            <h1>إختبار شامل على الدروس 12-13</h1>
+            <p class="subtitle">الأمجاد وآلام وأمجاد الصليب</p>
+            <p style="font-size: 1.1em; color: #555; margin-bottom: 30px;">
+                اختبر معلوماتك في 40 سؤالاً تقييمياً عن أمجاد الخلاص، التجديد، التقديس، وآلام الجهاد والخدمة.
+            </p>
+            <button class="btn-main" onclick="startGame()">▶️ ابدأ الاختبار</button>
+        </div>
+
+        <!-- شاشة الأسئلة -->
+        <div id="game-screen" class="screen">
+            <div>
+                <span id="progress-ribbon">السؤال 1 من 40</span>
+            </div>
+            <div id="question-text"></div>
+            <div id="options-container"></div>
+        </div>
+
+        <!-- شاشة النتيجة -->
+        <div id="result-screen" class="screen">
+            <div class="result-icon" id="result-emoji">🏆</div>
+            <h1>اكتملت المسابقة!</h1>
+            <div id="final-score">0 / 40</div>
+            <p id="result-message" style="font-size: 1.3em; margin-bottom: 30px; color: #34495e;"></p>
+            <button class="btn-main" onclick="resetGame()">🔄 العب مرة أخرى</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            // [source: 21] - الأمجاد (20 أسئلة)
+            { q: "ما هي الثمار التي يثمرها روح الله القدوس في المؤمنين حسب (غل 22:5-23)؟[cite: 21]", options: ["محبة، فرح، سلام، طول أناة، لطف، صلاح، إيمان، وداعة، تعفف[cite: 21]", "غنى، صحة، سلطان، مجد عالمي[cite: 21]", "حكمة فلسفية ومعرفة[cite: 21]", "معجزات ونبوات فقط[cite: 21]"], answer: 0 },
+            { q: "إلى ماذا ترمز الثياب البيض التي يلبسها صفوف المفديين في سفر الرؤيا؟[cite: 21]", options: ["إلى الملائكة فقط[cite: 21]", "الطهارة والنقاوة والقداسة التي بدونها لن يرى أحد الرب[cite: 21]", "إلى الغنى السماوي[cite: 21]", "علامة على الحزن[cite: 21]"], answer: 1 },
+            { q: "من هم الذين 'يُعَايِنُونَ اللَّهَ' كما ورد في إنجيل متى (مت 8:5)؟[cite: 21]", options: ["الأغنياء[cite: 21]", "الأقوياء[cite: 21]", "الأنقياء القلب[cite: 21]", "الفريسيون[cite: 21]"], answer: 2 },
+            { q: "ماذا سيُعطى 'لِمَنْ يَغْلِبُ' حسب (رؤ 7:2)؟[cite: 21]", options: ["ثروة الأرض[cite: 21]", "أن يأكل من شجرة الحياة التي في وسط فردوس الله[cite: 21]", "أن يرى المستقبل[cite: 21]", "أن يحكم العالم[cite: 21]"], answer: 1 },
+            { q: "ماذا يسمع العبد الصالح الأمين عند وصوله إلى مشارف العالم الآخر؟[cite: 21]", options: ["نِعِمَّا أَيُّهَا الْعَبْدُ الصَّالِحُ الأَمِينُ، كُنْتَ أَمِينًا فِي الْقَلِيلِ فَأَقِيمُكَ عَلَى الْكَثِيرِ، ادْخُلْ إِلَى فَرَحِ سَيِّدِكَ[cite: 21]", "اذهب عني يا فاعل الإثم[cite: 21]", "أنت لم تفعل ما يكفي[cite: 21]", "قف وانتظر طويلاً[cite: 21]"], answer: 0 },
+            { q: "ما هو الفهم الأرثوذكسي الصحيح لعبارة 'شركاء الطبيعة الإلهية' (2 بط 4:1)؟[cite: 21]", options: ["أن نصبح آلهة في الجوهر[cite: 21]", "شركة في العمل والمواهب والمحبة والميراث[cite: 21]", "أن نأخذ مكان الملائكة[cite: 21]", "أن نختفي في الله ونفقد شخصيتنا[cite: 21]"], answer: 1 },
+            { q: "ماذا علمنا قداسة البابا شنودة الثالث أن نرفض بخصوص الشرح الحديث لشركة الطبيعة الإلهية؟[cite: 21]", options: ["أن نرفض الشرح الحديث عن 'تأليه الإنسان'[cite: 21]", "أن نرفض قراءة الكتاب المقدس[cite: 21]", "أن نرفض الميراث السماوي[cite: 21]", "أن نرفض الشفاعة[cite: 21]"], answer: 0 },
+            { q: "ما هو الفرق بين بنوتنا للمسيح وبنوة المسيح للآب؟[cite: 21]", options: ["بنوتنا بالتبني، أما بنوة المسيح للآب فهي بالطبيعة أزلية أبدية[cite: 21]", "لا يوجد فرق بينهما[cite: 21]", "بنوتنا بالطبيعة وبنوته بالتبني[cite: 21]", "بنوتنا مؤقتة وبنوته غير موجودة[cite: 21]"], answer: 0 },
+            { q: "أين نزلت نفس اللص اليمين مع السيد المسيح بعد الصليب وقبل القيامة العامة؟[cite: 21]", options: ["إلى الجحيم ليعاقب[cite: 21]", "إلى الفردوس انتظاراً للملكوت في يوم القيامة العامة[cite: 21]", "إلى السماء الثالثة مباشرة[cite: 21]", "على الأرض كروح هائمة[cite: 21]"], answer: 1 },
+            { q: "ما الذي يميز المسيحية عن باقي الأديان فيما يخص 'مجد التجديد'؟[cite: 21]", options: ["أنها مجرد وصايا وتعاليم[cite: 21]", "أنها تطلب جهادات فقط[cite: 21]", "أنها ثورة داخلية وفعل روحاني وتغيير من الأعماق وموت وقيامة مع المسيح[cite: 21]", "أنها لا تهتم بالداخل[cite: 21]"], answer: 2 },
+            { q: "في طقس المعمودية، إلى أي اتجاه تنظر الأم عندما تجحد الشيطان؟[cite: 21]", options: ["إلى الشرق[cite: 21]", "إلى الغرب حيث موضع الظلمة[cite: 21]", "إلى الشمال[cite: 21]", "إلى الجنوب[cite: 21]"], answer: 1 },
+            { q: "كم مرة يغطس الكاهن الطفل في جرن المعمودية؟[cite: 21]", options: ["مرة واحدة[cite: 21]", "سبع مرات[cite: 21]", "ثلاث مرات على مثال الثالوث ودفن المسيح وقيامته[cite: 21]", "لا يغطسه بل يرشه بالماء[cite: 21]"], answer: 2 },
+            { q: "بعد خروج الطفل من المعمودية، كم رشمة يرشمه الكاهن بزيت الميرون؟[cite: 21]", options: ["7 رشومات[cite: 21]", "12 رشماً[cite: 21]", "36 رشماً بالصليب[cite: 21]", "رشم واحد على الجبهة[cite: 21]"], answer: 2 },
+            { q: "إلى ماذا يشير رشم العينين بالصليب في سر الميرون؟[cite: 21]", options: ["لتقديس الفكر[cite: 21]", "لتقديس السمع[cite: 21]", "لتقديس البصر[cite: 21]", "لتقديس الأعمال[cite: 21]"], answer: 2 },
+            { q: "أين يرشم الكاهن الصليب لتقديس الإرادة في سر الميرون؟[cite: 21]", options: ["على الرأس[cite: 21]", "على القلب (الصدر)[cite: 21]", "صليبان على الظهر[cite: 21]", "على المفاصل[cite: 21]"], answer: 2 },
+            { q: "ماذا يعني 'التقديس' في الكنيسة كما ذُكر في النص؟[cite: 21]", options: ["مجرد النظافة الجسدية[cite: 21]", "التخصيص والتكريس لله كما يحدث في سر الميرون[cite: 21]", "حفظ الألحان[cite: 21]", "رسم الأيقونات[cite: 21]"], answer: 1 },
+            { q: "ماذا يوضع حول الطفل المعمد بعد لبس الأبيض كعلامة للدخول في عهد مع المسيح؟[cite: 21]", options: ["زنار أحمر[cite: 21]", "طوق من ذهب[cite: 21]", "شال أسود[cite: 21]", "تاج من فضة[cite: 21]"], answer: 0 },
+            { q: "كيف تحدث 'سكنى المسيح' في داخلنا حسب 'مجد السكنى'؟[cite: 21]", options: ["بمجرد التفكير فيه[cite: 21]", "حين نتناول من جسد الرب ودمه وحين نصلي ونقرأ كلمته[cite: 21]", "بالنوم العميق[cite: 21]", "بالابتعاد عن الناس تماماً[cite: 21]"], answer: 1 },
+            { q: "ما هو الشعار الذي تحياه النفس الأمينة حسب (رو 8:14)؟[cite: 21]", options: ["إن عشنا فللرب نعيش، وإن متنا فللرب نموت[cite: 21]", "نأكل ونشرب لأننا غداً نموت[cite: 21]", "النجاح المادي هو دليل البركة[cite: 21]", "لا تتعب نفسك في الحياة[cite: 21]"], answer: 0 },
+            { q: "مَنْ هُم الذين ينسب إليهم الله حماقة والسماء ليست بطاهرة قدامه؟[cite: 21]", options: ["البشر الخاطئين[cite: 21]", "الحيوانات[cite: 21]", "ملائكته (أي 18:4)[cite: 21]", "الشياطين فقط[cite: 21]"], answer: 2 },
+
+            // [source: 22] - آلام وأمجاد الصليب (20 أسئلة)
+            { q: "أي رسالة تتحدث بشكل كبير عن الآلام والأمجاد معاً؟[cite: 22]", options: ["رسالة رومية[cite: 22]", "رسالة يعقوب[cite: 22]", "رسالة معلمنا بطرس الرسول الأولى[cite: 22]", "سفر الرؤيا[cite: 22]"], answer: 2 },
+            { q: "ماذا يقصد السيد المسيح بقوله: 'قَدْ أَتَتِ السَّاعَةُ لِيَتَمَجَّدَ ابْنُ الإِنْسَانِ'؟[cite: 22]", options: ["يوم القيامة فقط[cite: 22]", "يقصد الألم، لأن الألم طريق المجد[cite: 22]", "يوم الصعود[cite: 22]", "يوم ميلاده[cite: 22]"], answer: 1 },
+            { q: "هل المؤمن الحقيقي يبحث عن الأمجاد كهدف أساسي؟[cite: 22]", options: ["نعم، المجد هو كل شيء[cite: 22]", "لا، المؤمن يبحث عن الألم كتعبير حب فيمجده الرب[cite: 22]", "نعم، يبحث عن المجد الأرضي[cite: 22]", "لا يبحث عن شيء أبداً[cite: 22]"], answer: 1 },
+            { q: "ما هي الأبعاد الثلاثة للخطية (أو الغريزة) حسب علماء النفس كما ذُكر؟[cite: 22]", options: ["نظري، عملي، تطبيقي[cite: 22]", "فِكري، ووجداني، وسلوكي[cite: 22]", "ماضي، حاضر، مستقبل[cite: 22]", "جسدي، روحي، نفسي[cite: 22]"], answer: 1 },
+            { q: "أي تغيير يعتبر 'الأصعب' في جوانب الغريزة الإنسانية؟[cite: 22]", options: ["تغيير الفكر[cite: 22]", "تغيير الوجدان[cite: 22]", "تغيير السلوك[cite: 22]", "تغيير المظهر[cite: 22]"], answer: 2 },
+            { q: "لماذا تعتبر علاجات الطب النفسي الطبيعي قاصرة ومبتورة مقارنة بالمسيحية؟[cite: 22]", options: ["لأنها مكلفة جداً[cite: 22]", "لأنها تأخذ وقتاً طويلاً[cite: 22]", "لأنها إنسان يغير إنساناً، أما المسيحية فهي إعادة خلق من جديد[cite: 22]", "لأنها تستخدم الأدوية فقط[cite: 22]"], answer: 2 },
+            { q: "من القائل: 'الله الذي خلقك بدونك لا يشاء أن يخلصك بدونك'؟[cite: 22]", options: ["القديس يوحنا ذهبي الفم[cite: 22]", "القديس أثناسيوس[cite: 22]", "القديس أغسطينوس[cite: 22]", "القديس أنطونيوس[cite: 22]"], answer: 2 },
+            { q: "ماذا يطلق الكتاب المقدس على آلام الجهاد ضد الجسد والذات والعالم؟[cite: 22]", options: ["المرض[cite: 22]", "الصلب (مثل: صلبوا الجسد، صلبت مع المسيح)[cite: 22]", "التعب النفسي[cite: 22]", "الضعف البشري[cite: 22]"], answer: 1 },
+            { q: "ما هو نوع الألم الذي نعتبره 'ألماً إيجابياً' حين نغصب أنفسنا لنقتني النعمة؟[cite: 22]", options: ["المرض الجسدي[cite: 22]", "الاضطهاد الخارجي[cite: 22]", "آلام الجهاد الروحي (مثل الصوم والميطانيات)[cite: 22]", "الحزن على الماديات[cite: 22]"], answer: 2 },
+            { q: "ما هو المثال الذي ذُكر لراهب لم تكن له جهادات نسكية كثيرة ولكنه خَلُص؟[cite: 22]", options: ["كان يبني الكنائس[cite: 22]", "حفظ وصية: لا تدينوا لكي لا تدانوا[cite: 22]", "كان يوزع أمواله فقط[cite: 22]", "كان يرنم بصوت جميل[cite: 22]"], answer: 1 },
+            { q: "ما هو 'المستوى الإلهي' في المحبة كما ذُكر في النص؟[cite: 22]", options: ["أن تحب إنساناً 'بسبب' منفعته لك[cite: 22]", "أن تحب إنساناً 'بالرغم من' إساءته لك[cite: 22]", "أن تحب أصدقاءك فقط[cite: 22]", "أن تحب من يحبك[cite: 22]"], answer: 1 },
+            { q: "ما هو الفرق بين محبة الـ 'فيليا' والـ 'أغابي'؟[cite: 22]", options: ["الأغابي هي محبة إيجابية حقيقية تقدم الصفح، بينما الفيليا محبة مسببة ومنفعة متبادلة[cite: 22]", "الفيليا محبة إلهية والأغابي محبة بشرية[cite: 22]", "لا يوجد فرق بينهما[cite: 22]", "الأغابي محبة مشروطة والفيليا غير مشروطة[cite: 22]"], answer: 0 },
+            { q: "كيف أثبت السيد المسيح حبه وصبره على صالبيه؟[cite: 22]", options: ["أرسل عليهم ناراً[cite: 22]", "نزل عن الصليب[cite: 22]", "قال: 'يَا أَبَتَاهُ، اغْفِرْ لَهُمْ، لأَنَّهُمْ لَا يَعْلَمُونَ مَاذَا يَفْعَلُونَ'[cite: 22]", "لزم الصمت تماماً[cite: 22]"], answer: 2 },
+            { q: "ماذا طلب السيد المسيح كعلامة مميزة لتلاميذه في (يو 35:13)؟[cite: 22]", options: ["أن يرتدوا ملابس معينة[cite: 22]", "أن يكون لهم حب بعضاً لبعض[cite: 22]", "أن يتحدثوا بلغات مختلفة[cite: 22]", "أن يحفظوا التوراة غيباً[cite: 22]"], answer: 1 },
+            { q: "كيف يجب أن نفهم خدمة 'غسل الأقدام' التي أسسها المسيح؟[cite: 22]", options: ["مجرد طقس يتم بسرعة في صلاة اللقان[cite: 22]", "بمعنى الاحتمال والاتضاع وأن تنحني هاماتنا للذين نخدمهم[cite: 22]", "بمعنى النظافة الجسدية[cite: 22]", "بمعنى السيطرة على الآخرين[cite: 22]"], answer: 1 },
+            { q: "من أي نوع من الخدمة يُحذرنا النص بشدة؟[cite: 22]", options: ["خدمة الافتقاد[cite: 22]", "خدمة ذوي الاحتياجات الخاصة[cite: 22]", "خدمة الـ (Prestige) والوضع والهيبة التي لا تقدم النموذج المطلوب[cite: 22]", "خدمة الصلاة[cite: 22]"], answer: 2 },
+            { q: "ماذا يعني القول المذكور من البستان: 'كن مظلوماً...'؟[cite: 22]", options: ["كن مظلوماً لا ظالماً، وكن مطروداً لا طارداً[cite: 22]", "دافع عن نفسك بقوة[cite: 22]", "لا تسكت عن حقك أبداً[cite: 22]", "اهرب من الناس[cite: 22]"], answer: 0 },
+            { q: "ما هي 'الذات الجماعية' التي حذر منها النص في مجال الخدمة؟[cite: 22]", options: ["العمل بروح الفريق الواحد[cite: 22]", "أن ينحاز الخدام لبعضهم البعض ويصبحوا حزباً منغلقاً يتعامل بذاتية لا بموضوعية[cite: 22]", "محبة الكنيسة كلها[cite: 22]", "الاجتماعات الروحية الكبيرة[cite: 22]"], answer: 1 },
+            { q: "ماذا يجب أن تفعل عندما تجد أخاً احتد في أسلوبه مع شخص ما في الخدمة؟[cite: 22]", options: ["تقاطعه تماماً[cite: 22]", "تتحدث عنه بالسوء[cite: 22]", "تكون ضمن خدمة المصالحة وتحاول أن تصلح بينهما[cite: 22]", "تتجاهل الأمر[cite: 22]"], answer: 2 },
+            { q: "في أي من الأسرار يحدث 'الانسلاخ من الانتماء للبشر للانتماء لله' وإعادة التشكيل؟[cite: 22]", options: ["سر الزيجة[cite: 22]", "سر مسحة المرضى[cite: 22]", "سر المعمودية[cite: 22]", "سر التوبة والاعتراف[cite: 22]"], answer: 2 }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let firstAttempt = true;
+        const alphabet = ['أ', 'ب', 'ج', 'د'];
+
+        function startGame() {
+            document.getElementById('start-screen').classList.remove('active');
+            document.getElementById('game-screen').classList.add('active');
+            currentQuestionIndex = 0;
+            score = 0;
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            firstAttempt = true;
+            const q = questions[currentQuestionIndex];
+            
+            document.getElementById('progress-ribbon').innerText = `السؤال ${currentQuestionIndex + 1} من ${questions.length}`;
+            document.getElementById('question-text').innerText = q.q;
+
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+            
+            q.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                
+                const letterSpan = document.createElement('span');
+                letterSpan.className = 'option-letter';
+                letterSpan.innerText = `${alphabet[index]}.`;
+                btn.appendChild(letterSpan);
+
+                const textSpan = document.createElement('span');
+                textSpan.innerText = opt;
+                btn.appendChild(textSpan);
+
+                btn.onclick = () => checkAnswer(index, btn);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(selectedIndex, button) {
+            const q = questions[currentQuestionIndex];
+            
+            if (selectedIndex === q.answer) {
+                button.classList.add('correct');
+                
+                const allButtons = document.querySelectorAll('.option-btn');
+                allButtons.forEach(btn => btn.style.pointerEvents = 'none');
+
+                if (firstAttempt) score++;
+                
+                showStarsEffect(button);
+                document.body.classList.remove('warning');
+
+                setTimeout(() => {
+                    currentQuestionIndex++;
+                    if (currentQuestionIndex < questions.length) {
+                        loadQuestion();
+                    } else {
+                        showResult();
+                    }
+                }, 1200);
+
+            } else {
+                firstAttempt = false;
+                button.classList.add('wrong');
+                button.style.pointerEvents = 'none';
+                
+                document.body.classList.add('warning');
+                setTimeout(() => document.body.classList.remove('warning'), 400);
+            }
+        }
+
+        function showStarsEffect(button) {
+            const rect = button.getBoundingClientRect();
+            const x = rect.left + rect.width / 2;
+            const y = rect.top + rect.height / 2;
+
+            for (let i = 0; i < 8; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.innerText = '✨';
+                star.style.left = x + 'px';
+                star.style.top = y + 'px';
+                
+                const angle = Math.random() * Math.PI * 2;
+                const distance = 80 + Math.random() * 50;
+                star.style.setProperty('--tx', `${Math.cos(angle) * distance}px`);
+                star.style.setProperty('--ty', `${Math.sin(angle) * distance}px`);
+                
+                document.body.appendChild(star);
+                setTimeout(() => star.remove(), 1000);
+            }
+        }
+
+        function showResult() {
+            document.getElementById('game-screen').classList.remove('active');
+            document.getElementById('result-screen').classList.add('active');
+            
+            document.getElementById('final-score').innerText = `${score} / ${questions.length}`;
+            
+            let message = "";
+            let emoji = "";
+            
+            if (score === questions.length) {
+                message = "ممتاز جداً! لقد أثبتّ فهماً عميقاً لأمجاد الخلاص ومعاني آلام الصليب.";
+                emoji = "👑";
+            } else if (score >= 32) {
+                message = "عمل رائع! معلوماتك قوية ومتميزة.";
+                emoji = "🌟";
+            } else if (score >= 20) {
+                message = "مجهود طيب، ولكن يمكنك مراجعة بعض تفاصيل الدروس مرة أخرى.";
+                emoji = "📖";
+            } else {
+                message = "لا تستسلم! حاول التركيز أكثر وأعد قراءة المادة ثم جرب مجدداً.";
+                emoji = "💪";
+            }
+            
+            document.getElementById('result-message').innerText = message;
+            document.getElementById('result-emoji').innerText = emoji;
+        }
+
+        function resetGame() {
+            document.getElementById('result-screen').classList.remove('active');
+            document.getElementById('start-screen').classList.add('active');
+        }
+    </script>
+</body>
+</html>
