@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إختبار شامل على الدروس 1-4</title>
+    <style>
+        body {
+            margin: 0; padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; transition: background-color 0.5s;
+            color: #2c3e50; overflow-x: hidden;
+        }
+        body.warning { background: linear-gradient(135deg, #ffe6e6 0%, #ffcccc 100%); }
+        #game-container {
+            background: white; width: 95%; max-width: 900px;
+            border-radius: 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 30px; position: relative; text-align: center;
+            border: 4px solid #2980b9;
+        }
+        .screen { display: none; }
+        .screen.active { display: block; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        h1 { color: #2980b9; font-size: 2.2em; margin-bottom: 10px; }
+        p.subtitle { color: #7f8c8d; font-size: 1.2em; margin-bottom: 30px; }
+        .btn-main {
+            background-color: #2980b9; color: white; border: none;
+            padding: 15px 40px; font-size: 1.5em; border-radius: 50px;
+            cursor: pointer; box-shadow: 0 5px 15px rgba(41, 128, 185, 0.4);
+            transition: transform 0.2s, background-color 0.2s; font-weight: bold;
+        }
+        .btn-main:hover { transform: scale(1.05); background-color: #1c5980; }
+        #progress-ribbon {
+            background-color: #f39c12; color: #fff; padding: 10px 20px;
+            border-radius: 20px; font-size: 1.2em; font-weight: bold;
+            margin-bottom: 20px; display: inline-block; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        #question-text {
+            font-size: 1.3em; color: #34495e; margin: 20px 0 30px;
+            line-height: 1.6; font-weight: bold; text-align: right;
+        }
+        #options-container {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 15px;
+        }
+        @media (max-width: 600px) {
+            #options-container { grid-template-columns: 1fr; }
+        }
+        .option-btn {
+            background-color: #ecf0f1; border: 2px solid #bdc3c7;
+            padding: 15px; font-size: 1.1em; border-radius: 15px;
+            cursor: pointer; transition: all 0.3s; color: #2c3e50;
+            font-weight: 600; display: flex; align-items: center;
+            line-height: 1.4; text-align: right;
+        }
+        .option-btn:hover { background-color: #d6eaf8; border-color: #3498db; transform: translateY(-3px); }
+        .option-btn.correct {
+            background-color: #2ecc71 !important; color: white !important;
+            border-color: #27ae60 !important; transform: scale(1.05); z-index: 2; position: relative;
+        }
+        .option-btn.wrong {
+            background-color: #e74c3c !important; color: white !important;
+            border-color: #c0392b !important; animation: shake 0.4s;
+        }
+        .option-letter { margin-left: 15px; color: #2980b9; font-weight: bold; font-size: 1.2em; }
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+        .star {
+            position: absolute; font-size: 2em; pointer-events: none;
+            animation: flyStar 1s ease-out forwards; z-index: 10;
+        }
+        @keyframes flyStar {
+            0% { opacity: 1; transform: translate(0, 0) scale(1); }
+            100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(2); }
+        }
+        #final-score { font-size: 2.5em; color: #2980b9; font-weight: bold; margin: 20px 0; }
+        .result-icon { font-size: 4em; }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <!-- شاشة البداية -->
+        <div id="start-screen" class="screen active">
+            <h1>إختبار شامل على الدروس 1-4</h1>
+            <p class="subtitle">الصليب تاريخياً، عقيدياً، طقسياً، وروحياً</p>
+            <p style="font-size: 1.1em; color: #555; margin-bottom: 30px;">
+                يتكون هذا الاختبار الشامل من 40 سؤالاً تقييمياً. اختبر معلوماتك الآن!
+            </p>
+            <button class="btn-main" onclick="startGame()">▶️ ابدأ الاختبار</button>
+        </div>
+
+        <!-- شاشة الأسئلة -->
+        <div id="game-screen" class="screen">
+            <div>
+                <span id="progress-ribbon">السؤال 1 من 40</span>
+            </div>
+            <div id="question-text"></div>
+            <div id="options-container"></div>
+        </div>
+
+        <!-- شاشة النتيجة -->
+        <div id="result-screen" class="screen">
+            <div class="result-icon" id="result-emoji">🏆</div>
+            <h1>اكتملت المسابقة!</h1>
+            <div id="final-score">0 / 40</div>
+            <p id="result-message" style="font-size: 1.3em; margin-bottom: 30px; color: #34495e;"></p>
+            <button class="btn-main" onclick="resetGame()">🔄 العب مرة أخرى</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            // القسم الأول: الصليب تاريخيا (10 أسئلة)[cite: 13]
+            { q: "ما هو شعار مهرجان الكرازة المرقسية 2026 كما ورد في النص؟[cite: 13]", options: ["اَلرَّبُّ نُورِي وَخَلَاصِي[cite: 13]", "يَعْظُمُ انْتِصَارُنَا بِالَّذِي أَحَبَّنَا[cite: 13]", "كُلُّ الأَشْيَاءِ تَعْمَلُ مَعًا لِلْخَيْرِ[cite: 13]", "لَا تَخَفْ لأَنِّي مَعَكَ[cite: 13]"], answer: 1 },
+            { q: "كم مرة تعيد الكنيسة القبطية الأرثوذكسية للصليب في السنة بالإضافة لأسبوع الآلام؟[cite: 13]", options: ["مرة واحدة[cite: 13]", "ثلاث مرات[cite: 13]", "مرتين في السنة[cite: 13]", "أربع مرات[cite: 13]"], answer: 2 },
+            { q: "متى كانت فكرة الصليب في قلب الله وذهنه؟[cite: 13]", options: ["بعد خطية آدم مباشرة[cite: 13]", "في ملء الزمان فقط[cite: 13]", "منذ الأزل لأنها تتفق مع صفات الله الأزلية[cite: 13]", "أثناء محاكمة السيد المسيح[cite: 13]"], answer: 2 },
+            { q: "إلى ماذا كانت تشير الأقمصة من جلد التي صنعها الرب لآدم وحواء؟[cite: 13]", options: ["إلى ستر الجسد فقط[cite: 13]", "إشارة إلى أنه بدون سفك دم لا تحصل مغفرة[cite: 13]", "إلى تعليمهم الصيد[cite: 13]", "إلى طرد الحيوانات[cite: 13]"], answer: 1 },
+            { q: "من هو النبي الذي تنبأ عن الصليب قائلاً: 'إِلَهِى، إِلَهِى، لِمَاذَا تَرَكْتَنِي؟'[cite: 13]", options: ["إشعياء النبي[cite: 13]", "إرميا النبي[cite: 13]", "داود النبي[cite: 13]", "يونان النبي[cite: 13]"], answer: 2 },
+            { q: "ماذا كانت ترمز ذبيحة المحرقة في العهد القديم؟[cite: 13]", options: ["طاعة الابن الوحيد الكاملة على الصليب نيابة عن البشرية[cite: 13]", "النجاة من الطوفان[cite: 13]", "خطية الإنسان تجاه أخيه[cite: 13]", "طلب المطر[cite: 13]"], answer: 0 },
+            { q: "إلى ماذا يشير مكوث يونان في بطن الحوت ثلاثة أيام؟[cite: 13]", options: ["الهروب من وجه الرب[cite: 13]", "دفن السيد المسيح في القبر وقيامته بعد ثلاثة أيام[cite: 13]", "الذهاب إلى نينوى[cite: 13]", "التوبة عن الخطية[cite: 13]"], answer: 1 },
+            { q: "ماذا تمثل 'الحية النحاسية' كرمز في العهد القديم؟[cite: 13]", options: ["الشفاء من الأمراض العادية[cite: 13]", "هروب سم الخطية بالنظر للمسيح المصلوب بإيمان[cite: 13]", "عبادة الأوثان[cite: 13]", "الخوف من الصحراء[cite: 13]"], answer: 1 },
+            { q: "كيف سيظهر الصليب في مرحلة الاستمرار الأبدي كما ورد في إنجيل متى؟[cite: 13]", options: ["لن يظهر أبداً[cite: 13]", "سيظهر كنجوم في السماء[cite: 13]", "تظهر علامة ابن الإنسان في السماء في مجيء الرب[cite: 13]", "سيظهر كقوس قزح[cite: 13]"], answer: 2 },
+            { q: "من الذي تنبأ قائلاً: 'مَجْرُوحٌ لأَجْلِ مَعَاصِينَا، مَسْحُوقٌ لأَجْلِ آثَامِنَا'؟[cite: 13]", options: ["داود النبي[cite: 13]", "إشعياء النبي[cite: 13]", "موسى النبي[cite: 13]", "ميخا النبي[cite: 13]"], answer: 1 },
+
+            // القسم الثاني: الصليب عقيديا (10 أسئلة)[cite: 12]
+            { q: "ما هي النتيجة المباشرة لأكل آدم وحواء من الشجرة المميتة؟[cite: 12]", options: ["الطرد فقط دون موت[cite: 12]", "سقوطهما تحت حكم الموت وورثت البشرية الخطية وفساد الطبيعة[cite: 12]", "المرض الجسدي المؤقت[cite: 12]", "النسيان التام لمعرفة الله[cite: 12]"], answer: 1 },
+            { q: "لماذا كان يجب أن يكون الفادي 'غير محدود'؟[cite: 12]", options: ["لكي يصنع معجزات كثيرة[cite: 12]", "لأن خطية آدم غير محدودة إذ أنها موجهة إلى الله غير المحدود[cite: 12]", "ليستطيع الطيران للسماء[cite: 12]", "لأنه سيولد من عذراء[cite: 12]"], answer: 1 },
+            { q: "لماذا لم يمت اللاهوت على الصليب؟[cite: 12]", options: ["لأن اللاهوت غادر الجسد قبل الصلب[cite: 12]", "لأن اللاهوت أقام الناسوت المتحد به وقام ولم يمت ولن يموت[cite: 12]", "لأنه لم يكن متحداً بالناسوت[cite: 12]", "لأن الموت كان خدعة[cite: 12]"], answer: 1 },
+            { q: "ماذا نعلن عندما نرشم الصليب من فوق إلى تحت؟[cite: 12]", options: ["عقيدة التجسد والفداء وحلوله في بطن العذراء[cite: 12]", "وحدانية الله[cite: 12]", "نهاية العالم[cite: 12]", "قيامة الأموات فقط[cite: 12]"], answer: 0 },
+            { q: "لماذا اختار الرب الصليب بالذات ليفدينا من اللعنة؟[cite: 12]", options: ["لأنه كان متاحاً في ذلك الوقت[cite: 12]", "ليرفع اللعنة عنا لأن مكتوب: ملعون كل من علق على خشبة[cite: 12]", "ليظهر قوته للرومان[cite: 12]", "لأنه الموت الأسهل[cite: 12]"], answer: 1 },
+            { q: "كيف مات الإنسان 'موتاً أدبياً' بسبب الخطية؟[cite: 12]", options: ["بالهلاك في جهنم[cite: 12]", "بفساد الطبيعة البشرية[cite: 12]", "لأنه نزل عن مجد شركة الله في جنة عدن وطرد إلى أرض الشقاء[cite: 12]", "بانفصاله روحياً عن الله[cite: 12]"], answer: 2 },
+            { q: "ما هو الموت الرباعي الذي كان ينتظرنا وحمله المسيح عنا؟[cite: 12]", options: ["جسدي، وروحي، وأدبي، وأبدي[cite: 12]", "جسدي، ونفسي، ومرضي، وعقلي[cite: 12]", "روحي، ونفسي، وزمني، ونهائي[cite: 12]", "سريع، وبطيء، وعميق، وسطحي[cite: 12]"], answer: 0 },
+            { q: "لماذا يرى القديس أثناسيوس أن الرب اختار الصليب ليكون 'الموت علنياً'؟[cite: 12]", options: ["ليخيف الأعداء[cite: 12]", "تأكيداً للقيامة التي ستأتي فيما بعد[cite: 12]", "ليكون عظة لليهود[cite: 12]", "لإظهار الألم الجسدي[cite: 12]"], answer: 1 },
+            { q: "ماذا يحدث لنا متى نظرنا بإيمان إلى المسيح المصلوب لأجلنا (كما للحية النحاسية)؟[cite: 12]", options: ["نخلص من سم الشهوات والشرور والأحقاد[cite: 12]", "نشفى من الأمراض الجسدية فوراً[cite: 12]", "نكتسب قوة بدنية خارقة[cite: 12]", "تتحسن ظروفنا المادية[cite: 12]"], answer: 0 },
+            { q: "لماذا يجب أن يكون الفادي 'خالقاً'؟[cite: 12]", options: ["لكي يخلق عالماً جديداً[cite: 12]", "لكي يجدد طبيعتنا التي فسدت ويعيد خلقتها مرة ثانية[cite: 12]", "ليخلق طعاماً للجياع[cite: 12]", "ليصنع ملائكة جدد[cite: 12]"], answer: 1 },
+
+            // القسم الثالث: الصليب طقسيا (10 أسئلة)[cite: 11]
+            { q: "ما هي القاعدة التي تربط الطقس والعقيدة في الكنيسة؟[cite: 11]", options: ["الطقس أهم من العقيدة[cite: 11]", "العقيدة أهم من الطقس[cite: 11]", "لا يوجد طقس إلا وله معنى لاهوتي ولا عقيدة إلا ولها معنى طقسي[cite: 11]", "الطقس منفصل تماماً عن العقيدة[cite: 11]"], answer: 2 },
+            { q: "أين يوضع الصليب في بناء الكنيسة ليراه الجميع؟[cite: 11]", options: ["على منارة الكنيسة[cite: 11]", "في الفناء الخلفي[cite: 11]", "تحت المذبح فقط[cite: 11]", "في مكتبة الكنيسة[cite: 11]"], answer: 0 },
+            { q: "متى تحتفل الكنيسة بالعيد الأول للصليب المجيد؟[cite: 11]", options: ["10 برمهات[cite: 11]", "17 توت[cite: 11]", "1 توت[cite: 11]", "29 كيهك[cite: 11]"], answer: 1 },
+            { q: "ما هي الذكرى المرتبطة بعيد الصليب في 17 توت؟[cite: 11]", options: ["اكتشاف الصليب[cite: 11]", "ميلاد الملكة هيلانة[cite: 11]", "تدشين كنيسة القيامة في أورشليم وتكريس الصليب[cite: 11]", "نقل الجبل المقطم[cite: 11]"], answer: 2 },
+            { q: "متى تحتفل الكنيسة بعيد اكتشاف الصليب على يد الملكة هيلانة؟[cite: 11]", options: ["10 برمهات[cite: 11]", "17 توت[cite: 11]", "15 مسرى[cite: 11]", "8 بؤونة[cite: 11]"], answer: 0 },
+            { q: "في أي سنة تم اكتشاف خشبة الصليب المقدس على يد الملكة البارة هيلانة؟[cite: 11]", options: ["سنة 33م[cite: 11]", "سنة 326م[cite: 11]", "سنة 451م[cite: 11]", "سنة 284م[cite: 11]"], answer: 1 },
+            { q: "ماذا نعلن في 'ذكصولوجية عيد الصليب' حسب النص؟[cite: 11]", options: ["إيماننا بالصليب كعلامة فداء ومصالحة مع الله[cite: 11]", "تاريخ حياة الملكة هيلانة[cite: 11]", "قصة بناء فلك نوح[cite: 11]", "أسماء الرسل الإثني عشر[cite: 11]"], answer: 0 },
+            { q: "ماذا تقول إبصالية يوم الجمعة عن الصليب؟[cite: 11]", options: ["أعطى علامة لعبيده الذين يخافونه[cite: 11]", "أنه خفي عن الأعين[cite: 11]", "أنه من ذهب خالص[cite: 11]", "أنه صُنع من شجرة الزيتون[cite: 11]"], answer: 0 },
+            { q: "لماذا يوضع الصليب على المذبح أثناء القداس الإلهي؟[cite: 11]", options: ["للزينة فقط[cite: 11]", "ليبارك الكاهن به الشعب[cite: 11]", "ليحمله الشمامسة للخارج[cite: 11]", "ليكون بديلاً للإنجيل[cite: 11]"], answer: 1 },
+            { q: "لماذا نرشم الصليب على الطعام والشراب؟[cite: 11]", options: ["لأنه عادة شعبية قديمة[cite: 11]", "ليباركه الله وهو علامة قوة في كل مواقف حياتنا[cite: 11]", "ليغير طعم الطعام[cite: 11]", "للتأكد من درجة حرارته[cite: 11]"], answer: 1 },
+
+            // القسم الرابع: الصليب روحيا (10 أسئلة)[cite: 10]
+            { q: "ما هو الهدف من 'تجارب التتويب' التي يسمح بها الله؟[cite: 10]", options: ["لتدمير الإنسان[cite: 10]", "للدعوة للتوبة لينتبه الإنسان ويرجع لله كالابن الضال[cite: 10]", "لتجربة قوته البدنية[cite: 10]", "لزيادة ماله[cite: 10]"], answer: 1 },
+            { q: "لماذا سمح الله بتجارب قاسية لأيوب البار (تجارب التنقية)؟[cite: 10]", options: ["لأنه كان شريراً جداً[cite: 10]", "لينقيه من البر الذاتي[cite: 10]", "ليعاقبه على غناه[cite: 10]", "ليجعل أصدقاءه يشمتون فيه[cite: 10]"], answer: 1 },
+            { q: "ما هو نوع التجربة التي سمح بها الله لإبراهيم بتقديم ابنه إسحق؟[cite: 10]", options: ["تجارب للوقاية[cite: 10]", "تجارب للتنقية[cite: 10]", "تجارب للتزكية في محبته وتسليمه[cite: 10]", "تجارب للتتويب[cite: 10]"], answer: 2 },
+            { q: "لماذا سمح الله بأن يُعطى بولس الرسول 'شوكة في الجسد' (تجارب للوقاية)؟[cite: 10]", options: ["خوفاً عليه من أن يستكبر بسبب نجاحاته وإعلاناته[cite: 10]", "لأنه أخطأ خطية عظيمة[cite: 10]", "لمنعه من السفر[cite: 10]", "ليعاقبه على اضطهاده للكنيسة قديماً[cite: 10]"], answer: 0 },
+            { q: "ماذا تعني 'الحياة الأدبية' ضمن الحياة الرباعية في صليب المسيح؟[cite: 10]", options: ["الطهارة والقداسة[cite: 10]", "العشرة والشركة مع الله[cite: 10]", "أن نتمتع بكرامة أولاد الله[cite: 10]", "أن نكون مع الرب في السماء[cite: 10]"], answer: 2 },
+            { q: "كيف يجب أن نتعامل مع تجارب الله حتى عندما تسير الأمور عكس ما نشتهي؟[cite: 10]", options: ["نغضب ونتذمر[cite: 10]", "نثق في تدبير الله لأن النهاية حسب مشيئته الصالحة[cite: 10]", "نيأس من رحمة الله[cite: 10]", "نعتمد على ذكائنا فقط[cite: 10]"], answer: 1 },
+            { q: "ما هي 'بركة الغفران' التي ننالها من خلال فداء المسيح بدمه؟[cite: 10]", options: ["تخص الحاضر[cite: 10]", "تخص المستقبل[cite: 10]", "تخص الماضي حينما يسامحنا الله عن كل خطايانا بالتوبة[cite: 10]", "تخص الملائكة[cite: 10]"], answer: 2 },
+            { q: "أي بركة تخص المستقبل وتتم في المعمودية والميرون بقوة الصليب؟[cite: 10]", options: ["بركة التثبيت[cite: 10]", "بركة التقديس إذ يصير الإنسان ملكاً للرب[cite: 10]", "بركة الغفران[cite: 10]", "بركة الخلود[cite: 10]"], answer: 1 },
+            { q: "ماذا كان هدف الشيطان عندما حاول أن يتعرف على شخص الفادي؟[cite: 10]", options: ["لكي يؤمن به[cite: 10]", "حتى يمنع موته فلا يتم الفداء[cite: 10]", "لكي يساعده في الصلب[cite: 10]", "ليطلب منه المغفرة[cite: 10]"], answer: 1 },
+            { q: "كيف انتهت قبضة الشيطان بعد أن نزل السيد المسيح إلى الجحيم؟[cite: 10]", options: ["لأن اللاهوت كان متحداً بالناسوت فصُرع الشيطان وانفكت قبضته[cite: 10]", "لأن الشيطان تركه بإرادته[cite: 10]", "بسبب مساعدة الملائكة له فقط[cite: 10]", "لأنه دفع له فدية مادية[cite: 10]"], answer: 0 }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let firstAttempt = true;
+        const alphabet = ['أ', 'ب', 'ج', 'د'];
+
+        function startGame() {
+            document.getElementById('start-screen').classList.remove('active');
+            document.getElementById('game-screen').classList.add('active');
+            currentQuestionIndex = 0;
+            score = 0;
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            firstAttempt = true;
+            const q = questions[currentQuestionIndex];
+            
+            document.getElementById('progress-ribbon').innerText = `السؤال ${currentQuestionIndex + 1} من ${questions.length}`;
+            document.getElementById('question-text').innerText = q.q;
+
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+            
+            q.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                
+                const letterSpan = document.createElement('span');
+                letterSpan.className = 'option-letter';
+                letterSpan.innerText = `${alphabet[index]}.`;
+                btn.appendChild(letterSpan);
+
+                const textSpan = document.createElement('span');
+                textSpan.innerText = opt;
+                btn.appendChild(textSpan);
+
+                btn.onclick = () => checkAnswer(index, btn);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(selectedIndex, button) {
+            const q = questions[currentQuestionIndex];
+            
+            if (selectedIndex === q.answer) {
+                button.classList.add('correct');
+                
+                const allButtons = document.querySelectorAll('.option-btn');
+                allButtons.forEach(btn => btn.style.pointerEvents = 'none');
+
+                if (firstAttempt) score++;
+                
+                showStarsEffect(button);
+                document.body.classList.remove('warning');
+
+                setTimeout(() => {
+                    currentQuestionIndex++;
+                    if (currentQuestionIndex < questions.length) {
+                        loadQuestion();
+                    } else {
+                        showResult();
+                    }
+                }, 1200);
+
+            } else {
+                firstAttempt = false;
+                button.classList.add('wrong');
+                button.style.pointerEvents = 'none';
+                
+                document.body.classList.add('warning');
+                setTimeout(() => document.body.classList.remove('warning'), 400);
+            }
+        }
+
+        function showStarsEffect(button) {
+            const rect = button.getBoundingClientRect();
+            const x = rect.left + rect.width / 2;
+            const y = rect.top + rect.height / 2;
+
+            for (let i = 0; i < 8; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.innerText = '✨';
+                star.style.left = x + 'px';
+                star.style.top = y + 'px';
+                
+                const angle = Math.random() * Math.PI * 2;
+                const distance = 80 + Math.random() * 50;
+                star.style.setProperty('--tx', `${Math.cos(angle) * distance}px`);
+                star.style.setProperty('--ty', `${Math.sin(angle) * distance}px`);
+                
+                document.body.appendChild(star);
+                setTimeout(() => star.remove(), 1000);
+            }
+        }
+
+        function showResult() {
+            document.getElementById('game-screen').classList.remove('active');
+            document.getElementById('result-screen').classList.add('active');
+            
+            document.getElementById('final-score').innerText = `${score} / ${questions.length}`;
+            
+            let message = "";
+            let emoji = "";
+            
+            if (score === questions.length) {
+                message = "علامة كاملة! لقد أثبتت جدارة وفهم عميق للدروس الأربعة.";
+                emoji = "👑";
+            } else if (score >= 32) {
+                message = "ممتاز جداً! لديك حصيلة معرفية رائعة وشاملة.";
+                emoji = "🌟";
+            } else if (score >= 20) {
+                message = "محاولة جيدة، لكنك بحاجة لمراجعة بعض الدروس مرة أخرى.";
+                emoji = "📖";
+            } else {
+                message = "تحتاج إلى دراسة أعمق للمنهج.. لا تيأس وحاول من جديد!";
+                emoji = "💪";
+            }
+            
+            document.getElementById('result-message').innerText = message;
+            document.getElementById('result-emoji').innerText = emoji;
+        }
+
+        function resetGame() {
+            document.getElementById('result-screen').classList.remove('active');
+            document.getElementById('start-screen').classList.add('active');
+        }
+    </script>
+</body>
+</html>
