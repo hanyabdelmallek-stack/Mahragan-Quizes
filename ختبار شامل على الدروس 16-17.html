@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إختبار شامل على الدروس 16-17</title>
+    <style>
+        body {
+            margin: 0; padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; transition: background-color 0.5s;
+            color: #2c3e50; overflow-x: hidden;
+        }
+        body.warning { background: linear-gradient(135deg, #ffe6e6 0%, #ffcccc 100%); }
+        #game-container {
+            background: white; width: 95%; max-width: 900px;
+            border-radius: 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 30px; position: relative; text-align: center;
+            border: 4px solid #16a085;
+        }
+        .screen { display: none; }
+        .screen.active { display: block; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        h1 { color: #16a085; font-size: 2.2em; margin-bottom: 10px; }
+        p.subtitle { color: #7f8c8d; font-size: 1.2em; margin-bottom: 30px; }
+        .btn-main {
+            background-color: #16a085; color: white; border: none;
+            padding: 15px 40px; font-size: 1.5em; border-radius: 50px;
+            cursor: pointer; box-shadow: 0 5px 15px rgba(22, 160, 133, 0.4);
+            transition: transform 0.2s, background-color 0.2s; font-weight: bold;
+        }
+        .btn-main:hover { transform: scale(1.05); background-color: #117a65; }
+        #progress-ribbon {
+            background-color: #f1c40f; color: #2c3e50; padding: 10px 20px;
+            border-radius: 20px; font-size: 1.2em; font-weight: bold;
+            margin-bottom: 20px; display: inline-block; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        #question-text {
+            font-size: 1.3em; color: #34495e; margin: 20px 0 30px;
+            line-height: 1.6; font-weight: bold; text-align: right;
+        }
+        #options-container {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 15px;
+        }
+        @media (max-width: 600px) {
+            #options-container { grid-template-columns: 1fr; }
+        }
+        .option-btn {
+            background-color: #ecf0f1; border: 2px solid #bdc3c7;
+            padding: 15px; font-size: 1.1em; border-radius: 15px;
+            cursor: pointer; transition: all 0.3s; color: #2c3e50;
+            font-weight: 600; display: flex; align-items: center;
+            line-height: 1.4; text-align: right;
+        }
+        .option-btn:hover { background-color: #d1f2eb; border-color: #1abc9c; transform: translateY(-3px); }
+        .option-btn.correct {
+            background-color: #2ecc71 !important; color: white !important;
+            border-color: #27ae60 !important; transform: scale(1.05); z-index: 2; position: relative;
+        }
+        .option-btn.wrong {
+            background-color: #e74c3c !important; color: white !important;
+            border-color: #c0392b !important; animation: shake 0.4s;
+        }
+        .option-letter { margin-left: 15px; color: #16a085; font-weight: bold; font-size: 1.2em; }
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+        .star {
+            position: absolute; font-size: 2em; pointer-events: none;
+            animation: flyStar 1s ease-out forwards; z-index: 10;
+        }
+        @keyframes flyStar {
+            0% { opacity: 1; transform: translate(0, 0) scale(1); }
+            100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(2); }
+        }
+        #final-score { font-size: 2.5em; color: #16a085; font-weight: bold; margin: 20px 0; }
+        .result-icon { font-size: 4em; }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <!-- شاشة البداية -->
+        <div id="start-screen" class="screen active">
+            <h1>إختبار شامل على الدروس 16-17</h1>
+            <p class="subtitle">محبتنا لأنفسنا، للناس، والمحبة قمة الفضائل</p>
+            <p style="font-size: 1.1em; color: #555; margin-bottom: 30px;">
+                يتكون الاختبار من 40 سؤالاً تفاعلياً تقيس فهمك العميق للدروس الخاصة بالمحبة. الإجابات الصحيحة موزعة بشكل عشوائي لضمان تقييم دقيق.
+            </p>
+            <button class="btn-main" onclick="startGame()">▶️ ابدأ الاختبار</button>
+        </div>
+
+        <!-- شاشة الأسئلة -->
+        <div id="game-screen" class="screen">
+            <div>
+                <span id="progress-ribbon">السؤال 1 من 40</span>
+            </div>
+            <div id="question-text"></div>
+            <div id="options-container"></div>
+        </div>
+
+        <!-- شاشة النتيجة -->
+        <div id="result-screen" class="screen">
+            <div class="result-icon" id="result-emoji">🏆</div>
+            <h1>اكتملت المسابقة!</h1>
+            <div id="final-score">0 / 40</div>
+            <p id="result-message" style="font-size: 1.3em; margin-bottom: 30px; color: #34495e;"></p>
+            <button class="btn-main" onclick="resetGame()">🔄 العب مرة أخرى</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            // أسئلة من الدرس 16-17 (محبتنا لأنفسنا وللناس) - Source 27
+            { q: "هل محبة النفس تعتبر خطية في المفهوم المسيحي؟[cite: 27]", options: ["نعم، لأنها نوع من الكبرياء[cite: 27]", "كلا، فقد قال الكتاب: 'تُحِبُّ قَرِيبَكَ كَنَفْسِكَ'[cite: 27]", "نعم، يجب أن نكره أنفسنا تماماً[cite: 27]", "كلا، إذا كانت محبة للشهوات[cite: 27]"], answer: 1 },
+            { q: "كيف يجب أن تتجه محبتك لنفسك لكي تكون صحيحة؟[cite: 27]", options: ["أن تتركها تسلك حسب هواها[cite: 27]", "أن تدللها ولا تلومها[cite: 27]", "أن تتجه اتجاهاً روحياً فتحب لنفسك النقاوة والقداسة[cite: 27]", "أن تفضل نفسك على غيرك[cite: 27]"], answer: 2 },
+            { q: "ما هي الفضائل التي تظهر محبتك الحقيقية لنفسك؟[cite: 27]", options: ["الأنانية وتفضيل الذات[cite: 27]", "ضبط النفس ومحاسبتها ولومها (تبكيتها على أخطائها)[cite: 27]", "السعي وراء الكرامة الزمنية[cite: 27]", "عدم الاكتراث بالآخرين[cite: 27]"], answer: 1 },
+            { q: "ماذا يقصد بإنكار الذات في محبة النفس؟[cite: 27]", options: ["أن تكون مثل السيد المسيح الذي: 'أَخْلَى نَفْسَهُ'[cite: 27]", "أن تضيع حياتك بلا هدف[cite: 27]", "أن ترفض كل من يحبك[cite: 27]", "أن تدلل نفسك باستمرار[cite: 27]"], answer: 0 },
+            { q: "لماذا يُعد عدم الحب بين البشر أمراً غير طبيعي؟[cite: 27]", options: ["لأن القوانين الوضعية ترفضه[cite: 27]", "لأن البشر كلهم أبناء آدم وحواء وتربطهم رابطة الدم والحب[cite: 27]", "لأنه يضر بالاقتصاد[cite: 27]", "لأن الحيوانات لا تفعل ذلك[cite: 27]"], answer: 1 },
+            { q: "ما هو أول إيذاء حدثنا عنه الكتاب المقدس؟[cite: 27]", options: ["وحش افترس إنساناً[cite: 27]", "إنسان ضد إنسان (قايين قام على أخيه هابيل وقتله)[cite: 27]", "فيضان أغرق الناس[cite: 27]", "مرض أهلك البشرية[cite: 27]"], answer: 1 },
+            { q: "ما هو الأساس الإيجابي الذي استلزمه الإصلاح الإلهي للتعامل بين الناس؟[cite: 27]", options: ["الكف عن الكراهية[cite: 27]", "وضع قوانين صارمة للقصاص[cite: 27]", "مشاعر الود والتعاطف والتعاون[cite: 27]", "الانعزال عن المجتمع[cite: 27]"], answer: 2 },
+            { q: "ما هو العنصر السلبي في إصلاح التعامل بين الناس؟[cite: 27]", options: ["العزلة عن الآخرين[cite: 27]", "الكف عن الكراهية والاعتداء[cite: 27]", "مشاعر الود[cite: 27]", "تقديم الهدايا[cite: 27]"], answer: 1 },
+            { q: "أين ينبغي أن تكون محبتنا للناس؟[cite: 27]", options: ["فوق محبتنا لله[cite: 27]", "موازية لمحبتنا لله[cite: 27]", "داخل محبتنا لله، لا تكون ضدها ولا تزيد عليها[cite: 27]", "خارجة عن إرادة الله[cite: 27]"], answer: 2 },
+            { q: "لماذا لا تُعتبر محبة الأم التي تدلل ابنها وتغطي أخطاءه محبة حقيقية؟[cite: 27]", options: ["لأنها لا تنفق عليه المال[cite: 27]", "لأنها ليست نافعة وتفسده، بل تُسمى تدليلاً أو دالة مرضية[cite: 27]", "لأن الأب لا يعرف[cite: 27]", "لأن الابن سيكبر ويتركها[cite: 27]"], answer: 1 },
+            { q: "إلى أين يصل البذل في المحبة العملية؟[cite: 27]", options: ["إلى التحدث بكلمات طيبة فقط[cite: 27]", "إلى بذل الذات والعطاء من الأعواز والاستعداد للتضحية[cite: 27]", "إلى تقديم الهدايا في المناسبات[cite: 27]", "إلى زيارة المرضى فقط[cite: 27]"], answer: 1 },
+            { q: "ماذا حدث عندما ميز يعقوب ابنه يوسف عن باقي إخوته؟[cite: 27]", options: ["أحبوه أكثر[cite: 27]", "تسبب ذلك في حسدهم له، وجر عليه الكثير من الضيقات[cite: 27]", "أصبح ملكاً فوراً[cite: 27]", "لم يحدث شيء[cite: 27]"], answer: 1 },
+            { q: "لماذا لا يسكن الله في القلب الذي تسكنه البغضة؟[cite: 27]", options: ["لأن القلب صغير جداً[cite: 27]", "لأن البغضة تحتاج لوقت طويل[cite: 27]", "لأن الله محبة، وكل من يبغض أخاه فهو قاتل نفس[cite: 27]", "لأن الله يفضل القلوب الفارغة[cite: 27]"], answer: 2 },
+            { q: "كيف يُعتبر الانتقام في المسيحية؟[cite: 27]", options: ["حق مشروع للإنسان[cite: 27]", "لون من الكراهية والعداوة، ويدخل في محبة الذات لا في محبة الغير[cite: 27]", "فضيلة إيجابية[cite: 27]", "ضرورة لفرض العدل الفردي[cite: 27]"], answer: 1 },
+            { q: "ما هي أعلى قمة تصل إليها المحبة حسب الدرس؟[cite: 27]", options: ["محبة الأصدقاء[cite: 27]", "محبة العائلة[cite: 27]", "محبة الأعداء[cite: 27]", "محبة النفس[cite: 27]"], answer: 2 },
+            { q: "إذا كان من الصعب عليك محبة عدوك، فما هو الحد الأدنى المطلوب؟[cite: 27]", options: ["أن تتجاهله تماماً[cite: 27]", "أن تنتقم منه سراً[cite: 27]", "على الأقل لا تبغضه، واغفر له في قلبك وانس إساءته[cite: 27]", "أن ترفع عليه دعوى قضائية[cite: 27]"], answer: 2 },
+            { q: "ما هو المثال الذي ضُرب للمحبة العملية في الحياة الاجتماعية؟[cite: 27]", options: ["قايين وهابيل[cite: 27]", "أبشالوم وداود[cite: 27]", "راعوث التي رفضت أن تترك حماتها وحدها بعد موت ابنها[cite: 27]", "يعقوب وعيسو[cite: 27]"], answer: 2 },
+            { q: "ماذا قال يوحنا الحبيب عن المحبة الحقيقية؟[cite: 27]", options: ["لا نحب بالكلام ولا باللسان، بل بالعمل والحق[cite: 27]", "لا تحبوا العالم[cite: 27]", "المحبة تحتمل كل شيء[cite: 27]", "الله محبة[cite: 27]"], answer: 0 },
+            { q: "لماذا تنازعت ليئة وأختها راحيل؟[cite: 27]", options: ["بسبب المال[cite: 27]", "حول إنجاب البنين والمنافسة[cite: 27]", "بسبب تقسيم الأرض[cite: 27]", "بسبب رعاية الغنم[cite: 27]"], answer: 1 },
+            { q: "ما هو الدليل على أن المحبة الحقيقية يجب أن تكون طاهرة؟[cite: 27]", options: ["أن الشاب الذي يحب فتاة ليفسد عفتها إنما يهتم بنفسه ولا يهتم بأبديتها[cite: 27]", "أن الحب يغطي كل الخطايا[cite: 27]", "أن المحبة لا تفكر في الغد[cite: 27]", "أن المحبة تعتمد على المال[cite: 27]"], answer: 0 },
+
+            // أسئلة من الدرس 16-17 (المحبة قمة الفضائل) - Source 28
+            { q: "بماذا شُبهت المحبة في سفر نشيد الأنشاد (نش 6:8-7)؟[cite: 28]", options: ["أنها قوية كالموت، ومياه كثيرة لا تستطيع أن تطفئها[cite: 28]", "أنها ضعيفة كالريح[cite: 28]", "أنها مثل شجرة الزيتون[cite: 28]", "أنها كالجبال العالية[cite: 28]"], answer: 0 },
+            { q: "كيف تظهر قوة المحبة من الناحية السلبية؟[cite: 28]", options: ["في الانتقام بقوة[cite: 28]", "في احتمالها لأخطاء من تحبه مهما فعل، فالمحبة لا تسقط أبداً[cite: 28]", "في البكاء المستمر[cite: 28]", "في الهروب من المشاكل[cite: 28]"], answer: 1 },
+            { q: "ما هو الحل الوحيد لمحبتنا للآخرين لكي لا تتعارض مع وصية 'تحب الرب إلهك من كل قلبك'؟[cite: 28]", options: ["أن نحبهم في أيام معينة فقط[cite: 28]", "أن نحب كل أحد وكل شيء من داخل محبتنا لله[cite: 28]", "أن نكره الناس تماماً[cite: 28]", "أن نعطي نصف القلب لله ونصفه للناس[cite: 28]"], answer: 1 },
+            { q: "متى تعتبر المحبة 'خاطئة'؟[cite: 28]", options: ["إذا كانت للفقراء[cite: 28]", "إذا كانت خارج محبة الله أو أكثر من محبتنا لله[cite: 28]", "إذا كانت للأعداء[cite: 28]", "إذا كانت بالعمل والحق[cite: 28]"], answer: 1 },
+            { q: "ماذا يطلب الله من الإنسان بشكل أساسي (أم 26:23)؟[cite: 28]", options: ["يا ابني أعطني أموالك[cite: 28]", "يا ابني أعطني قلبك[cite: 28]", "يا ابني أعطني وقتك الفارغ[cite: 28]", "يا ابني قدم لي ذبائح[cite: 28]"], answer: 1 },
+            { q: "كيف يؤثر حب الله على صلاة الإنسان؟[cite: 28]", options: ["يجدها واجب ثقيل[cite: 28]", "يلتمس الأعذار لكي لا يصلي[cite: 28]", "يجد لذة في الحديث معه وتشبع نفسه كما من شحم ودسم[cite: 28]", "يصلي فقط وقت الضيق[cite: 28]"], answer: 2 },
+            { q: "لماذا لا يجد الذي يحب الله صعوبة في تنفيذ وصاياه؟[cite: 28]", options: ["لأن الوصايا سهلة بطبيعتها[cite: 28]", "لأن إرادته تتحد مع مشيئة الله ولا يرى الوصية ثقيلة أو تقيده[cite: 28]", "لأنه يخاف من جهنم فقط[cite: 28]", "لأنه يقلد الآخرين[cite: 28]"], answer: 1 },
+            { q: "بماذا يُوصف الإنسان الذي ترتفع بالحب درجة حرارة روحه من الحب الإلهي؟[cite: 28]", options: ["أنه مريض جسدياً[cite: 28]", "أنه مريض حباً، ويصاب بهذيان مقدس كقول بولس: 'الكتب الكثيرة تحولك إلى الهذيان'[cite: 28]", "أنه غاضب ومكتئب[cite: 28]", "أنه لا يبالي بشيء[cite: 28]"], answer: 1 },
+            { q: "ما معنى 'حبيبي أبيض وأحمر معلم بين ربوة'؟[cite: 28]", options: ["أبيض في نقاوة قلبه، وأحمر في الدم المسفوك لأجلنا، ومميز بين عشرة آلاف[cite: 28]", "أنه يرتدي ملابس بيضاء وحمراء[cite: 28]", "أنه يعيش في الجبال[cite: 28]", "أنه غاضب ومنتقم[cite: 28]"], answer: 0 },
+            { q: "كيف ينظر المحب الحقيقي لتجارب وضيقات الطريق الروحي؟[cite: 28]", options: ["يتذمر ويترك الطريق[cite: 28]", "يحسبها عقاباً من الله[cite: 28]", "لا تحزنه، بل يرى فيها بركاتها ويحسبها كل فرح[cite: 28]", "يهرب منها بأي ثمن[cite: 28]"], answer: 2 },
+            { q: "ما هي 'القداسة' كما عرفها الآباء في سياق محبة الله؟[cite: 28]", options: ["الانعزال في الصحراء[cite: 28]", "استبدال شهوة بشهوة، نترك شهوة العالم لنحظى بشهوة التمتع بعشرة الله[cite: 28]", "تلاوة الصلوات بدون فهم[cite: 28]", "الصوم المستمر فقط[cite: 28]"], answer: 1 },
+            { q: "لماذا نحب الله حسب (1 يو 19:4)؟[cite: 28]", options: ["لأنه يرزقنا المال[cite: 28]", "لأنه أحبنا قبلاً وفدانا[cite: 28]", "لكي نتجنب الأمراض[cite: 28]", "لأنه أمرنا بذلك بالقوة[cite: 28]"], answer: 1 },
+            { q: "ما هو أثر محبة الله على 'الخوف' الموجود في قلوبنا؟[cite: 28]", options: ["تزيد من رعبنا[cite: 28]", "تطرد الخوف إلى خارج قلوبنا[cite: 28]", "لا تؤثر عليه[cite: 28]", "تجعلنا نخاف من الناس أكثر[cite: 28]"], answer: 1 },
+            { q: "كيف يُحدد امتياز درجتنا ومتعتنا في الأبدية (نجماً يمتاز عن نجم)؟[cite: 28]", options: ["حسب مقدار أموالنا[cite: 28]", "حسب مقدار محبتنا لله[cite: 28]", "حسب ذكائنا الأرضي[cite: 28]", "بشكل عشوائي[cite: 28]"], answer: 1 },
+            { q: "ما هي الحقيقة الأولى التي يجب أن تتأكد منها لتصل إلى محبة الله؟[cite: 28]", options: ["أنك تستطيع الاعتماد على نفسك[cite: 28]", "أن الله هو الكائن الوحيد الذي لا يمكنك أن تستغني عنه (بدوني لا تقدرون أن تفعلوا شيئاً)[cite: 28]", "أن العالم يكفيك[cite: 28]", "أن الصداقات البشرية هي الأهم[cite: 28]"], answer: 1 },
+            { q: "ما الذي يجب أن تتركه للوصول إلى محبة الله؟[cite: 28]", options: ["العمل والدراسة[cite: 28]", "الأسرة والأصدقاء[cite: 28]", "المحبة المضادة (محبة العالم وشهواته)[cite: 28]", "كل أنواع الطعام[cite: 28]"], answer: 2 },
+            { q: "ما هي مأساة ديماس التي ذكرها بولس الرسول؟[cite: 28]", options: ["أنه مرض ومات[cite: 28]", "أنه ترك بولس إذ أحب العالم الحاضر[cite: 28]", "أنه كان فقيراً جداً[cite: 28]", "أنه لم يكن يعرف القراءة[cite: 28]"], answer: 1 },
+            { q: "كيف يجب أن نعيش في العالم حسب وصية بولس الرسول؟[cite: 28]", options: ["أن نغرق في شهواته[cite: 28]", "أن نستخدمه كأننا لا نستعمله، لأن هيئة هذا العالم تزول[cite: 28]", "أن نكره كل ما خلقه الله[cite: 28]", "أن نجمع أكبر قدر من المال[cite: 28]"], answer: 1 },
+            { q: "هل الأفضل أن نبدأ بمحاربة المحبات الأخرى أم بمحبة الله أولاً؟[cite: 28]", options: ["يجب أن نحارب المحبات الأخرى فقط[cite: 28]", "يجب أن ننتظر محبة الله لتأتي وحدها[cite: 28]", "ابدأ بأيهما، فمحاربة الشر تُدخل الله، ومحبة الله تطرد المحبات الأخرى[cite: 28]", "لا يهم لأننا لن ننجح[cite: 28]"], answer: 2 },
+            { q: "لماذا فرح يوحنا المعمدان عندما رأى الناس يلتفون حول المسيح؟[cite: 28]", options: ["لأنه تعب من الخدمة[cite: 28]", "لأنه يحب العزلة[cite: 28]", "لأنه صديق العريس، يفرح فرحاً من أجل صوت العريس[cite: 28]", "لأنه أراد أن يترك رسالته[cite: 28]"], answer: 2 }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let firstAttempt = true;
+        const alphabet = ['أ', 'ب', 'ج', 'د'];
+
+        function startGame() {
+            document.getElementById('start-screen').classList.remove('active');
+            document.getElementById('game-screen').classList.add('active');
+            currentQuestionIndex = 0;
+            score = 0;
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            firstAttempt = true;
+            const q = questions[currentQuestionIndex];
+            
+            document.getElementById('progress-ribbon').innerText = `السؤال ${currentQuestionIndex + 1} من ${questions.length}`;
+            document.getElementById('question-text').innerText = q.q;
+
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+            
+            q.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                
+                const letterSpan = document.createElement('span');
+                letterSpan.className = 'option-letter';
+                letterSpan.innerText = `${alphabet[index]}.`;
+                btn.appendChild(letterSpan);
+
+                const textSpan = document.createElement('span');
+                textSpan.innerText = opt;
+                btn.appendChild(textSpan);
+
+                btn.onclick = () => checkAnswer(index, btn);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(selectedIndex, button) {
+            const q = questions[currentQuestionIndex];
+            
+            if (selectedIndex === q.answer) {
+                button.classList.add('correct');
+                
+                const allButtons = document.querySelectorAll('.option-btn');
+                allButtons.forEach(btn => btn.style.pointerEvents = 'none');
+
+                if (firstAttempt) score++;
+                
+                showStarsEffect(button);
+                document.body.classList.remove('warning');
+
+                setTimeout(() => {
+                    currentQuestionIndex++;
+                    if (currentQuestionIndex < questions.length) {
+                        loadQuestion();
+                    } else {
+                        showResult();
+                    }
+                }, 1200);
+
+            } else {
+                firstAttempt = false;
+                button.classList.add('wrong');
+                button.style.pointerEvents = 'none';
+                
+                document.body.classList.add('warning');
+                setTimeout(() => document.body.classList.remove('warning'), 400);
+            }
+        }
+
+        function showStarsEffect(button) {
+            const rect = button.getBoundingClientRect();
+            const x = rect.left + rect.width / 2;
+            const y = rect.top + rect.height / 2;
+
+            for (let i = 0; i < 8; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.innerText = '✨';
+                star.style.left = x + 'px';
+                star.style.top = y + 'px';
+                
+                const angle = Math.random() * Math.PI * 2;
+                const distance = 80 + Math.random() * 50;
+                star.style.setProperty('--tx', `${Math.cos(angle) * distance}px`);
+                star.style.setProperty('--ty', `${Math.sin(angle) * distance}px`);
+                
+                document.body.appendChild(star);
+                setTimeout(() => star.remove(), 1000);
+            }
+        }
+
+        function showResult() {
+            document.getElementById('game-screen').classList.remove('active');
+            document.getElementById('result-screen').classList.add('active');
+            
+            document.getElementById('final-score').innerText = `${score} / ${questions.length}`;
+            
+            let message = "";
+            let emoji = "";
+            
+            if (score === questions.length) {
+                message = "علامة كاملة! لقد أثبتّ قدرة فائقة على فهم جوهر المحبة لله وللناس.";
+                emoji = "👑";
+            } else if (score >= 32) {
+                message = "ممتاز جداً! لديك حصيلة روحية ومعرفية قوية حول دروس المحبة.";
+                emoji = "🌟";
+            } else if (score >= 20) {
+                message = "مجهود طيب، ولكن هناك مجال للمراجعة لتثبيت المفاهيم الروحية العميقة.";
+                emoji = "📖";
+            } else {
+                message = "لا تيأس! المحبة تحتاج إلى تأمل ودراسة مستمرة، جرب الاختبار مرة أخرى.";
+                emoji = "💪";
+            }
+            
+            document.getElementById('result-message').innerText = message;
+            document.getElementById('result-emoji').innerText = emoji;
+        }
+
+        function resetGame() {
+            document.getElementById('result-screen').classList.remove('active');
+            document.getElementById('start-screen').classList.add('active');
+        }
+    </script>
+</body>
+</html>
