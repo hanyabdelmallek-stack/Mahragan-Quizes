@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إختبار شامل على الدروس 14-15</title>
+    <style>
+        body {
+            margin: 0; padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; transition: background-color 0.5s;
+            color: #2c3e50; overflow-x: hidden;
+        }
+        body.warning { background: linear-gradient(135deg, #ffe6e6 0%, #ffcccc 100%); }
+        #game-container {
+            background: white; width: 95%; max-width: 900px;
+            border-radius: 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 30px; position: relative; text-align: center;
+            border: 4px solid #2980b9;
+        }
+        .screen { display: none; }
+        .screen.active { display: block; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        h1 { color: #2980b9; font-size: 2.2em; margin-bottom: 10px; }
+        p.subtitle { color: #7f8c8d; font-size: 1.2em; margin-bottom: 30px; }
+        .btn-main {
+            background-color: #2980b9; color: white; border: none;
+            padding: 15px 40px; font-size: 1.5em; border-radius: 50px;
+            cursor: pointer; box-shadow: 0 5px 15px rgba(41, 128, 185, 0.4);
+            transition: transform 0.2s, background-color 0.2s; font-weight: bold;
+        }
+        .btn-main:hover { transform: scale(1.05); background-color: #1f618d; }
+        #progress-ribbon {
+            background-color: #f1c40f; color: #2c3e50; padding: 10px 20px;
+            border-radius: 20px; font-size: 1.2em; font-weight: bold;
+            margin-bottom: 20px; display: inline-block; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        #question-text {
+            font-size: 1.3em; color: #34495e; margin: 20px 0 30px;
+            line-height: 1.6; font-weight: bold; text-align: right;
+        }
+        #options-container {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 15px;
+        }
+        @media (max-width: 600px) {
+            #options-container { grid-template-columns: 1fr; }
+        }
+        .option-btn {
+            background-color: #ecf0f1; border: 2px solid #bdc3c7;
+            padding: 15px; font-size: 1.1em; border-radius: 15px;
+            cursor: pointer; transition: all 0.3s; color: #2c3e50;
+            font-weight: 600; display: flex; align-items: center;
+            line-height: 1.4; text-align: right;
+        }
+        .option-btn:hover { background-color: #d6eaf8; border-color: #3498db; transform: translateY(-3px); }
+        .option-btn.correct {
+            background-color: #2ecc71 !important; color: white !important;
+            border-color: #27ae60 !important; transform: scale(1.05); z-index: 2; position: relative;
+        }
+        .option-btn.wrong {
+            background-color: #e74c3c !important; color: white !important;
+            border-color: #c0392b !important; animation: shake 0.4s;
+        }
+        .option-letter { margin-left: 15px; color: #2980b9; font-weight: bold; font-size: 1.2em; }
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+        .star {
+            position: absolute; font-size: 2em; pointer-events: none;
+            animation: flyStar 1s ease-out forwards; z-index: 10;
+        }
+        @keyframes flyStar {
+            0% { opacity: 1; transform: translate(0, 0) scale(1); }
+            100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(2); }
+        }
+        #final-score { font-size: 2.5em; color: #2980b9; font-weight: bold; margin: 20px 0; }
+        .result-icon { font-size: 4em; }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <!-- شاشة البداية -->
+        <div id="start-screen" class="screen active">
+            <h1>إختبار شامل على الدروس 14-15</h1>
+            <p class="subtitle">قصة الفداء في التسبحة اليومية وفي القداس الإلهي</p>
+            <p style="font-size: 1.1em; color: #555; margin-bottom: 30px;">
+                يتكون الاختبار من 40 سؤالاً تفاعلياً تقيس فهمك العميق للدروس. الإجابات الصحيحة موزعة لضمان تقييم دقيق لمعلوماتك.
+            </p>
+            <button class="btn-main" onclick="startGame()">▶️ ابدأ الاختبار</button>
+        </div>
+
+        <!-- شاشة الأسئلة -->
+        <div id="game-screen" class="screen">
+            <div>
+                <span id="progress-ribbon">السؤال 1 من 40</span>
+            </div>
+            <div id="question-text"></div>
+            <div id="options-container"></div>
+        </div>
+
+        <!-- شاشة النتيجة -->
+        <div id="result-screen" class="screen">
+            <div class="result-icon" id="result-emoji">🏆</div>
+            <h1>اكتملت المسابقة!</h1>
+            <div id="final-score">0 / 40</div>
+            <p id="result-message" style="font-size: 1.3em; margin-bottom: 30px; color: #34495e;"></p>
+            <button class="btn-main" onclick="resetGame()">🔄 العب مرة أخرى</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            // الدرس 15 (التسبحة اليومية) - Source 25
+            { q: "حسب مديح القيامة، ماذا نالت حواء عوض حزنها؟[cite: 25]", options: ["الموت الأبدي[cite: 25]", "الزينة[cite: 25]", "الطرد من الفردوس[cite: 25]", "النسيان[cite: 25]"], answer: 1 },
+            { q: "كيف كان رد فعل الجنود الملائكية عندما رأوا المخلص حُسب مع الأموات؟[cite: 25]", options: ["هربوا بعيداً[cite: 25]", "لم يكترثوا[cite: 25]", "حزنوا ويئسوا[cite: 25]", "بهتوا (اندهشوا)[cite: 25]"], answer: 3 },
+            { q: "من هي التي وُصفت بأنها 'الكنز المختوم' الذي امتلأنا بالحياة من قبله؟[cite: 25]", options: ["والدة الإله (العذراء مريم)[cite: 25]", "حواء[cite: 25]", "الكنيسة[cite: 25]", "مدينة بيت لحم[cite: 25]"], answer: 0 },
+            { q: "في ثيؤطوكية يوم الاثنين، مَن هو 'آدم الثاني'؟[cite: 25]", options: ["نوح[cite: 25]", "يوسف النجار[cite: 25]", "السيد المسيح[cite: 25]", "إبراهيم[cite: 25]"], answer: 2 },
+            { q: "بمشورة مَن أكل آدم من ثمرة الشجرة حسب لبش ثيؤطوكية الاثنين؟[cite: 25]", options: ["بإرادته المنفردة[cite: 25]", "حواء أمنا الأولى[cite: 25]", "الحية فقط[cite: 25]", "الشيطان مباشرة[cite: 25]"], answer: 1 },
+            { q: "ما الذي حلّ على جنسنا وكل الخليقة بسبب الأكل من الشجرة؟[cite: 25]", options: ["الجوع والعطش[cite: 25]", "البركة[cite: 25]", "الطوفان[cite: 25]", "سلطان الموت والفساد[cite: 25]"], answer: 3 },
+            { q: "في ثيؤطوكية الثلاثاء، مَن هي التي أرضعت عائل كل أحد؟[cite: 25]", options: ["السيدة العذراء[cite: 25]", "حواء[cite: 25]", "سارة[cite: 25]", "الكنيسة[cite: 25]"], answer: 0 },
+            { q: "ما هي شجرة الحياة التي استحققنا أن نأكل منها في العهد الجديد حسب ثيؤطوكية الخميس؟[cite: 25]", options: ["شجرة التين[cite: 25]", "المعرفة والعلوم[cite: 25]", "جسد الله ودمه الحقيقيين[cite: 25]", "المن السماوي[cite: 25]"], answer: 2 },
+            { q: "مَن التي من أجلها أُغلق باب الفردوس، ومن قِبل مَن فُتح مرة أخرى؟[cite: 25]", options: ["أغلق بسبب آدم، وفتح بسبب إبراهيم[cite: 25]", "أغلق بسبب حواء، وفتح من قبل مريم العذراء[cite: 25]", "أغلق بسبب الحية، وفتح بسبب الملائكة[cite: 25]", "لم يغلق الفردوس أبداً[cite: 25]"], answer: 1 },
+            { q: "ما هي الذبيحة الحقيقية التي عرفناها من قبل مريم حسب ثيؤطوكية الأحد؟[cite: 25]", options: ["ذبيحة المحرقة[cite: 25]", "ذبيحة الخطية القديمة[cite: 25]", "ذبيحة السلامة[cite: 25]", "المغفرة الخطايا[cite: 25]"], answer: 3 },
+            { q: "كيف تُحسب الأيام في الشريعة اليهودية (مثل مدة بقاء المسيح في القبر)؟[cite: 25]", options: ["تحسب الليالي فقط[cite: 25]", "يحسب اليوم بـ 24 ساعة دقيقة[cite: 25]", "يحسب الجزء من اليوم يوماً كاملاً[cite: 25]", "لا تعترف الشريعة بأجزاء الأيام[cite: 25]"], answer: 2 },
+            { q: "كم عدد الظهورات المتعددة بعد القيامة التي سجلها العهد الجديد؟[cite: 25]", options: ["7 ظهورات[cite: 25]", "11 ظهوراً[cite: 25]", "12 ظهوراً[cite: 25]", "40 ظهوراً[cite: 25]"], answer: 1 },
+            { q: "لأكثر من كم أخ ظهر الرب دفعة واحدة بعد قيامته؟[cite: 25]", options: ["12 أخاً[cite: 25]", "70 أخاً[cite: 25]", "100 أخ[cite: 25]", "500 أخ[cite: 25]"], answer: 3 },
+            { q: "بماذا وعد الرجلان اللذان بلباس أبيض التلاميذ يوم الصعود؟[cite: 25]", options: ["أن يسوع هذا سيأتي هكذا كما رأيتموه منطلقاً[cite: 25]", "أن المسيح لن يعود[cite: 25]", "أنه سيرسل ملائكة بدلاً منه[cite: 25]", "أنه سيؤسس مملكة أرضية[cite: 25]"], answer: 0 },
+            { q: "ماذا ننتظر كل يوم في قانون الإيمان بناءً على قصة الفداء؟[cite: 25]", options: ["ننتظر الموت[cite: 25]", "ننتظر مجازاة الأشرار فقط[cite: 25]", "ننتظر قيامة الأموات وحياة الدهر الآتي[cite: 25]", "ننتظر انتهاء العالم بالماء[cite: 25]"], answer: 2 },
+            { q: "مَن هو الذي حَمَل هو نفسه خطايانا في جسده على الخشبة؟[cite: 25]", options: ["الكهنة[cite: 25]", "الرب يسوع (فداء الرب لنا على الصليب)[cite: 25]", "الأنبياء[cite: 25]", "رؤساء الملائكة[cite: 25]"], answer: 1 },
+            
+            // الدرس 14 (القداس الإلهي) - Source 26
+            { q: "ما هي الصلوات الليتورجية والطقسية في كنيستنا القبطية؟[cite: 26]", options: ["مجرد عادات قديمة[cite: 26]", "أناشيد غير مفهومة[cite: 26]", "صلوات مأخوذة من العهد القديم فقط[cite: 26]", "عبارة عن تدوين لعقائدنا وإيماننا المسيحي[cite: 26]"], answer: 3 },
+            { q: "كيف تصف أوشية الراقدين الموت بالنسبة لعبيد الله؟[cite: 26]", options: ["أنه لا يكون موت لعبيدك، بل هو انتقال[cite: 26]", "أنه نهاية الوجود[cite: 26]", "أنه عقاب أبدي[cite: 26]", "أنه نوم بلا استيقاظ[cite: 26]"], answer: 0 },
+            { q: "حسب أوشية الراقدين، مَن هو الطاهر من دنس؟[cite: 26]", options: ["الأنبياء والرسل[cite: 26]", "الأطفال الصغار فقط[cite: 26]", "ليس أحداً طاهراً من دنس ولو كانت حياته يوماً واحداً[cite: 26]", "الملائكة الذين على الأرض[cite: 26]"], answer: 2 },
+            { q: "في صلاة الصلح بالقداس الباسيلي، كيف دخل الموت إلى العالم؟[cite: 26]", options: ["بسبب الجهل[cite: 26]", "بحسد إبليس[cite: 26]", "بقضاء من الله[cite: 26]", "بالصدفة[cite: 26]"], answer: 1 },
+            { q: "كيف هُدم الموت حسب القداس الباسيلي؟[cite: 26]", options: ["بالصلاة والصوم[cite: 26]", "بطوفان نوح[cite: 26]", "بالناموس[cite: 26]", "بالظهور المحيي الذي لابنك الوحيد الجنس[cite: 26]"], answer: 3 },
+            { q: "لماذا يصلي الكاهن بصيغة الجمع 'جبلنا وخلقنا ووضعنا في فردوس النعيم'؟[cite: 26]", options: ["لأن الشعب كله من سلالة آدم، فما حدث لآدم حدث لهم[cite: 26]", "للتفخيم والتعظيم[cite: 26]", "لأنه يتحدث عن الملائكة والبشر[cite: 26]", "لأنه خطأ مطبعي[cite: 26]"], answer: 0 },
+            { q: "في القداس الغريغوري، مَن الذي ائتمنه الله على خلاصنا؟[cite: 26]", options: ["رئيس ملائكة[cite: 26]", "نبي عظيم[cite: 26]", "لا ملاك ولا رئيس ملائكة بل أنت بغير استحالة تجسدت[cite: 26]", "إبراهيم أبو الآباء[cite: 26]"], answer: 2 },
+            { q: "في أي شيء شابهنا المسيح حسب صلاة الصلح في القداس الغريغوري؟[cite: 26]", options: ["في الخطيئة فقط[cite: 26]", "شابهتنا في كل شيء، ما خلا الخطية وحدها[cite: 26]", "في المظهر فقط[cite: 26]", "في الضعف الموروث[cite: 26]"], answer: 1 },
+            { q: "ماذا يصرخ الكاهن بالنيابة عن الشعب كله في القداس الغريغوري (قبل الرشومات)؟[cite: 26]", options: ["أنا بريء من الخطيئة[cite: 26]", "أنا تبت ورجعت[cite: 26]", "أنا لم أسمع الوصية[cite: 26]", "أنا اختطفت لي قضية (حكم) الموت[cite: 26]"], answer: 3 },
+            { q: "حسب صلاة الصلح في القداس الكيرلسي، مَن الذي يتزكى أمام الله؟[cite: 26]", options: ["ليس مولود امرأة يتزكى أمامك[cite: 26]", "كل مَن يصلي بانتظام[cite: 26]", "الأبرار من العهد القديم[cite: 26]", "الشهداء فقط[cite: 26]"], answer: 0 },
+            { q: "كيف نتعامل مع قصة الخلق المذكورة في سفر التكوين بناءً على صلوات الأجبية؟[cite: 26]", options: ["أنها قصة خيالية للعظة[cite: 26]", "أنها رمزية لا تمت للواقع بصلة[cite: 26]", "أنها حقيقية ونأخذها بحرفيتها[cite: 26]", "أنها تتحدث عن شعوب وليس أفراد[cite: 26]"], answer: 2 },
+            { q: "في قطع صلاة باكر، مِن ماذا خلّص المسيح أبانا آدم؟[cite: 26]", options: ["من العبودية في مصر[cite: 26]", "من الغواية[cite: 26]", "من المرض[cite: 26]", "من الجوع[cite: 26]"], answer: 1 },
+            { q: "في صلاة باكر، مِن ماذا عتق المسيح أمنا حواء؟[cite: 26]", options: ["من العمل الشاق[cite: 26]", "من أعدائها[cite: 26]", "من النسيان[cite: 26]", "من طلقات الموت[cite: 26]"], answer: 3 },
+            { q: "في أي يوم وفي أي ساعة سُمر المسيح على الصليب حسب صلوات الأجبية؟[cite: 26]", options: ["في اليوم السادس وفي الساعة السادسة[cite: 26]", "في اليوم الثالث والساعة الثالثة[cite: 26]", "في اليوم الأول والساعة التاسعة[cite: 26]", "في اليوم السابع[cite: 26]"], answer: 0 },
+            { q: "لماذا سُمر المسيح على الصليب في اليوم السادس والساعة السادسة كما في الأجبية؟[cite: 26]", options: ["ليتمم النبوات الرومانية[cite: 26]", "لأنها ساعة الراحة[cite: 26]", "من أجل الخطية التي تجرأ عليها أبونا آدم في الفردوس[cite: 26]", "لأنه أخطأ في حق قيصر[cite: 26]"], answer: 2 },
+            { q: "ماذا نطلب من المسيح أن يمزقه في صلاة الساعة السادسة؟[cite: 26]", options: ["ملابسنا العتيقة[cite: 26]", "صك خطايانا[cite: 26]", "ستارة الهيكل[cite: 26]", "أعدائنا[cite: 26]"], answer: 1 },
+            { q: "في صلاة الساعة التاسعة، مَن الذي قَبِل الرب اعترافه على الصليب؟[cite: 26]", options: ["يوحنا الحبيب[cite: 26]", "قائد المئة[cite: 26]", "بيلاطس البنطي[cite: 26]", "اللص على الصليب[cite: 26]"], answer: 3 },
+            { q: "ماذا نقر ونعترف في صلاة الساعة التاسعة أسوة باللص؟[cite: 26]", options: ["نقر بخطايانا معترفين بألوهيتك[cite: 26]", "نقر بضعفنا البشري فقط[cite: 26]", "نعترف بخطايا غيرنا[cite: 26]", "نطلب النجاة من الموت الجسدي[cite: 26]"], answer: 0 },
+            { q: "كيف جُبل الإنسان في البداية حسب القداس الباسيلي؟[cite: 26]", options: ["على الفساد والموت[cite: 26]", "ككائن روحي بلا جسد[cite: 26]", "على غير فساد[cite: 26]", "كملاك مجنح[cite: 26]"], answer: 2 },
+            { q: "لمَن نصلي في أوشية الراقدين (نطاق المسكونة)؟[cite: 26]", options: ["لمصر فقط[cite: 26]", "من مشارق الشمس إلى مغاربها، ومن الشمال إلى الجنوب[cite: 26]", "لأورشليم وما حولها[cite: 26]", "لأديرة الرهبان فقط[cite: 26]"], answer: 1 },
+            { q: "ما هي المدينة التي وُلد فيها آدم الثاني لكي يرد آدم الأول للفردوس؟[cite: 25]", options: ["الناصرة[cite: 25]", "أورشليم[cite: 25]", "مصر[cite: 25]", "بيت لحم مدينة الأنبياء[cite: 25]"], answer: 3 },
+            { q: "في ثيؤطوكية الجمعة، بماذا رُد الإنسان مرة أخرى إلى الفردوس؟[cite: 25]", options: ["من قبل صليبه، وقيامته المقدسة[cite: 25]", "بالأعمال الصالحة[cite: 25]", "بالتوبة فقط[cite: 25]", "بكثرة الصلوات[cite: 25]"], answer: 0 },
+            { q: "مَن التي يُقال لها 'الفردوس الناطق للمسيح' في ثيؤطوكية الأربعاء؟[cite: 25]", options: ["الكنيسة[cite: 25]", "حواء[cite: 25]", "السيدة العذراء[cite: 25]", "الملائكة[cite: 25]"], answer: 2 },
+            { q: "ابنة مَن هي مريم العذراء كما ورد في ثيؤطوكية الأحد؟[cite: 25]", options: ["ابنة داود[cite: 25]", "ابنة يواقيم[cite: 25]", "ابنة إبراهيم[cite: 25]", "ابنة يعقوب[cite: 25]"], answer: 1 }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let firstAttempt = true;
+        const alphabet = ['أ', 'ب', 'ج', 'د'];
+
+        function startGame() {
+            document.getElementById('start-screen').classList.remove('active');
+            document.getElementById('game-screen').classList.add('active');
+            currentQuestionIndex = 0;
+            score = 0;
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            firstAttempt = true;
+            const q = questions[currentQuestionIndex];
+            
+            document.getElementById('progress-ribbon').innerText = `السؤال ${currentQuestionIndex + 1} من ${questions.length}`;
+            document.getElementById('question-text').innerText = q.q;
+
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+            
+            q.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                
+                const letterSpan = document.createElement('span');
+                letterSpan.className = 'option-letter';
+                letterSpan.innerText = `${alphabet[index]}.`;
+                btn.appendChild(letterSpan);
+
+                const textSpan = document.createElement('span');
+                textSpan.innerText = opt;
+                btn.appendChild(textSpan);
+
+                btn.onclick = () => checkAnswer(index, btn);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(selectedIndex, button) {
+            const q = questions[currentQuestionIndex];
+            
+            if (selectedIndex === q.answer) {
+                button.classList.add('correct');
+                
+                const allButtons = document.querySelectorAll('.option-btn');
+                allButtons.forEach(btn => btn.style.pointerEvents = 'none');
+
+                if (firstAttempt) score++;
+                
+                showStarsEffect(button);
+                document.body.classList.remove('warning');
+
+                setTimeout(() => {
+                    currentQuestionIndex++;
+                    if (currentQuestionIndex < questions.length) {
+                        loadQuestion();
+                    } else {
+                        showResult();
+                    }
+                }, 1200);
+
+            } else {
+                firstAttempt = false;
+                button.classList.add('wrong');
+                button.style.pointerEvents = 'none';
+                
+                document.body.classList.add('warning');
+                setTimeout(() => document.body.classList.remove('warning'), 400);
+            }
+        }
+
+        function showStarsEffect(button) {
+            const rect = button.getBoundingClientRect();
+            const x = rect.left + rect.width / 2;
+            const y = rect.top + rect.height / 2;
+
+            for (let i = 0; i < 8; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.innerText = '✨';
+                star.style.left = x + 'px';
+                star.style.top = y + 'px';
+                
+                const angle = Math.random() * Math.PI * 2;
+                const distance = 80 + Math.random() * 50;
+                star.style.setProperty('--tx', `${Math.cos(angle) * distance}px`);
+                star.style.setProperty('--ty', `${Math.sin(angle) * distance}px`);
+                
+                document.body.appendChild(star);
+                setTimeout(() => star.remove(), 1000);
+            }
+        }
+
+        function showResult() {
+            document.getElementById('game-screen').classList.remove('active');
+            document.getElementById('result-screen').classList.add('active');
+            
+            document.getElementById('final-score').innerText = `${score} / ${questions.length}`;
+            
+            let message = "";
+            let emoji = "";
+            
+            if (score === questions.length) {
+                message = "علامة كاملة! مذهل، لقد أثبتّ قدرة فائقة على فهم قصة الفداء في التسبحة والقداس.";
+                emoji = "👑";
+            } else if (score >= 32) {
+                message = "ممتاز جداً! معلوماتك الليتورجية والطقسية قوية ورائعة.";
+                emoji = "🌟";
+            } else if (score >= 20) {
+                message = "مجهود طيب، ولكن هناك مجال للمراجعة وتثبيت بعض المفاهيم.";
+                emoji = "📖";
+            } else {
+                message = "لا تستسلم! يمكنك قراءة الدروس مرة أخرى وتجربة الاختبار من جديد.";
+                emoji = "💪";
+            }
+            
+            document.getElementById('result-message').innerText = message;
+            document.getElementById('result-emoji').innerText = emoji;
+        }
+
+        function resetGame() {
+            document.getElementById('result-screen').classList.remove('active');
+            document.getElementById('start-screen').classList.add('active');
+        }
+    </script>
+</body>
+</html>
