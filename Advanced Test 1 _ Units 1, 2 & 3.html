@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Advanced Test 1 _ Units 1, 2 & 3</title>
+<style>
+    :root {
+        --primary: #1A237E; /* Deep Indigo */
+        --secondary: #FBC02D; /* Vibrant Gold */
+        --bg: #E8EAF6; /* Light Indigo Background */
+        --correct: #2E7D32; /* Deep Green */
+        --wrong: #C62828; /* Deep Red */
+        --text: #212121;
+    }
+
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: var(--bg);
+        color: var(--text);
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+        overflow-x: hidden;
+    }
+
+    #ribbon {
+        width: 100%;
+        background-color: var(--primary);
+        color: white;
+        padding: 15px 30px;
+        font-size: 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-sizing: border-box;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        font-weight: bold;
+        letter-spacing: 1px;
+    }
+
+    #music-controls {
+        cursor: pointer;
+        background: var(--secondary);
+        border: none;
+        border-radius: 12px;
+        padding: 10px 20px;
+        font-size: 18px;
+        font-weight: bold;
+        color: #1A237E;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        transition: transform 0.2s;
+    }
+
+    #music-controls:hover {
+        transform: scale(1.05);
+    }
+
+    #game-container, #result-screen {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        padding: 40px;
+        margin: 40px 20px;
+        max-width: 900px;
+        width: 90%;
+        text-align: center;
+        position: relative;
+    }
+
+    .warning {
+        animation: flashRed 0.6s ease-in-out 2;
+    }
+
+    @keyframes flashRed {
+        0% { box-shadow: 0 0 0px var(--wrong); }
+        50% { box-shadow: 0 0 30px var(--wrong); }
+        100% { box-shadow: 0 0 0px var(--wrong); }
+    }
+
+    #illustration {
+        font-size: 80px;
+        margin: 10px 0 20px 0;
+        text-shadow: 2px 2px 10px rgba(0,0,0,0.1);
+    }
+
+    #question-text {
+        font-size: 22px;
+        margin-bottom: 30px;
+        color: var(--primary);
+        font-weight: 600;
+        line-height: 1.6;
+    }
+
+    .options-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .option-btn {
+        background-color: #F8F9FA;
+        border: 3px solid var(--primary);
+        border-radius: 12px;
+        padding: 18px;
+        font-size: 18px;
+        cursor: pointer;
+        transition: transform 0.2s, background-color 0.3s, border-color 0.3s, box-shadow 0.2s;
+        font-family: inherit;
+        color: var(--text);
+        font-weight: 500;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .option-btn:hover {
+        transform: translateY(-4px);
+        background-color: #E8EAF6;
+        box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+    }
+
+    .option-btn.correct {
+        background-color: var(--correct) !important;
+        color: white;
+        border-color: var(--correct);
+        box-shadow: 0 0 15px var(--correct);
+    }
+
+    .option-btn.wrong {
+        background-color: var(--wrong) !important;
+        color: white;
+        border-color: var(--wrong);
+        animation: shake 0.4s;
+    }
+
+    @keyframes shake {
+        0% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        50% { transform: translateX(5px); }
+        75% { transform: translateX(-5px); }
+        100% { transform: translateX(0); }
+    }
+
+    .star {
+        position: fixed;
+        font-size: 40px;
+        animation: flyUp 1s ease-out forwards;
+        pointer-events: none;
+        z-index: 1000;
+    }
+
+    @keyframes flyUp {
+        0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
+        100% { transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(1.5) rotate(180deg); opacity: 0; }
+    }
+
+    #result-screen {
+        display: none;
+    }
+
+    #result-title {
+        font-size: 48px;
+        color: var(--primary);
+        margin-bottom: 20px;
+        font-weight: bold;
+    }
+
+    #result-text {
+        font-size: 32px;
+        color: var(--correct);
+        margin-bottom: 40px;
+        font-weight: 600;
+        white-space: pre-line;
+    }
+
+    #retake-btn {
+        background-color: var(--secondary);
+        color: #1A237E;
+        border: none;
+        padding: 18px 40px;
+        font-size: 24px;
+        border-radius: 12px;
+        cursor: pointer;
+        font-weight: bold;
+        box-shadow: 0 6px 10px rgba(0,0,0,0.2);
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    #retake-btn:hover {
+        transform: scale(1.08);
+        box-shadow: 0 8px 15px rgba(0,0,0,0.3);
+    }
+
+    @media(max-width: 768px) {
+        .options-grid {
+            grid-template-columns: 1fr;
+        }
+        #ribbon {
+            flex-direction: column;
+            gap: 10px;
+            font-size: 20px;
+            text-align: center;
+        }
+        #question-text {
+            font-size: 18px;
+        }
+        .option-btn {
+            font-size: 16px;
+            padding: 15px;
+        }
+    }
+</style>
+</head>
+<body>
+
+<div id="ribbon">
+    <div>🎓 Advanced Test 1 _ Units 1, 2 & 3</div>
+    <div id="progress-text">Question 1 of 30</div>
+    <button id="music-controls" onclick="toggleMusic()">🎵 Play Music</button>
+</div>
+
+<div id="game-container">
+    <div id="illustration"></div>
+    <div id="question-text"></div>
+    <div class="options-grid" id="options-grid"></div>
+</div>
+
+<div id="result-screen">
+    <div id="result-title">🌟 Outstanding Performance! 🌟</div>
+    <div id="result-text"></div>
+    <button id="retake-btn" onclick="retake()">Retake Advanced Test 🔄</button>
+</div>
+
+<script>
+    // --- Audio Synthesizer ---
+    let audioCtx;
+    let isPlaying = false;
+    let loopId;
+
+    function playTone(freq, time, duration) {
+        if (!audioCtx) return;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        gain.gain.setValueAtTime(0, time);
+        gain.gain.linearRampToValueAtTime(0.06, time + 0.05);
+        gain.gain.linearRampToValueAtTime(0, time + duration);
+        osc.start(time);
+        osc.stop(time + duration);
+    }
+
+    function playMelody() {
+        if (!isPlaying) return;
+        const now = audioCtx.currentTime;
+        const melody = [
+            { f: 293.66, t: 0.0, d: 0.6 },
+            { f: 329.63, t: 0.6, d: 0.6 },
+            { f: 440.00, t: 1.2, d: 0.6 },
+            { f: 392.00, t: 1.8, d: 1.2 } 
+        ];
+        
+        melody.forEach(note => playTone(note.f, now + note.t, note.d));
+        loopId = setTimeout(playMelody, 4000); 
+    }
+
+    function toggleMusic() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        const btn = document.getElementById('music-controls');
+        if (isPlaying) {
+            isPlaying = false;
+            clearTimeout(loopId);
+            btn.innerHTML = '🎵 Play Music';
+        } else {
+            isPlaying = true;
+            audioCtx.resume();
+            playMelody();
+            btn.innerHTML = '⏸️ Stop Music';
+        }
+    }
+
+    // --- Game Logic & Data ---
+    const questions = [
+        { q: "What are the two specific aspects of the Cross experienced by a Christian?[cite: 9]", o: ["Justification and Sanctification[cite: 9]", "Salvation and Condemnation[cite: 9]", "Joy and Suffering[cite: 9]", "Grace and Redemption[cite: 9]"], a: 2, ill: "✝️" },
+        { q: "Why did the Savior fundamentally need to possess an unlimited nature?[cite: 9]", o: ["Because Adam's sin was directed against the infinite God.[cite: 9]", "Because the Roman Empire spanned across the known world.[cite: 9]", "Because humanity's corrupted nature required eternal punishment.[cite: 9]", "Because physical death affected all subsequent generations.[cite: 9]"], a: 0, ill: "♾️" },
+        { q: "Which type of death involves being driven out to a land of misery and humiliation?[cite: 9]", o: ["Physical death[cite: 9]", "Spiritual death[cite: 9]", "Moral (relational) death[cite: 9]", "Eternal death[cite: 9]"], a: 2, ill: "💔" },
+        { q: "When making the sign of the cross, what does moving from the left to the right shoulder signify?[cite: 9]", o: ["God the Son descending from heaven.[cite: 9]", "The Holy Trinity's eternal and unified nature.[cite: 9]", "Christ bearing our sins in His own body.[cite: 9]", "Transferring from darkness to light through salvation.[cite: 9]"], a: 3, ill: "✨" },
+        { q: "Which event is celebrated during the Feast of the Cross on Thoout 17?[cite: 9]", o: ["The discovery of the Holy Cross by St. Queen Helen.[cite: 9]", "The consecration of the Church of the Resurrection.[cite: 9]", "The victorious Resurrection of our Lord Jesus Christ.[cite: 9]", "The appearance of the Cross to Emperor Constantine.[cite: 9]"], a: 1, ill: "⛪" },
+        { q: "Which blessing of the Cross provides spiritual stability and strength to overcome sin?[cite: 9]", o: ["Purification[cite: 9]", "Forgiveness[cite: 9]", "Abiding in Him[cite: 9]", "Sanctification[cite: 9]"], a: 2, ill: "🌳" },
+        { q: "Why did God choose crucifixion specifically to save humanity from sin?[cite: 9]", o: ["To demonstrate profound physical suffering.[cite: 9]", "To fulfill the prophecy of the bronze serpent.[cite: 9]", "To bear the sentence of eternal destruction.[cite: 9]", "To carry the curse on our behalf.[cite: 9]"], a: 3, ill: "📜" },
+        { q: "Which of these biblical figures is listed as a symbolic person representing a type of Christ?[cite: 9]", o: ["Melchizedek[cite: 9]", "Elijah[cite: 9]", "Isaiah[cite: 9]", "Abraham[cite: 9]"], a: 0, ill: "👤" },
+        { q: "What is the significance of the sacrifice on the Cross being offered \"once for all\"?[cite: 9]", o: ["It fulfills all Levitical priestly requirements.[cite: 9]", "It applies only to the original sin of Adam.[cite: 9]", "It is unlimited in power and sufficient for all.[cite: 9]", "It replaced the need for the Old Testament laws.[cite: 9]"], a: 2, ill: "⏳" },
+        { q: "Which action during the crucifixion resulted in the shedding of blood from Christ's head?[cite: 9]", o: ["The piercing with a spear.[cite: 9]", "The crowning with thorns.[cite: 9]", "The nailing to the wood.[cite: 9]", "The scourging at the pillar.[cite: 9]"], a: 1, ill: "🩸" },
+
+        { q: "Why do the Jewish people refer to the Book of Leviticus as the \"Law of the Priests\"?[cite: 10]", o: ["It expounds upon the laws pertaining to priests and Levites.[cite: 10]", "It describes the construction of the Tabernacle of Meeting.[cite: 10]", "It contains the lineage of Aaron and his descendants.[cite: 10]", "It details the garments worn by the High Priest.[cite: 10]"], a: 0, ill: "📖" },
+        { q: "Which sacrifice from the Book of Leviticus symbolizes the Incarnation of the Son?[cite: 10]", o: ["The Burnt offering[cite: 10]", "The Peace offering[cite: 10]", "The Grain offering[cite: 10]", "The Sin offering[cite: 10]"], a: 2, ill: "🌾" },
+        { q: "What is the symbolic meaning of presenting a sacrifice at the door of the Tabernacle?[cite: 10]", o: ["That without blood, there is no entry into the Holy Places.[cite: 10]", "That the sacrifice must be witnessed by the congregation.[cite: 10]", "That only the High Priest can enter the Holy of Holies.[cite: 10]", "That the guilty person remains outside the sanctuary.[cite: 10]"], a: 0, ill: "🚪" },
+        { q: "Which parts of the offered sacrifices belong strictly to the Lord and must not be eaten?[cite: 10]", o: ["The flesh and bones[cite: 10]", "The blood and fat[cite: 10]", "The skin and wool[cite: 10]", "The heart and lungs[cite: 10]"], a: 1, ill: "🔥" },
+        { q: "What does the guilty individual acknowledge by laying his hand on the sacrifice's head?[cite: 10]", o: ["His ownership of the chosen animal.[cite: 10]", "His willingness to pay the priestly tax.[cite: 10]", "His acceptance of the Tabernacle rituals.[cite: 10]", "His sins and the Principle of Redemption.[cite: 10]"], a: 3, ill: "🤲" },
+        { q: "Which Levitical offering serves as a symbol for a \"Thanksgiving offering\"?[cite: 10]", o: ["The Peace offering[cite: 10]", "The Trespass offering[cite: 10]", "The Burnt offering[cite: 10]", "The Sin offering[cite: 10]"], a: 0, ill: "🕊️" },
+        { q: "What is the significance of sprinkling the sacrifice's blood around the Altar?[cite: 10]", o: ["It purifies the priests before entering the Tabernacle.[cite: 10]", "It ensures the fire on the Altar continues burning.[cite: 10]", "It signifies that the worship is founded upon blood.[cite: 10]", "It marks the boundaries of the holy sanctuary.[cite: 10]"], a: 2, ill: "🩸" },
+        { q: "Why does the daily shedding of animal blood demonstrate futility?[cite: 10]", o: ["Because animals lack the free will to obey God.[cite: 10]", "Because there were not enough animals available.[cite: 10]", "Because it cannot take away the sins of humanity.[cite: 10]", "Because the priests were often ritually unclean.[cite: 10]"], a: 2, ill: "🐑" },
+        { q: "Which Levitical sacrifice specifically symbolizes sins directed towards God?[cite: 10]", o: ["The Trespass offering[cite: 10]", "The Peace offering[cite: 10]", "The Grain offering[cite: 10]", "The Burnt offering[cite: 10]"], a: 0, ill: "⚡" },
+        { q: "Which animals were accepted as flock offerings (small livestock) for the sacrifices?[cite: 10]", o: ["Turtledoves and pigeons[cite: 10]", "Sheep and goats[cite: 10]", "Bulls and oxen[cite: 10]", "Camels and donkeys[cite: 10]"], a: 1, ill: "🐦" },
+
+        { q: "The seven phrases spoken by Christ on the Cross were all characterized by what overarching theme?[cite: 11]", o: ["Endurance[cite: 11]", "Judgment[cite: 11]", "Giving[cite: 11]", "Silence[cite: 11]"], a: 2, ill: "🎁" },
+        { q: "In saying \"Father, forgive them,\" which specific role was Christ demonstrating?[cite: 11]", o: ["A Teacher proving He is the Messiah.[cite: 11]", "A Priest interceding for His crucifiers.[cite: 11]", "A King granting a share in His kingdom.[cite: 11]", "A Shepherd caring for His Church.[cite: 11]"], a: 1, ill: "🙏" },
+        { q: "Who was the only individual to defend the Lord Jesus Christ while the disciples fled?[cite: 11]", o: ["St. John the Beloved[cite: 11]", "St. Longinus[cite: 11]", "The right-hand thief[cite: 11]", "The Virgin Mary[cite: 11]"], a: 2, ill: "🛡️" },
+        { q: "What does the cry \"My God, My God, why have You forsaken Me?\" truly indicate?[cite: 11]", o: ["The Father permitted Him to bear the consequences of sin.[cite: 11]", "The divine nature separated from the human nature.[cite: 11]", "The Holy Spirit withdrew from Him during the crucifixion.[cite: 11]", "The Father rejected the sacrifice due to its cruelty.[cite: 11]"], a: 0, ill: "⚖️" },
+        { q: "Which prophecy from the Book of Genesis was fulfilled when Christ said, \"It is finished\"?[cite: 11]", o: ["The separation of the firmament.[cite: 11]", "The blessing of Abraham's descendants.[cite: 11]", "The crushing of the serpent's head.[cite: 11]", "The covenant of the rainbow.[cite: 11]"], a: 2, ill: "🐍" },
+        { q: "What is the meaning behind Christ committing His spirit into the Father's hands?[cite: 11]", o: ["He required angelic assistance to ascend.[cite: 11]", "He surrendered His spirit by His own authority.[cite: 11]", "He was unable to endure further physical pain.[cite: 11]", "He feared the approach of the Roman soldiers.[cite: 11]"], a: 1, ill: "👑" },
+        { q: "What was the spiritual meaning behind Christ saying, \"I thirst\"?[cite: 11]", o: ["He desired a drink of vinegar mixed with gall.[cite: 11]", "He longed for the disciples to return to Him.[cite: 11]", "He thirsted for the salvation of humanity.[cite: 11]", "He needed physical relief from the scourging.[cite: 11]"], a: 2, ill: "💧" },
+        { q: "Which biblical figure is cited as an example of someone who accepted salvation after piercing Christ?[cite: 11]", o: ["St. Longinus[cite: 11]", "St. Paul[cite: 11]", "St. Peter[cite: 11]", "Pontius Pilate[cite: 11]"], a: 0, ill: "🗡️" },
+        { q: "What practical lesson is taught through Christ entrusting His mother to St. John?[cite: 11]", o: ["We must abandon earthly ties for spiritual ones.[cite: 11]", "We should not neglect our own family and relatives.[cite: 11]", "We must ensure all disciples remain in Jerusalem.[cite: 11]", "We should seek physical protection from enemies.[cite: 11]"], a: 1, ill: "👨‍👩‍👧‍👦" },
+        { q: "What three titles did the right-hand thief confess when speaking to Christ?[cite: 11]", o: ["Prophet, Priest, and King[cite: 11]", "Teacher, Healer, and Master[cite: 11]", "Creator, Redeemer, and Judge[cite: 11]", "Lord, King, and Savior[cite: 11]"], a: 3, ill: "🗝️" }
+    ];
+
+    let currentQ = 0;
+    let score = 0;
+    let firstTry = true;
+
+    function shootStars(btn) {
+        const rect = btn.getBoundingClientRect();
+        const emojis = ['🌟', '✨', '🎓', '🏆'];
+        for(let i=0; i<20; i++) {
+            let star = document.createElement('div');
+            star.className = 'star';
+            star.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+            star.style.left = (rect.left + rect.width/2) + 'px';
+            star.style.top = (rect.top + rect.height/2) + 'px';
+            
+            let angle = Math.random() * Math.PI * 2;
+            let distance = Math.random() * 150 + 80;
+            let tx = Math.cos(angle) * distance;
+            let ty = Math.sin(angle) * distance - 120; 
+            
+            star.style.setProperty('--tx', `${tx}px`);
+            star.style.setProperty('--ty', `${ty}px`);
+            
+            document.body.appendChild(star);
+            setTimeout(() => star.remove(), 1000);
+        }
+    }
+
+    function loadQuestion() {
+        firstTry = true;
+        const q = questions[currentQ];
+        document.getElementById('progress-text').innerText = `Question ${currentQ + 1} of ${questions.length}`;
+        document.getElementById('illustration').innerText = q.ill;
+        document.getElementById('question-text').innerText = q.q;
+        
+        const optionsGrid = document.getElementById('options-grid');
+        optionsGrid.innerHTML = '';
+        
+        q.o.forEach((opt, index) => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerHTML = opt;
+            btn.onclick = () => checkAnswer(index, btn);
+            optionsGrid.appendChild(btn);
+        });
+    }
+
+    function checkAnswer(index, btn) {
+        if(btn.classList.contains('wrong') || btn.classList.contains('correct')) return;
+
+        const q = questions[currentQ];
+        const buttons = document.querySelectorAll('.option-btn');
+        const container = document.getElementById('game-container');
+        
+        if (index === q.a) {
+            btn.classList.add('correct');
+            shootStars(btn);
+            if (firstTry) score++;
+            
+            buttons.forEach(b => b.style.pointerEvents = 'none');
+            
+            setTimeout(() => {
+                currentQ++;
+                if (currentQ < questions.length) {
+                    loadQuestion();
+                } else {
+                    showResult();
+                }
+            }, 1800);
+        } else {
+            btn.classList.add('wrong');
+            firstTry = false;
+            
+            container.classList.remove('warning');
+            void container.offsetWidth; 
+            container.classList.add('warning');
+        }
+    }
+
+    function showResult() {
+        document.getElementById('game-container').style.display = 'none';
+        document.getElementById('result-screen').style.display = 'block';
+        
+        const percent = Math.round((score / questions.length) * 100);
+        let message = `You scored ${score} out of ${questions.length} on your first attempt.\n\nThat's ${percent}%!`;
+        
+        if(percent === 100) {
+            message = `Perfect Score! Flawless knowledge of the advanced material.\n\n` + message;
+        } else if (percent >= 80) {
+            message = `Excellent Work! You have a strong grasp of the material.\n\n` + message;
+        } else {
+            message = `Good Effort! Keep reviewing the units to master the details.\n\n` + message;
+        }
+        
+        document.getElementById('result-text').innerText = message;
+    }
+
+    function retake() {
+        currentQ = 0;
+        score = 0;
+        document.getElementById('game-container').style.display = 'block';
+        document.getElementById('result-screen').style.display = 'none';
+        loadQuestion();
+    }
+
+    // Initialize Advanced Test
+    loadQuestion();
+</script>
+</body>
+</html>
