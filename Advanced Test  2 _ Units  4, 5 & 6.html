@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Advanced Test 2</title>
+<style>
+    :root {
+        --primary: #004D40; /* Deep Teal */
+        --secondary: #FFC107; /* Amber */
+        --bg: #E0F2F1; /* Light Teal Background */
+        --correct: #1B5E20; /* Deep Green */
+        --wrong: #B71C1C; /* Deep Red */
+        --text: #212121;
+    }
+
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: var(--bg);
+        color: var(--text);
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+        overflow-x: hidden;
+    }
+
+    #ribbon {
+        width: 100%;
+        background-color: var(--primary);
+        color: white;
+        padding: 15px 30px;
+        font-size: 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-sizing: border-box;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        font-weight: bold;
+        letter-spacing: 1px;
+    }
+
+    #music-controls {
+        cursor: pointer;
+        background: var(--secondary);
+        border: none;
+        border-radius: 12px;
+        padding: 10px 20px;
+        font-size: 18px;
+        font-weight: bold;
+        color: #004D40;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        transition: transform 0.2s;
+    }
+
+    #music-controls:hover {
+        transform: scale(1.05);
+    }
+
+    #game-container, #result-screen {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        padding: 40px;
+        margin: 40px 20px;
+        max-width: 900px;
+        width: 90%;
+        text-align: center;
+        position: relative;
+    }
+
+    .warning {
+        animation: flashRed 0.6s ease-in-out 2;
+    }
+
+    @keyframes flashRed {
+        0% { box-shadow: 0 0 0px var(--wrong); }
+        50% { box-shadow: 0 0 30px var(--wrong); }
+        100% { box-shadow: 0 0 0px var(--wrong); }
+    }
+
+    #illustration {
+        font-size: 80px;
+        margin: 10px 0 20px 0;
+        text-shadow: 2px 2px 10px rgba(0,0,0,0.1);
+    }
+
+    #question-text {
+        font-size: 22px;
+        margin-bottom: 30px;
+        color: var(--primary);
+        font-weight: 600;
+        line-height: 1.6;
+    }
+
+    .options-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .option-btn {
+        background-color: #F8F9FA;
+        border: 3px solid var(--primary);
+        border-radius: 12px;
+        padding: 18px;
+        font-size: 18px;
+        cursor: pointer;
+        transition: transform 0.2s, background-color 0.3s, border-color 0.3s, box-shadow 0.2s;
+        font-family: inherit;
+        color: var(--text);
+        font-weight: 500;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .option-btn:hover {
+        transform: translateY(-4px);
+        background-color: #E0F2F1;
+        box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+    }
+
+    .option-btn.correct {
+        background-color: var(--correct) !important;
+        color: white;
+        border-color: var(--correct);
+        box-shadow: 0 0 15px var(--correct);
+    }
+
+    .option-btn.wrong {
+        background-color: var(--wrong) !important;
+        color: white;
+        border-color: var(--wrong);
+        animation: shake 0.4s;
+    }
+
+    @keyframes shake {
+        0% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        50% { transform: translateX(5px); }
+        75% { transform: translateX(-5px); }
+        100% { transform: translateX(0); }
+    }
+
+    .star {
+        position: fixed;
+        font-size: 40px;
+        animation: flyUp 1s ease-out forwards;
+        pointer-events: none;
+        z-index: 1000;
+    }
+
+    @keyframes flyUp {
+        0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
+        100% { transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(1.5) rotate(180deg); opacity: 0; }
+    }
+
+    #result-screen {
+        display: none;
+    }
+
+    #result-title {
+        font-size: 48px;
+        color: var(--primary);
+        margin-bottom: 20px;
+        font-weight: bold;
+    }
+
+    #result-text {
+        font-size: 32px;
+        color: var(--correct);
+        margin-bottom: 40px;
+        font-weight: 600;
+        white-space: pre-line;
+    }
+
+    #retake-btn {
+        background-color: var(--secondary);
+        color: #004D40;
+        border: none;
+        padding: 18px 40px;
+        font-size: 24px;
+        border-radius: 12px;
+        cursor: pointer;
+        font-weight: bold;
+        box-shadow: 0 6px 10px rgba(0,0,0,0.2);
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    #retake-btn:hover {
+        transform: scale(1.08);
+        box-shadow: 0 8px 15px rgba(0,0,0,0.3);
+    }
+
+    @media(max-width: 768px) {
+        .options-grid {
+            grid-template-columns: 1fr;
+        }
+        #ribbon {
+            flex-direction: column;
+            gap: 10px;
+            font-size: 20px;
+            text-align: center;
+        }
+        #question-text {
+            font-size: 18px;
+        }
+        .option-btn {
+            font-size: 16px;
+            padding: 15px;
+        }
+    }
+</style>
+</head>
+<body>
+
+<div id="ribbon">
+    <div>🎓 Advanced Test 2</div>
+    <div id="progress-text">Question 1 of 30</div>
+    <button id="music-controls" onclick="toggleMusic()">🎵 Play Music</button>
+</div>
+
+<div id="game-container">
+    <div id="illustration"></div>
+    <div id="question-text"></div>
+    <div class="options-grid" id="options-grid"></div>
+</div>
+
+<div id="result-screen">
+    <div id="result-title">🌟 Outstanding Performance! 🌟</div>
+    <div id="result-text"></div>
+    <button id="retake-btn" onclick="retake()">Retake Advanced Test 🔄</button>
+</div>
+
+<script>
+    // --- Audio Synthesizer ---
+    let audioCtx;
+    let isPlaying = false;
+    let loopId;
+
+    function playTone(freq, time, duration) {
+        if (!audioCtx) return;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.value = freq;
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        gain.gain.setValueAtTime(0, time);
+        gain.gain.linearRampToValueAtTime(0.06, time + 0.05);
+        gain.gain.linearRampToValueAtTime(0, time + duration);
+        osc.start(time);
+        osc.stop(time + duration);
+    }
+
+    function playMelody() {
+        if (!isPlaying) return;
+        const now = audioCtx.currentTime;
+        const melody = [
+            { f: 349.23, t: 0.0, d: 0.5 }, 
+            { f: 440.00, t: 0.5, d: 0.5 }, 
+            { f: 523.25, t: 1.0, d: 0.5 }, 
+            { f: 659.25, t: 1.5, d: 1.0 }  
+        ];
+        
+        melody.forEach(note => playTone(note.f, now + note.t, note.d));
+        loopId = setTimeout(playMelody, 3500); 
+    }
+
+    function toggleMusic() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        const btn = document.getElementById('music-controls');
+        if (isPlaying) {
+            isPlaying = false;
+            clearTimeout(loopId);
+            btn.innerHTML = '🎵 Play Music';
+        } else {
+            isPlaying = true;
+            audioCtx.resume();
+            playMelody();
+            btn.innerHTML = '⏸️ Stop Music';
+        }
+    }
+
+    // --- Game Logic & Data ---
+    const questions = [
+        { q: "When are the three annual processions of the Cross celebrated?", o: ["Good Friday, Bright Saturday, and Easter Sunday.", "Thoout 17, Paremhotep 10, and Palm Sunday.[cite: 12]", "The Epiphany, Pentecost, and the Feast of the Ascension.", "Epep 7, Koiahk 1, and the Feast of the Annunciation."], a: 1, ill: "✝️" },
+        { q: "What is the specific theme of the Gospel reading at the first station before the Main Sanctuary?", o: ["The appointment and sending of the seventy apostles.", "The visitation of St. Mary to St. Elizabeth.", "The angels of God ascending and descending upon the Son of Man.[cite: 12]", "The parables concerning the kingdom of heaven."], a: 2, ill: "📖" },
+        { q: "At the station before the icon of Archangel Michael, what specific event connects him to the message of salvation?", o: ["He delivered the disciples from the prison of the Sanhedrin.", "He proclaimed the holy Resurrection when the stone was rolled away.[cite: 12]", "He strengthened Christ during His prayer in the Garden of Gethsemane.", "He brought the good news of the incarnation to St. Mary."], a: 1, ill: "✨" },
+        { q: "Which station specifically emphasizes that the Cross is the narrow gate through which one must enter the Kingdom?", o: ["Before the Northern Door.[cite: 12]", "Before the Immersion Font.", "Before the Main Sanctuary.", "Before the Southern Door."], a: 0, ill: "🚪" },
+        { q: "The Gospel reading from Luke 10:1-12 about appointing and sending the 70 apostles is read before which icon?", o: ["The Icon of the Apostles.", "The Icon of St. John the Baptist.", "The Icon of Any Saint.", "The Icon of St. Mark.[cite: 12]"], a: 3, ill: "📜" },
+        { q: "Which group of stations specifically focuses on how believers are guided into salvation through sacraments, worship, and holy life?", o: ["Concerning the Church.[cite: 12]", "The Sanctuary of the Church.", "The Story of Salvation & Servants of Salvation.", "Icons of Salvation."], a: 0, ill: "⛪" },
+        { q: "During the procession, what is the meaning of the Cross at the Southern Door?", o: ["It is the key to the gate of heaven and the sanctuary.", "It is the royal procession and throne of the King.[cite: 12]", "It is the ultimate symbol of sacrifice and self-denial.", "It is the narrow gate of repentance and struggle."], a: 1, ill: "👑" },
+        { q: "Which biblical figure endured the specific cross of submission and obedience during the story of salvation?", o: ["St. John the Baptist.", "St. Mary the Mother of God.[cite: 12]", "St. Anthony.", "Archangel Gabriel."], a: 1, ill: "🙏" },
+        { q: "The Gospel reading of Matthew 16:24-28 regarding denying oneself and taking up the cross is associated with which type of icon?", o: ["Any Martyr.", "The Apostles.", "Any Saint.[cite: 12]", "St. John the Baptist."], a: 2, ill: "👤" },
+        { q: "What is chanted at each of the 12 stops immediately before the Gospel reading?", o: ["An additional verse for the Cross.", "A doxology for the specific saint.", "A psalm.[cite: 12]", "The Gospel Response."], a: 2, ill: "🎵" },
+
+        { q: "In what year did St. Shenouda the Archimandrite depart?", o: ["451 A.D.[cite: 13]", "383 A.D.", "333 A.D.", "431 A.D."], a: 0, ill: "⏳" },
+        { q: "Who prophesied about St. Shenouda's future by placing the young man's hands on his own head?", o: ["Pope Cyril I.", "St. Anthony.", "St. Pigol.[cite: 13]", "St. Pachomius."], a: 2, ill: "🙌" },
+        { q: "What specific items make up the Holy Eskeem that St. Shenouda wore?", o: ["A string of plaited leather with crosses.[cite: 13]", "A leather belt wrapped three times around the waist.", "A woven linen tunic with a continuous prayer rope.", "A woolen cape adorned with twelve stars."], a: 0, ill: "📿" },
+        { q: "At which ecumenical council did St. Shenouda prove the heretic Nestorius wrong regarding the nature of Christ?", o: ["The Council of Nicaea.", "The Council of Ephesus.[cite: 13]", "The Council of Chalcedon.", "The Council of Constantinople."], a: 1, ill: "🏛️" },
+        { q: "What specific title did His Holiness Pope Cyril I give to St. Shenouda?", o: ["The Prophet Saint.[cite: 13]", "The Desert Father.", "The Pillar of Faith.", "The Archimandrite."], a: 0, ill: "📜" },
+        { q: "Which of the following explains why St. Shenouda was given the title 'Archimandrite'?", o: ["He fought idol worshippers and successfully destroyed their temples.", "He lived a life of solitude and greatly helped young monks pursue monasticism.[cite: 13]", "He translated the Holy Bible into the Coptic language.", "He served as an abbot for exactly sixty-six years."], a: 1, ill: "🏜️" },
+        { q: "How many monks and nuns was St. Shenouda a father to during his time as abbot?", o: ["1,800 monks and 4,000 nuns.", "4,500 monks and 1,500 nuns.", "3,000 monks and 2,000 nuns.", "4,000 monks and 1,800 nuns.[cite: 13]"], a: 3, ill: "👥" },
+        { q: "What text did St. Shenouda continually encourage his monks to memorize?", o: ["The Rules of St. Pachomius.", "The Book of Psalms.", "The Holy Bible.[cite: 13]", "The Divine Liturgy."], a: 2, ill: "📖" },
+        { q: "When does the Church commemorate the consecration of St. Shenouda's church?", o: ["Koiahk 1 (December 10).[cite: 13]", "Paremhotep 10 (March 19).", "Epep 7 (July 14).", "Thoout 17 (September 27)."], a: 0, ill: "⛪" },
+        { q: "After which saint is St. Shenouda known as one of the most effective monks to practice communal monasticism?", o: ["St. Anthony.", "St. Pachomius.[cite: 13]", "St. Macarius.", "St. Pigol."], a: 1, ill: "🤝" },
+
+        { q: "Who is the only person that can set the boundaries in your life?", o: ["You.[cite: 14]", "God.", "Your spiritual father.", "Your parents."], a: 0, ill: "🛑" },
+        { q: "Which biblical verse demonstrates the boundary of touch set by the Lord Jesus Christ?", o: ["\"Render therefore to Caesar the things that are Caesar's.\"", "\"Do not cling to Me, for I have not yet ascended to My Father.\"[cite: 14]", "\"We ought to obey God rather than men.\"", "\"Put your sword in its place.\""], a: 1, ill: "✋" },
+        { q: "Setting a boundary that is too harsh or closed off leads to which specific risk?", o: ["Allowing people to intrude and overstep limits.", "Experiencing destructive spiritual thoughts.", "Distancing oneself from others.[cite: 14]", "Forgetting about personal needs completely."], a: 2, ill: "🧱" },
+        { q: "What is the 'Distancing' behavior associated with the boundary of Privacy?", o: ["Discussing every detail of personal life with a stranger.", "Not sharing any details about personal life with a close friend.[cite: 14]", "Building trust gradually with a friend.", "Seeking advice from trustworthy and experienced people."], a: 1, ill: "🔒" },
+        { q: "In the context of a 'Distressed or Depressed Mood', what constitutes an 'Intrusion' boundary?", o: ["Confiding in someone who is experienced for guidance.", "Expecting people to sympathize and share in your feelings.[cite: 14]", "Keeping feelings to oneself and telling no one.", "Refusing to entertain any unfamiliar new ideas."], a: 1, ill: "🌧️" },
+        { q: "What defines an 'Intrusion' boundary regarding Time?", o: ["Claiming that your time belongs only to you.", "Accepting friend requests from unknown people.", "Organizing time according to priorities.", "Spending all your time with friends or on social media.[cite: 14]"], a: 3, ill: "📱" },
+        { q: "Which behavior represents a healthy boundary for 'Obstacles to Decision Making'?", o: ["Choosing what suits you without consulting anyone else.", "Seeking advice from experienced people and deciding based on personal circumstances.[cite: 14]", "Being afraid to make any decision or take responsibility.", "Making decisions solely based on people's opinions."], a: 1, ill: "⚖️" },
+        { q: "St. Paul established boundaries for dealing with unbelievers in which biblical passage?", o: ["Exodus 20:12-17.", "Galatians 1:10.", "2 Corinthians 6:14.[cite: 14]", "Acts 5:29."], a: 2, ill: "📜" },
+        { q: "What is the 'Distancing' boundary behavior associated with Physical boundaries?", o: ["Politely objecting and setting clear limits.", "Never answering phone calls from friends.", "Considering wrong touches from strangers harmless.", "Staying silent because of a fear to speak.[cite: 14]"], a: 3, ill: "🤐" },
+        { q: "What fundamental trait did God give humanity that reflects His respect for boundaries?", o: ["Free will.[cite: 14]", "Discernment.", "Eternal life.", "Psychological safety."], a: 0, ill: "🕊️" }
+    ];
+
+    let currentQ = 0;
+    let score = 0;
+    let firstTry = true;
+
+    function shootStars(btn) {
+        const rect = btn.getBoundingClientRect();
+        const emojis = ['🌟', '✨', '🎓', '🏆'];
+        for(let i=0; i<20; i++) {
+            let star = document.createElement('div');
+            star.className = 'star';
+            star.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+            star.style.left = (rect.left + rect.width/2) + 'px';
+            star.style.top = (rect.top + rect.height/2) + 'px';
+            
+            let angle = Math.random() * Math.PI * 2;
+            let distance = Math.random() * 150 + 80;
+            let tx = Math.cos(angle) * distance;
+            let ty = Math.sin(angle) * distance - 120; 
+            
+            star.style.setProperty('--tx', `${tx}px`);
+            star.style.setProperty('--ty', `${ty}px`);
+            
+            document.body.appendChild(star);
+            setTimeout(() => star.remove(), 1000);
+        }
+    }
+
+    function loadQuestion() {
+        firstTry = true;
+        const q = questions[currentQ];
+        document.getElementById('progress-text').innerText = `Question ${currentQ + 1} of ${questions.length}`;
+        document.getElementById('illustration').innerText = q.ill;
+        document.getElementById('question-text').innerText = q.q;
+        
+        const optionsGrid = document.getElementById('options-grid');
+        optionsGrid.innerHTML = '';
+        
+        q.o.forEach((opt, index) => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerHTML = opt;
+            btn.onclick = () => checkAnswer(index, btn);
+            optionsGrid.appendChild(btn);
+        });
+    }
+
+    function checkAnswer(index, btn) {
+        if(btn.classList.contains('wrong') || btn.classList.contains('correct')) return;
+
+        const q = questions[currentQ];
+        const buttons = document.querySelectorAll('.option-btn');
+        const container = document.getElementById('game-container');
+        
+        if (index === q.a) {
+            btn.classList.add('correct');
+            shootStars(btn);
+            if (firstTry) score++;
+            
+            buttons.forEach(b => b.style.pointerEvents = 'none');
+            
+            setTimeout(() => {
+                currentQ++;
+                if (currentQ < questions.length) {
+                    loadQuestion();
+                } else {
+                    showResult();
+                }
+            }, 1800);
+        } else {
+            btn.classList.add('wrong');
+            firstTry = false;
+            
+            container.classList.remove('warning');
+            void container.offsetWidth; 
+            container.classList.add('warning');
+        }
+    }
+
+    function showResult() {
+        document.getElementById('game-container').style.display = 'none';
+        document.getElementById('result-screen').style.display = 'block';
+        
+        const percent = Math.round((score / questions.length) * 100);
+        let message = `You scored ${score} out of ${questions.length} on your first attempt.\n\nThat's ${percent}%!`;
+        
+        if(percent === 100) {
+            message = `Perfect Score! Flawless knowledge of the advanced material.\n\n` + message;
+        } else if (percent >= 80) {
+            message = `Excellent Work! You have a strong grasp of the material.\n\n` + message;
+        } else {
+            message = `Good Effort! Keep reviewing the units to master the details.\n\n` + message;
+        }
+        
+        document.getElementById('result-text').innerText = message;
+    }
+
+    function retake() {
+        currentQ = 0;
+        score = 0;
+        document.getElementById('game-container').style.display = 'block';
+        document.getElementById('result-screen').style.display = 'none';
+        loadQuestion();
+    }
+
+    // Initialize Advanced Test
+    loadQuestion();
+</script>
+</body>
+</html>
