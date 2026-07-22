@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Advanced Quiz: The Procession of the Cross</title>
+<style>
+    :root {
+        --primary: #4A148C; /* Deep Purple */
+        --secondary: #FFB300; /* Amber */
+        --bg: #F3E5F5; /* Light Purple Background */
+        --correct: #2E7D32; /* Deep Green */
+        --wrong: #C62828; /* Deep Red */
+        --text: #212121;
+    }
+
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: var(--bg);
+        color: var(--text);
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+        overflow-x: hidden;
+    }
+
+    #ribbon {
+        width: 100%;
+        background-color: var(--primary);
+        color: white;
+        padding: 15px 30px;
+        font-size: 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-sizing: border-box;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        font-weight: bold;
+        letter-spacing: 1px;
+    }
+
+    #music-controls {
+        cursor: pointer;
+        background: var(--secondary);
+        border: none;
+        border-radius: 12px;
+        padding: 10px 20px;
+        font-size: 18px;
+        font-weight: bold;
+        color: #4A148C;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        transition: transform 0.2s;
+    }
+
+    #music-controls:hover {
+        transform: scale(1.05);
+    }
+
+    #game-container, #result-screen {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        padding: 40px;
+        margin: 40px 20px;
+        max-width: 900px;
+        width: 90%;
+        text-align: center;
+        position: relative;
+    }
+
+    .warning {
+        animation: flashRed 0.6s ease-in-out 2;
+    }
+
+    @keyframes flashRed {
+        0% { box-shadow: 0 0 0px var(--wrong); }
+        50% { box-shadow: 0 0 30px var(--wrong); }
+        100% { box-shadow: 0 0 0px var(--wrong); }
+    }
+
+    #illustration {
+        font-size: 80px;
+        margin: 10px 0 20px 0;
+        text-shadow: 2px 2px 10px rgba(0,0,0,0.1);
+    }
+
+    #question-text {
+        font-size: 22px;
+        margin-bottom: 30px;
+        color: var(--primary);
+        font-weight: 600;
+        line-height: 1.6;
+    }
+
+    .options-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .option-btn {
+        background-color: #F8F9FA;
+        border: 3px solid var(--primary);
+        border-radius: 12px;
+        padding: 18px;
+        font-size: 18px;
+        cursor: pointer;
+        transition: transform 0.2s, background-color 0.3s, border-color 0.3s, box-shadow 0.2s;
+        font-family: inherit;
+        color: var(--text);
+        font-weight: 500;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .option-btn:hover {
+        transform: translateY(-4px);
+        background-color: #F3E5F5;
+        box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+    }
+
+    .option-btn.correct {
+        background-color: var(--correct) !important;
+        color: white;
+        border-color: var(--correct);
+        box-shadow: 0 0 15px var(--correct);
+    }
+
+    .option-btn.wrong {
+        background-color: var(--wrong) !important;
+        color: white;
+        border-color: var(--wrong);
+        animation: shake 0.4s;
+    }
+
+    @keyframes shake {
+        0% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        50% { transform: translateX(5px); }
+        75% { transform: translateX(-5px); }
+        100% { transform: translateX(0); }
+    }
+
+    .star {
+        position: fixed;
+        font-size: 40px;
+        animation: flyUp 1s ease-out forwards;
+        pointer-events: none;
+        z-index: 1000;
+    }
+
+    @keyframes flyUp {
+        0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
+        100% { transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(1.5) rotate(180deg); opacity: 0; }
+    }
+
+    #result-screen {
+        display: none;
+    }
+
+    #result-title {
+        font-size: 48px;
+        color: var(--primary);
+        margin-bottom: 20px;
+        font-weight: bold;
+    }
+
+    #result-text {
+        font-size: 32px;
+        color: var(--correct);
+        margin-bottom: 40px;
+        font-weight: 600;
+        white-space: pre-line;
+    }
+
+    #retake-btn {
+        background-color: var(--secondary);
+        color: #4A148C;
+        border: none;
+        padding: 18px 40px;
+        font-size: 24px;
+        border-radius: 12px;
+        cursor: pointer;
+        font-weight: bold;
+        box-shadow: 0 6px 10px rgba(0,0,0,0.2);
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    #retake-btn:hover {
+        transform: scale(1.08);
+        box-shadow: 0 8px 15px rgba(0,0,0,0.3);
+    }
+
+    @media(max-width: 768px) {
+        .options-grid {
+            grid-template-columns: 1fr;
+        }
+        #ribbon {
+            flex-direction: column;
+            gap: 10px;
+            font-size: 20px;
+            text-align: center;
+        }
+        #question-text {
+            font-size: 18px;
+        }
+        .option-btn {
+            font-size: 16px;
+            padding: 15px;
+        }
+    }
+</style>
+</head>
+<body>
+
+<div id="ribbon">
+    <div>🎓 Advanced Quiz: The Procession of the Cross</div>
+    <div id="progress-text">Question 1 of 30</div>
+    <button id="music-controls" onclick="toggleMusic()">🎵 Play Music</button>
+</div>
+
+<div id="game-container">
+    <div id="illustration"></div>
+    <div id="question-text"></div>
+    <div class="options-grid" id="options-grid"></div>
+</div>
+
+<div id="result-screen">
+    <div id="result-title">🌟 Outstanding Performance! 🌟</div>
+    <div id="result-text"></div>
+    <button id="retake-btn" onclick="retake()">Retake Advanced Quiz 🔄</button>
+</div>
+
+<script>
+    // --- Audio Synthesizer ---
+    let audioCtx;
+    let isPlaying = false;
+    let loopId;
+
+    function playTone(freq, time, duration) {
+        if (!audioCtx) return;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        gain.gain.setValueAtTime(0, time);
+        gain.gain.linearRampToValueAtTime(0.06, time + 0.05);
+        gain.gain.linearRampToValueAtTime(0, time + duration);
+        osc.start(time);
+        osc.stop(time + duration);
+    }
+
+    function playMelody() {
+        if (!isPlaying) return;
+        const now = audioCtx.currentTime;
+        const melody = [
+            { f: 261.63, t: 0.0, d: 0.5 },
+            { f: 329.63, t: 0.5, d: 0.5 },
+            { f: 392.00, t: 1.0, d: 0.5 },
+            { f: 523.25, t: 1.5, d: 1.0 } 
+        ];
+        
+        melody.forEach(note => playTone(note.f, now + note.t, note.d));
+        loopId = setTimeout(playMelody, 3500); 
+    }
+
+    function toggleMusic() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        const btn = document.getElementById('music-controls');
+        if (isPlaying) {
+            isPlaying = false;
+            clearTimeout(loopId);
+            btn.innerHTML = '🎵 Play Music';
+        } else {
+            isPlaying = true;
+            audioCtx.resume();
+            playMelody();
+            btn.innerHTML = '⏸️ Stop Music';
+        }
+    }
+
+    // --- Game Logic & Data ---
+    const questions = [
+        { q: "Why is the Cross honored by the Coptic Orthodox Church?[cite: 15]", o: ["It is the means by which heaven and earth were reconciled.[cite: 15]", "It is the architectural foundation of every Coptic Orthodox parish.[cite: 15]", "It represents the continuous suffering of the early Christian martyrs.[cite: 15]", "It symbolizes the chronological division between the Old and New Covenants.[cite: 15]"], a: 0, ill: "✝️" },
+        { q: "Who leads the chorus of deacons by carrying the Holy Cross decorated with flowers during the procession?[cite: 15]", o: ["The bishop.[cite: 15]", "The priest.[cite: 15]", "The deacon.[cite: 15]", "The archdeacon.[cite: 15]"], a: 2, ill: "💐" },
+        { q: "Where does the procession of the Cross strictly commence before moving to the sanctuary door?[cite: 15]", o: ["Inside the altar.[cite: 15]", "At the Northern Door.[cite: 15]", "Beside the Immersion Font.[cite: 15]", "In the center of the nave.[cite: 15]"], a: 0, ill: "⛪" },
+        { q: "What specific verse is added to the Gospel Response at each of the 12 stops?[cite: 15]", o: ["'He who carries the cross and leaves behind the temptations...'[cite: 15]", "'Through His Cross, and His holy Resurrection, He restored man once again to the Paradise.'[cite: 15]", "'The Lord gave the word; Great was the company of those who proclaimed it.'[cite: 15]", "'And they overcame him by the blood of the Lamb and by the word of their testimony.'[cite: 15]"], a: 1, ill: "📜" },
+        { q: "The Gospel reading from John 1:43-51, read before the Main Sanctuary, emphasizes what event?[cite: 15]", o: ["The Annunciation of Archangel Gabriel to St. Mary.[cite: 15]", "The angels of God ascending and descending upon the Son of Man.[cite: 15]", "The appointment and sending of the seventy apostles.[cite: 15]", "The baptism of our Lord Jesus Christ by St. John the Baptist.[cite: 15]"], a: 1, ill: "👼" },
+        { q: "Which icon is associated with the reading of the parables concerning the kingdom of heaven from Matthew 13?[cite: 15]", o: ["Archangel Michael.[cite: 15]", "St. Mary the Mother of God.[cite: 15]", "Archangel Gabriel.[cite: 15]", "St. Mark.[cite: 15]"], a: 0, ill: "⚔️" },
+        { q: "St. Mary the Theotokos is noted for enduring which specific type of cross?[cite: 15]", o: ["The cross of physical persecution and martyrdom.[cite: 15]", "The cross of submission and obedience.[cite: 15]", "The cross of ascetic struggle and worldly sacrifice.[cite: 15]", "The cross of ministry and delivering the gospel.[cite: 15]"], a: 1, ill: "🙏" },
+        { q: "Group 3 of the 12 Stations focuses primarily on what overarching theme?[cite: 15]", o: ["The martyrs who overcame the enemy by the blood of the Lamb.[cite: 15]", "The specific roles of God the Father, St. Mary, and the Archangels.[cite: 15]", "The Church as the means of salvation through sacraments and worship.[cite: 15]", "The fulfillment of Old Testament prophecies regarding the Kingdom.[cite: 15]"], a: 2, ill: "🏛️" },
+        { q: "At the station before the Northern Door, what does the Church spiritually teach the Cross represents?[cite: 15]", o: ["The key to the gate of heaven.[cite: 15]", "The royal procession and throne of the King.[cite: 15]", "The narrow gate.[cite: 15]", "The gate of righteousness.[cite: 15]"], a: 2, ill: "🚪" },
+        { q: "Which psalm verse is chanted before the Immersion Font (The Baptismal Room)?[cite: 15]", o: ["'How lovely is Your tabernacle, O Lord of hosts!'[cite: 15]", "'The voice of the Lord is over the waters...'[cite: 15]", "'Open to me the gates of righteousness...'[cite: 15]", "'But I am like a green olive tree in the house of God...'[cite: 15]"], a: 1, ill: "💧" },
+        { q: "Through baptism, believers put on the new man due to the work of salvation accomplished by what?[cite: 15]", o: ["The Cross.[cite: 15]", "The intercession of the saints.[cite: 15]", "The blood of the martyrs.[cite: 15]", "The angels of God ascending.[cite: 15]"], a: 0, ill: "✨" },
+        { q: "At which station is the Gospel reading of our Lord Jesus Christ's entry into Jerusalem on Palm Sunday read?[cite: 15]", o: ["Before the Northern Door.[cite: 15]", "Before the Main Sanctuary.[cite: 15]", "Before the Southern Door.[cite: 15]", "Before the Icon of St. Mark.[cite: 15]"], a: 2, ill: "🌿" },
+        { q: "What specific action did Archangel Michael perform regarding the holy Resurrection of the Lord?[cite: 15]", o: ["He brought the good news to St. Mary regarding the incarnation.[cite: 15]", "He proclaimed it when the stone was rolled away from the tomb.[cite: 15]", "He encamped all around those who fear Him to deliver them.[cite: 15]", "He established the Kingdom of the new Covenant.[cite: 15]"], a: 1, ill: "🪨" },
+        { q: "Who carried the cross of the ministry to deliver the gospel of salvation to us?[cite: 15]", o: ["St. Anthony.[cite: 15]", "St. Mark.[cite: 15]", "St. John the Baptist.[cite: 15]", "Archangel Gabriel.[cite: 15]"], a: 1, ill: "🦁" },
+        { q: "What is read immediately following the chanted psalm at each of the 12 stops?[cite: 15]", o: ["The Gospel Response.[cite: 15]", "An additional verse for the Cross.[cite: 15]", "The Gospel.[cite: 15]", "A doxology for the saint of the icon.[cite: 15]"], a: 2, ill: "📖" },
+        { q: "Which two individuals are typically used as examples for the station before the Icon of Any Martyr?[cite: 15]", o: ["St. Anthony and St. Paul.[cite: 15]", "St. Mark and St. Luke.[cite: 15]", "St. George or St. Mina.[cite: 15]", "St. Peter and St. John.[cite: 15]"], a: 2, ill: "🛡️" },
+        { q: "The text states that 'he who takes up the cross of self-denial, ascetic struggle, and sacrifice of worldly desires, gains his soul.' Who is given as the example of this?[cite: 15]", o: ["St. Anthony.[cite: 15]", "St. John the Baptist.[cite: 15]", "St. Mark.[cite: 15]", "Archangel Michael.[cite: 15]"], a: 0, ill: "🏜️" },
+        { q: "What specifically does the Sanctuary symbolize in the context of the first station?[cite: 15]", o: ["The new Covenant.[cite: 15]", "Heaven.[cite: 15]", "The narrow gate.[cite: 15]", "Paradise.[cite: 15]"], a: 1, ill: "☁️" },
+        { q: "In Revelation 12:11, what two things did the martyrs use to overcome the enemy?[cite: 15]", o: ["Ascetic struggle and sacrifice of worldly desires.[cite: 15]", "The blood of the Lamb and the word of their testimony.[cite: 15]", "Self-denial and the cross of submission.[cite: 15]", "Repentance and witnessing to Christ.[cite: 15]"], a: 1, ill: "🩸" },
+        { q: "Before which icon is the Visitation of St. Mary to St. Elizabeth read from the Gospel of Luke?[cite: 15]", o: ["The Icon of St. Mary the Mother of God.[cite: 15]", "The Icon of Archangel Gabriel.[cite: 15]", "The Icon of the Apostles.[cite: 15]", "The Icon of St. John the Baptist.[cite: 15]"], a: 0, ill: "🤰" },
+        { q: "What dates mark the two feasts of the Cross annually?[cite: 15]", o: ["Thoout 17 and Paremhotep 10.[cite: 15]", "Thoout 10 and Paremhotep 17.[cite: 15]", "Epep 7 and Koiahk 1.[cite: 15]", "September 19 and March 27.[cite: 15]"], a: 0, ill: "📅" },
+        { q: "Who brought the good news regarding the incarnation of our Lord Jesus Christ for our salvation?[cite: 15]", o: ["Archangel Michael.[cite: 15]", "Archangel Gabriel.[cite: 15]", "St. John the Baptist.[cite: 15]", "St. Mark.[cite: 15]"], a: 1, ill: "🕊️" },
+        { q: "Which group of stations is dedicated exclusively to icons of salvation, focusing on martyrs and saints?[cite: 15]", o: ["Group 1.[cite: 15]", "Group 2.[cite: 15]", "Group 3.[cite: 15]", "Group 4.[cite: 15]"], a: 1, ill: "🖼️" },
+        { q: "During the procession, what do the priests specifically do while following the chorus of deacons?[cite: 15]", o: ["They chant the Gospel Response.[cite: 15]", "They carry the Holy Cross.[cite: 15]", "They offer incense.[cite: 15]", "They open the sanctuary door.[cite: 15]"], a: 2, ill: "🌫️" },
+        { q: "According to the reading at the Icon of Archangel Michael, who is like the man who sold all he had to obtain the hidden treasure?[cite: 15]", o: ["He who strives to enter through the narrow gate and accepts the way of repentance, struggle, and self-denial.[cite: 15]", "He who carries the cross and leaves behind the temptations and desires of this world to gain the heavenly reward.[cite: 15]", "He who carries the cross of the ministry to deliver the gospel of salvation to all the believers across the earth.[cite: 15]", "He who endures the cross of physical persecution, suffering, and strict obedience to the Lord's commandments.[cite: 15]"], a: 1, ill: "💎" },
+        { q: "The Gospel of Matthew 10:1-8, read before the Icon of the Apostles, contains which specific directive?[cite: 15]", o: ["'Strive to enter through the narrow gate...'[cite: 15]", "'And as you go, preach, saying \"The kingdom of heaven is at hand.\"'[cite: 15]", "'If anyone desires to come after Me, let him deny himself...'[cite: 15]", "'You shall see heaven open...'[cite: 15]"], a: 1, ill: "🗣️" },
+        { q: "What is the primary spiritual meaning of entering through the narrow gate at the Northern Door?[cite: 15]", o: ["Dying and rising with Christ and being cleansed from sin.[cite: 15]", "Enduring physical persecution and martyrdom for the sake of Christ.[cite: 15]", "Accepting the way of repentance, struggle, self-denial, and carrying the cross.[cite: 15]", "Acknowledging the Cross as the royal procession and throne of the King.[cite: 15]"], a: 2, ill: "🛤️" },
+        { q: "St. John the Baptist's life points toward the Cross through self-denial, repentance, and witnessing to Christ as what?[cite: 15]", o: ["The Lamb of God who takes away the sin of the world.[cite: 15]", "The Most High Himself who shall establish her forever.[cite: 15]", "The King of Kings and the Lord of hosts in heaven.[cite: 15]", "The Crucified One who restores man back to the Paradise.[cite: 15]"], a: 0, ill: "🐑" },
+        { q: "At the station before the Icon of Any Martyr, the Gospel reading of Luke 21:12-19 warns of what?[cite: 15]", o: ["That many will lose their own souls to gain the whole world.[cite: 15]", "That men will be delivered up to synagogues and prison, and some put to death.[cite: 15]", "That not everyone who says Lord, Lord shall enter the kingdom.[cite: 15]", "That the angels of God will ascend and descend.[cite: 15]"], a: 1, ill: "⛓️" },
+        { q: "What does the Cross at the Southern Door specifically open for the faithful to enter the heavenly Jerusalem?[cite: 15]", o: ["The narrow gate.[cite: 15]", "The sanctuary door.[cite: 15]", "The gates of righteousness.[cite: 15]", "The Kingdom of the new Covenant.[cite: 15]"], a: 2, ill: "🗝️" }
+    ];
+
+    let currentQ = 0;
+    let score = 0;
+    let firstTry = true;
+
+    function shootStars(btn) {
+        const rect = btn.getBoundingClientRect();
+        const emojis = ['🌟', '✨', '🎓', '🏆'];
+        for(let i=0; i<20; i++) {
+            let star = document.createElement('div');
+            star.className = 'star';
+            star.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+            star.style.left = (rect.left + rect.width/2) + 'px';
+            star.style.top = (rect.top + rect.height/2) + 'px';
+            
+            let angle = Math.random() * Math.PI * 2;
+            let distance = Math.random() * 150 + 80;
+            let tx = Math.cos(angle) * distance;
+            let ty = Math.sin(angle) * distance - 120; 
+            
+            star.style.setProperty('--tx', `${tx}px`);
+            star.style.setProperty('--ty', `${ty}px`);
+            
+            document.body.appendChild(star);
+            setTimeout(() => star.remove(), 1000);
+        }
+    }
+
+    function loadQuestion() {
+        firstTry = true;
+        const q = questions[currentQ];
+        document.getElementById('progress-text').innerText = `Question ${currentQ + 1} of ${questions.length}`;
+        document.getElementById('illustration').innerText = q.ill;
+        document.getElementById('question-text').innerText = q.q;
+        
+        const optionsGrid = document.getElementById('options-grid');
+        optionsGrid.innerHTML = '';
+        
+        q.o.forEach((opt, index) => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerHTML = opt;
+            btn.onclick = () => checkAnswer(index, btn);
+            optionsGrid.appendChild(btn);
+        });
+    }
+
+    function checkAnswer(index, btn) {
+        if(btn.classList.contains('wrong') || btn.classList.contains('correct')) return;
+
+        const q = questions[currentQ];
+        const buttons = document.querySelectorAll('.option-btn');
+        const container = document.getElementById('game-container');
+        
+        if (index === q.a) {
+            btn.classList.add('correct');
+            shootStars(btn);
+            if (firstTry) score++;
+            
+            buttons.forEach(b => b.style.pointerEvents = 'none');
+            
+            setTimeout(() => {
+                currentQ++;
+                if (currentQ < questions.length) {
+                    loadQuestion();
+                } else {
+                    showResult();
+                }
+            }, 1800);
+        } else {
+            btn.classList.add('wrong');
+            firstTry = false;
+            
+            container.classList.remove('warning');
+            void container.offsetWidth; 
+            container.classList.add('warning');
+        }
+    }
+
+    function showResult() {
+        document.getElementById('game-container').style.display = 'none';
+        document.getElementById('result-screen').style.display = 'block';
+        
+        const percent = Math.round((score / questions.length) * 100);
+        let message = `You scored ${score} out of ${questions.length} on your first attempt.\n\nThat's ${percent}%!`;
+        
+        if(percent === 100) {
+            message = `Perfect Score! Flawless knowledge of the advanced material.\n\n` + message;
+        } else if (percent >= 80) {
+            message = `Excellent Work! You have a strong grasp of the material.\n\n` + message;
+        } else {
+            message = `Good Effort! Keep reviewing the material to master the details.\n\n` + message;
+        }
+        
+        document.getElementById('result-text').innerText = message;
+    }
+
+    function retake() {
+        currentQ = 0;
+        score = 0;
+        document.getElementById('game-container').style.display = 'block';
+        document.getElementById('result-screen').style.display = 'none';
+        loadQuestion();
+    }
+
+    // Initialize Advanced Test
+    loadQuestion();
+</script>
+</body>
+</html>
