@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>General Review 1</title>
+<style>
+    :root {
+        --primary: #1565C0; /* Deep Blue */
+        --secondary: #FFD54F; /* Soft Gold */
+        --bg: #E3F2FD; /* Very Light Blue */
+        --correct: #2E7D32; /* Deep Green */
+        --wrong: #C62828; /* Deep Red */
+        --text: #212121;
+    }
+
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: var(--bg);
+        color: var(--text);
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+        overflow-x: hidden;
+    }
+
+    #ribbon {
+        width: 100%;
+        background-color: var(--primary);
+        color: white;
+        padding: 15px 30px;
+        font-size: 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-sizing: border-box;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        font-weight: bold;
+        letter-spacing: 1px;
+    }
+
+    #music-controls {
+        cursor: pointer;
+        background: var(--secondary);
+        border: none;
+        border-radius: 12px;
+        padding: 10px 20px;
+        font-size: 18px;
+        font-weight: bold;
+        color: #0D47A1;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        transition: transform 0.2s;
+    }
+
+    #music-controls:hover {
+        transform: scale(1.05);
+    }
+
+    #game-container, #result-screen {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        padding: 40px;
+        margin: 40px 20px;
+        max-width: 900px;
+        width: 90%;
+        text-align: center;
+        position: relative;
+    }
+
+    .warning {
+        animation: flashRed 0.6s ease-in-out 2;
+    }
+
+    @keyframes flashRed {
+        0% { box-shadow: 0 0 0px var(--wrong); }
+        50% { box-shadow: 0 0 30px var(--wrong); }
+        100% { box-shadow: 0 0 0px var(--wrong); }
+    }
+
+    #illustration {
+        font-size: 80px;
+        margin: 10px 0 20px 0;
+        text-shadow: 2px 2px 10px rgba(0,0,0,0.1);
+    }
+
+    #question-text {
+        font-size: 22px;
+        margin-bottom: 30px;
+        color: var(--primary);
+        font-weight: 600;
+        line-height: 1.6;
+    }
+
+    .options-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .option-btn {
+        background-color: #F8F9FA;
+        border: 3px solid var(--primary);
+        border-radius: 12px;
+        padding: 18px;
+        font-size: 18px;
+        cursor: pointer;
+        transition: transform 0.2s, background-color 0.3s, border-color 0.3s, box-shadow 0.2s;
+        font-family: inherit;
+        color: var(--text);
+        font-weight: 500;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .option-btn:hover {
+        transform: translateY(-4px);
+        background-color: #E3F2FD;
+        box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+    }
+
+    .option-btn.correct {
+        background-color: var(--correct) !important;
+        color: white;
+        border-color: var(--correct);
+        box-shadow: 0 0 15px var(--correct);
+    }
+
+    .option-btn.wrong {
+        background-color: var(--wrong) !important;
+        color: white;
+        border-color: var(--wrong);
+        animation: shake 0.4s;
+    }
+
+    @keyframes shake {
+        0% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        50% { transform: translateX(5px); }
+        75% { transform: translateX(-5px); }
+        100% { transform: translateX(0); }
+    }
+
+    .star {
+        position: fixed;
+        font-size: 40px;
+        animation: flyUp 1s ease-out forwards;
+        pointer-events: none;
+        z-index: 1000;
+    }
+
+    @keyframes flyUp {
+        0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
+        100% { transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(1.5) rotate(180deg); opacity: 0; }
+    }
+
+    #result-screen {
+        display: none;
+    }
+
+    #result-title {
+        font-size: 48px;
+        color: var(--primary);
+        margin-bottom: 20px;
+        font-weight: bold;
+    }
+
+    #result-text {
+        font-size: 32px;
+        color: var(--correct);
+        margin-bottom: 40px;
+        font-weight: 600;
+        white-space: pre-line;
+    }
+
+    #retake-btn {
+        background-color: var(--secondary);
+        color: #0D47A1;
+        border: none;
+        padding: 18px 40px;
+        font-size: 24px;
+        border-radius: 12px;
+        cursor: pointer;
+        font-weight: bold;
+        box-shadow: 0 6px 10px rgba(0,0,0,0.2);
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    #retake-btn:hover {
+        transform: scale(1.08);
+        box-shadow: 0 8px 15px rgba(0,0,0,0.3);
+    }
+
+    @media(max-width: 768px) {
+        .options-grid {
+            grid-template-columns: 1fr;
+        }
+        #ribbon {
+            flex-direction: column;
+            gap: 10px;
+            font-size: 20px;
+            text-align: center;
+        }
+        #question-text {
+            font-size: 18px;
+        }
+        .option-btn {
+            font-size: 16px;
+            padding: 15px;
+        }
+    }
+</style>
+</head>
+<body>
+
+<div id="ribbon">
+    <div>🎓 General Review 1</div>
+    <div id="progress-text">Question 1 of 30</div>
+    <button id="music-controls" onclick="toggleMusic()">🎵 Play Music</button>
+</div>
+
+<div id="game-container">
+    <div id="illustration"></div>
+    <div id="question-text"></div>
+    <div class="options-grid" id="options-grid"></div>
+</div>
+
+<div id="result-screen">
+    <div id="result-title">🌟 Outstanding Performance! 🌟</div>
+    <div id="result-text"></div>
+    <button id="retake-btn" onclick="retake()">Retake General Review 🔄</button>
+</div>
+
+<script>
+    // --- Audio Synthesizer ---
+    let audioCtx;
+    let isPlaying = false;
+    let loopId;
+
+    function playTone(freq, time, duration) {
+        if (!audioCtx) return;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.value = freq;
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        gain.gain.setValueAtTime(0, time);
+        gain.gain.linearRampToValueAtTime(0.06, time + 0.05);
+        gain.gain.linearRampToValueAtTime(0, time + duration);
+        osc.start(time);
+        osc.stop(time + duration);
+    }
+
+    function playMelody() {
+        if (!isPlaying) return;
+        const now = audioCtx.currentTime;
+        const melody = [
+            { f: 261.63, t: 0.0, d: 0.4 }, 
+            { f: 329.63, t: 0.5, d: 0.4 }, 
+            { f: 392.00, t: 1.0, d: 0.4 }, 
+            { f: 523.25, t: 1.5, d: 0.8 }  
+        ];
+        
+        melody.forEach(note => playTone(note.f, now + note.t, note.d));
+        loopId = setTimeout(playMelody, 3000); 
+    }
+
+    function toggleMusic() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        const btn = document.getElementById('music-controls');
+        if (isPlaying) {
+            isPlaying = false;
+            clearTimeout(loopId);
+            btn.innerHTML = '🎵 Play Music';
+        } else {
+            isPlaying = true;
+            audioCtx.resume();
+            playMelody();
+            btn.innerHTML = '⏸️ Stop Music';
+        }
+    }
+
+    // --- Game Logic & Data ---
+    const questions = [
+        { q: "Which of the following is an example of a 'Distancing' boundary regarding Chores & Household Tasks?[cite: 21]", o: ["Helping with everything, even tasks one is not old enough to understand.", "Refusing to entertain any new ideas that are unfamiliar.", "Prioritizing one's own rest and comfort and never helping with chores.", "Keeping feelings to oneself and telling no one during hard times."], a: 2, ill: "🧹" },
+        { q: "What does the first word on the Cross ('Father, forgive them...') indicate about Christ's role?[cite: 18]", o: ["He is a Teacher.", "He is a King.", "He is a Priest.", "He is a Shepherd."], a: 2, ill: "👑" },
+        { q: "On what exact date does the Church celebrate the Discovery of the Holy Cross by St. Queen Helen?[cite: 16]", o: ["Thoout 17 (September 27).", "Epep 7 (July 14).", "Paremhotep 10 (March 19).", "Koiahk 1 (December 10)."], a: 2, ill: "📅" },
+        { q: "At the station before the Southern Door, the Cross is seen as what?[cite: 19]", o: ["The royal procession and throne of the King.", "The key to the gate of heaven.", "The narrow gate of repentance.", "A green olive tree in the house of God."], a: 0, ill: "🚪" },
+        { q: "St. Shenouda attended the Ecumenical Council of Ephesus in 431 A.D. to effectively fight against the heresy of which individual?[cite: 20]", o: ["Arius.", "Macedonius.", "Eutyches.", "Nestorius."], a: 3, ill: "🏛️" },
+        { q: "The sprinkling of blood by the priest all around the Altar of Burnt Offering signifies what specific theological concept?[cite: 17]", o: ["That the worship to which it points is founded upon blood.", "That without blood, there is no entry into the Holy Places.", "That an innocent soul redeems another soul that deserves death.", "That the blood and fat belong exclusively to the Lord."], a: 0, ill: "🩸" },
+        { q: "In the context of Communication, what constitutes an 'Intrusion' boundary?[cite: 21]", o: ["Accepting a friend request from someone you do not know.", "Never answering a phone call from friends or taking days to respond.", "Answering communication as seen and setting clear limits.", "Staying silent because of a fear to speak out."], a: 0, ill: "📱" },
+        { q: "Christ's phrase 'I thirst' physically fulfilled the prophecy from which specific Old Testament book?[cite: 18]", o: ["Isaiah.", "Genesis.", "Zechariah.", "Psalm 69."], a: 3, ill: "💧" },
+        { q: "What specific historical reason explains why God willed to be crucified instead of us?[cite: 16]", o: ["Because crucifixion was seen as the only method to shed blood.", "Because crucifixion was the standard Roman penalty for treason.", "Because crucifixion fulfilled the specific prophecy of Jonah.", "Because crucifixion was considered a method of death that was cursed in its nature."], a: 3, ill: "📜" },
+        { q: "Which book of the Torah is referred to by the Jewish people as the 'Law of the Priests'?[cite: 17]", o: ["Genesis.", "Leviticus.", "Exodus.", "Deuteronomy."], a: 1, ill: "📖" },
+        { q: "Who placed his hands on young St. Shenouda's head and prophesied that he would be 'a father for many people'?[cite: 20]", o: ["St. Pachomius.", "Pope Cyril I.", "St. Pigol.", "His biological father."], a: 2, ill: "🙌" },
+        { q: "During the procession of the Cross, what specific action is performed by the priests while the chorus of deacons follows the Holy Cross?[cite: 19]", o: ["They carry the icons.", "They chant the Gospel.", "They offer incense.", "They read the prophecies."], a: 2, ill: "🌫️" },
+        { q: "Which of the following is one of the four types of death humanity faced that Christ bore on our behalf?[cite: 16]", o: ["Moral (relational) death.", "Intellectual death.", "Emotional death.", "Generational death."], a: 0, ill: "💀" },
+        { q: "When setting healthy boundaries, what specific elements should a person consider?[cite: 21]", o: ["Popularity, social status, and avoiding all conflict.", "Sympathizing with everyone and prioritizing others' needs.", "The opinions of others and the current trends in society.", "Clarity, expressing feelings, politeness, and a respectful manner."], a: 3, ill: "⚖️" },
+        { q: "Christ's seventh word, 'Father, into Your hands I commit My spirit,' demonstrates that He gave up His spirit in what specific manner?[cite: 18]", o: ["By His authority and willingly surrendered His spirit by His own will.", "Because the physical trauma of the crucifixion finally overtook Him.", "As a sign of the separation of His divine nature from His human nature.", "Because the Father forsook the Son to bear the consequences of sin."], a: 0, ill: "🕊️" },
+        { q: "How many total years did St. Shenouda serve as an abbot for monasteries and convents?[cite: 20]", o: ["118 years.", "66 years.", "83 years.", "51 years."], a: 1, ill: "⏳" },
+        { q: "When a guilty individual brings an animal sacrifice, placing his hand upon its head specifically accomplishes what?[cite: 17]", o: ["It acknowledges that he grieved the heart of God.", "It demonstrates his obedience to the Levitical Law.", "It transfers his sins onto the sacrifice as a principle of redemption.", "It signifies his personal purification from all physical impurity."], a: 2, ill: "✋" },
+        { q: "The Gospel reading of Luke 10:1-12 about appointing and sending the 70 apostles is read before which specific icon?[cite: 19]", o: ["The Apostles.", "Archangel Michael.", "St. John the Baptist.", "St. Mark."], a: 3, ill: "🖼️" },
+        { q: "When signing the Cross using our first 3 fingers from our forehead to our chest, what specific doctrine are we declaring?[cite: 16]", o: ["God's love for us as He died on the Cross.", "God the Son coming from heaven and being born of St. Mary.", "Our faith in the spiritual blessings of the new covenant.", "The doctrine of the Holy Trinity."], a: 1, ill: "✝️" },
+        { q: "God created humanity with what specific trait, demonstrating that He lovingly invites rather than forces Himself upon anyone?[cite: 21]", o: ["Discernment.", "Eternal life.", "Free will.", "Psychological safety."], a: 2, ill: "❤️" },
+        { q: "Which historical figure benefited from the forgiveness offered on the Cross after piercing Christ's side?[cite: 18]", o: ["St. Peter.", "St. Longinus.", "St. John the Beloved.", "St. Paul."], a: 1, ill: "🛡️" },
+        { q: "Which specific sacrifice symbolizes the 'Obedience of the Son'?[cite: 17]", o: ["The Peace offering.", "The Grain offering.", "The Sin offering.", "The Burnt offering."], a: 3, ill: "🔥" },
+        { q: "Which biblical verse demonstrates St. Paul setting boundaries in dealing with unbelievers?[cite: 21]", o: ["'We ought to obey God rather than men.' (Acts 5:29)", "'Do not be unequally yoked together with unbelievers.' (2 Corinthians 6:14)", "'For do I now persuade men, or God?' (Galatians 1:10)", "'Put your sword in its place.' (Matthew 26:52)"], a: 1, ill: "📜" },
+        { q: "Which biblical figure points toward the Cross through self-denial, repentance, and witnessing to Christ?[cite: 19]", o: ["St. Anthony.", "St. John the Baptist.", "St. George.", "Archangel Gabriel."], a: 1, ill: "👤" },
+        { q: "The sacrifice on the Cross does not need to be repeated because it possesses which two specific characteristics?[cite: 16]", o: ["It is a perfect spiritual symbol and requires only remembrance.", "It is unlimited in power and sufficient for all humanity until the end of time.", "It completely replaced the Jewish temple and all its earthly priests.", "It abolished the Old Testament law and the need for the Levitical priesthood."], a: 1, ill: "♾️" },
+        { q: "What is the 'Holy Eskeem' that St. Shenouda was dressed in by his uncle?[cite: 20]", o: ["A string of plaited leather with crosses.", "A woolen cloak signifying asceticism.", "A white tunic representing purity.", "A golden cross worn around the neck."], a: 0, ill: "📿" },
+        { q: "Which of the following is a 'Flock animal (small livestock)' for the sacrifices?[cite: 17]", o: ["Bulls.", "Oxen.", "Turtledoves.", "Goats."], a: 3, ill: "🐐" },
+        { q: "When Christ entrusted the Holy Virgin Mary to St. John, it taught us several lessons. Which of the following is one of those lessons?[cite: 18]", o: ["To properly comfort the sorrowful and those in mourning.", "To completely abandon our earthly families to serve the Church.", "To ensure that widows receive daily food distributions.", "To build a physical home in Jerusalem for the apostles."], a: 0, ill: "🫂" },
+        { q: "St. Shenouda is known to be one of the most effective monks to practice communal monasticism after which saint?[cite: 20]", o: ["St. Pachomius.", "St. Anthony.", "St. Macarius.", "St. Paul the Hermit."], a: 0, ill: "🤝" },
+        { q: "The third group of stations in the procession is titled 'Concerning the Church.' What is the overarching focus of these specific stations?[cite: 19]", o: ["The fulfillment of Old Testament prophecies regarding the Kingdom of heaven.", "How the Church guides believers into salvation through her sacraments, worship, and holy life.", "The martyrs who overcame the enemy by the blood of the Lamb.", "God the Father, St. Mary, and the Archangels in the story of salvation."], a: 1, ill: "⛪" }
+    ];
+
+    let currentQ = 0;
+    let score = 0;
+    let firstTry = true;
+
+    function shootStars(btn) {
+        const rect = btn.getBoundingClientRect();
+        const emojis = ['🌟', '✨', '🎓', '🏆'];
+        for(let i=0; i<20; i++) {
+            let star = document.createElement('div');
+            star.className = 'star';
+            star.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+            star.style.left = (rect.left + rect.width/2) + 'px';
+            star.style.top = (rect.top + rect.height/2) + 'px';
+            
+            let angle = Math.random() * Math.PI * 2;
+            let distance = Math.random() * 150 + 80;
+            let tx = Math.cos(angle) * distance;
+            let ty = Math.sin(angle) * distance - 120; 
+            
+            star.style.setProperty('--tx', `${tx}px`);
+            star.style.setProperty('--ty', `${ty}px`);
+            
+            document.body.appendChild(star);
+            setTimeout(() => star.remove(), 1000);
+        }
+    }
+
+    function loadQuestion() {
+        firstTry = true;
+        const q = questions[currentQ];
+        document.getElementById('progress-text').innerText = `Question ${currentQ + 1} of ${questions.length}`;
+        document.getElementById('illustration').innerText = q.ill;
+        document.getElementById('question-text').innerText = q.q;
+        
+        const optionsGrid = document.getElementById('options-grid');
+        optionsGrid.innerHTML = '';
+        
+        q.o.forEach((opt, index) => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerHTML = opt;
+            btn.onclick = () => checkAnswer(index, btn);
+            optionsGrid.appendChild(btn);
+        });
+    }
+
+    function checkAnswer(index, btn) {
+        if(btn.classList.contains('wrong') || btn.classList.contains('correct')) return;
+
+        const q = questions[currentQ];
+        const buttons = document.querySelectorAll('.option-btn');
+        const container = document.getElementById('game-container');
+        
+        if (index === q.a) {
+            btn.classList.add('correct');
+            shootStars(btn);
+            if (firstTry) score++;
+            
+            buttons.forEach(b => b.style.pointerEvents = 'none');
+            
+            setTimeout(() => {
+                currentQ++;
+                if (currentQ < questions.length) {
+                    loadQuestion();
+                } else {
+                    showResult();
+                }
+            }, 1800);
+        } else {
+            btn.classList.add('wrong');
+            firstTry = false;
+            
+            container.classList.remove('warning');
+            void container.offsetWidth; 
+            container.classList.add('warning');
+        }
+    }
+
+    function showResult() {
+        document.getElementById('game-container').style.display = 'none';
+        document.getElementById('result-screen').style.display = 'block';
+        
+        const percent = Math.round((score / questions.length) * 100);
+        let message = `You scored ${score} out of ${questions.length} on your first attempt.\n\nThat's ${percent}%!`;
+        
+        if(percent === 100) {
+            message = `Perfect Score! Flawless knowledge of the study material.\n\n` + message;
+        } else if (percent >= 80) {
+            message = `Excellent Work! You have a strong grasp of the material.\n\n` + message;
+        } else {
+            message = `Good Effort! Keep reviewing the lessons to master the details.\n\n` + message;
+        }
+        
+        document.getElementById('result-text').innerText = message;
+    }
+
+    function retake() {
+        currentQ = 0;
+        score = 0;
+        document.getElementById('game-container').style.display = 'block';
+        document.getElementById('result-screen').style.display = 'none';
+        loadQuestion();
+    }
+
+    // Initialize the General Review
+    loadQuestion();
+</script>
+</body>
+</html>
