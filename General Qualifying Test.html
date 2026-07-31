@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>General Qualifying Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .quiz-container {
+            background: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            max-width: 600px;
+            width: 100%;
+        }
+        h1 {
+            font-size: 24px;
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        .question-header {
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .option-btn {
+            background: #e9ecef;
+            border: 2px solid transparent;
+            padding: 12px 20px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+        }
+        .option-btn:hover {
+            background: #dee2e6;
+        }
+        .option-btn.selected {
+            background: #cfe2ff;
+            border-color: #0d6efd;
+        }
+        .controls {
+            margin-top: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .next-btn {
+            background: #0d6efd;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .next-btn:hover {
+            background: #0b5ed7;
+        }
+        .next-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        .progress {
+            font-size: 14px;
+            color: #6c757d;
+        }
+        .results {
+            text-align: center;
+            display: none;
+        }
+        .results h2 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        .score-percentage {
+            font-size: 54px;
+            font-weight: bold;
+            color: #0d6efd;
+            margin: 15px 0;
+        }
+        .results p {
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: #495057;
+        }
+        .correct-text {
+            color: #198754;
+            font-weight: bold;
+        }
+        .incorrect-text {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .restart-btn {
+            background: #198754;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        .restart-btn:hover {
+            background: #157347;
+        }
+    </style>
+</head>
+<body>
+
+<div class="quiz-container">
+    <div id="quiz-block">
+        <h1>General Qualifying Test</h1>
+        <div class="question-header" id="question">Loading question...</div>
+        <div class="options-container" id="options"></div>
+        <div class="controls">
+            <span class="progress" id="progress">Question 1 / 60</span>
+            <button class="next-btn" id="next-btn" disabled>Next Question</button>
+        </div>
+    </div>
+    
+    <div class="results" id="results-block">
+        <h2>Exam Complete!</h2>
+        <div class="score-percentage" id="score-percentage">0%</div>
+        <p>Correct Answers: <span class="correct-text" id="correct-count">0</span> out of 60</p>
+        <p>Incorrect Answers: <span class="incorrect-text" id="incorrect-count">0</span> out of 60</p>
+        <button class="restart-btn" onclick="startQuiz()">Restart Exam</button>
+    </div>
+</div>
+
+<script>
+    const questionsData = [
+        { q: "What is one of the two aspects of the Cross mentioned in the text?", options: ["Revenge", "Joy", "Popularity", "Wealth"], a: "Joy" },
+        { q: "Who are the Levites?", options: ["A group of Roman soldiers", "The prophets of the New Testament", "Descendants of the Tribe of Levi", "The kings of Israel"], a: "Descendants of the Tribe of Levi" },
+        { q: "Which word on the cross indicates that Christ is a Shepherd?", options: ["I thirst", "Father, forgive them", "It is finished", "Woman, behold your son"], a: "Woman, behold your son" },
+        { q: "How many total stations are in the Procession of the Cross?", options: ["12", "7", "10", "3"], a: "12" },
+        { q: "Where was St. Shenouda born?", options: ["Cairo", "Alexandria", "Akhmeem", "Antioch"], a: "Akhmeem" },
+        { q: "What do boundaries provide protection and safety from?", options: ["Studying hard", "Paying taxes", "Destructive thoughts/ideas", "Physical sickness"], a: "Destructive thoughts/ideas" },
+        
+        { q: "Which biblical figure is mentioned as a symbolic person of Christ in the Old Testament?", options: ["David", "Melchizedek", "Elijah", "Solomon"], a: "Melchizedek" },
+        { q: "Which book is referred to by the Jewish people as the 'Law of the Priests'?", options: ["Leviticus", "Exodus", "Genesis", "Numbers"], a: "Leviticus" },
+        { q: "Which of the seven words signifies the declaration of joy through accomplishing redemption?", options: ["Today you will be with Me", "It is finished", "I thirst", "Father, forgive them"], a: "It is finished" },
+        { q: "During the Procession, what does the Northern Door station remind us of?", options: ["The narrow gate", "The annunciation of Gabriel", "The royal procession", "The baptism of the Lord"], a: "The narrow gate" },
+        { q: "What was St. Shenouda's responsibility when his father entrusted him with work as a young boy?", options: ["Weaving heavy baskets", "Copying manuscripts", "Baking church bread", "Tending to the sheep"], a: "Tending to the sheep" },
+        { q: "Who is the only one that can set the boundaries in your life?", options: ["Your friends", "Society", "You", "Your teachers"], a: "You" },
+        
+        { q: "Why did God choose the Cross specifically to save us?", options: ["To remove the curse", "To please the religious leaders", "To establish an earthly kingdom", "To abolish all physical pain"], a: "To remove the curse" },
+        { q: "What does the Burnt Offering symbolize?", options: ["Incarnation of the Son", "Bearing our sins", "Obedience of the Son", "Thanksgiving offering"], a: "Obedience of the Son" },
+        { q: "What did the right-hand thief confess Christ as when he said, 'When You come into Your kingdom'?", options: ["Teacher", "King", "Shepherd", "Priest"], a: "King" },
+        { q: "What does the Immersion Font (The Baptismal Room) station focus on?", options: ["The flight into Egypt", "Dying and rising with Christ", "The preaching of the apostles", "The creation of the world"], a: "Dying and rising with Christ" },
+        { q: "What did St. Pigol say when he placed St. Shenouda's hands on his own head?", options: ["You will travel to distant lands", "You will build a great cathedral", "You will write many books", "You will be a father for many people"], a: "You will be a father for many people" },
+        { q: "What is considered an 'Intrusion' boundary regarding chores?", options: ["I never help or do my chores", "I do chores at certain times of the day", "I help with everything, even tasks I am not old enough to do", "I only clean my own room"], a: "I help with everything, even tasks I am not old enough to do" },
+        
+        { q: "What does making the sign of the cross from the left to right shoulder signify?", options: ["The suffering of the martyrs", "Being transferred from darkness to light", "The physical birth of Christ", "The authority of the apostles"], a: "Being transferred from darkness to light" },
+        { q: "What does the Peace Offering symbolize?", options: ["Obedience of the Son", "Thanksgiving offering", "Incarnation of the Son", "Sins directed towards God"], a: "Thanksgiving offering" },
+        { q: "Who pierced the side of Christ with a spear during the crucifixion and later believed?", options: ["St. John", "St. Peter", "St. Paul", "St. Longinus"], a: "St. Longinus" },
+        { q: "Who is considered an example of those who carried the cross of the ministry to deliver the gospel?", options: ["St. Anthony", "St. Mark", "St. Mina", "St. George"], a: "St. Mark" },
+        { q: "What does the 'Holy Eskeem' consist of?", options: ["A string of plaited leather with crosses", "A pure golden crown", "A white woolen tunic", "A heavy wooden staff"], a: "A string of plaited leather with crosses" },
+        { q: "What is a 'Healthy' boundary regarding privacy?", options: ["I discuss every detail with a stranger", "I write all my secrets online", "I build trust gradually with a friend", "I don't share any details with a close friend"], a: "I build trust gradually with a friend" },
+        
+        { q: "What are the two Feasts of the Cross celebrated by the Church?", options: ["Koiahk 1 and Epep 7", "Tobe 11 and Mesore 13", "Thoout 17 and Paremhotep 10", "Hator 5 and Baramouda 10"], a: "Thoout 17 and Paremhotep 10" },
+        { q: "Which of the following is listed as a bird used for the sacrifices?", options: ["Eagles", "Ravens", "Sparrows", "Turtledoves"], a: "Turtledoves" },
+        { q: "What did Jesus entrust to St. John the Beloved on the cross?", options: ["A scroll of prophecies", "The garments the soldiers took", "His mother, the Holy Virgin", "The keys to the kingdom"], a: "His mother, the Holy Virgin" },
+        { q: "Which group is honored in the 'Icons of Salvation' category for carrying the cross of preaching?", options: ["The Prophets", "The Apostles", "The Monks", "The Archangels"], a: "The Apostles" },
+        { q: "Why was St. Shenouda given the title 'Archimandrite'?", options: ["He was the sole founder of Coptic monasticism", "He wrote the Divine Liturgy", "He lived the life of solitude and helped young monks", "He translated the Bible into Greek"], a: "He lived the life of solitude and helped young monks" },
+        { q: "In the context of decision making, what is a 'Distancing' boundary?", options: ["I seek advice from trustworthy people", "I demand others choose for me", "People's opinions are important to my decisions", "I am afraid to make any decision and take responsibility"], a: "I am afraid to make any decision and take responsibility" },
+        
+        { q: "Which of the following is listed as one of the four types of death that the Cross addresses?", options: ["Moral (relational) death", "Biological decay", "Intellectual death", "Cultural death"], a: "Moral (relational) death" },
+        { q: "What is the individual acknowledging when placing their hand on the head of the sacrifice?", options: ["Their physical hunger", "The innocence of humanity", "The principle of redemption", "Their desire for wealth"], a: "The principle of redemption" },
+        { q: "What does the cry 'My God, My God, why have You forsaken Me?' mean?", options: ["Jesus was completely unaware of God's plan", "The Father literally abandoned the Son forever", "The divine nature separated from the human nature", "The Father permitted Him to suffer on our behalf"], a: "The Father permitted Him to suffer on our behalf" },
+        { q: "What is the Southern Door station associated with?", options: ["The royal procession and throne of the King", "St. John the Baptist", "The appointing of the 70 apostles", "The visitation of St. Mary to St. Elizabeth"], a: "The royal procession and throne of the King" },
+        { q: "How many years did St. Shenouda live?", options: ["80 years", "100 years", "118 years", "66 years"], a: "118 years" },
+        { q: "What Biblical example of Jesus setting boundaries of touch is mentioned?", options: ["Render to Caesar the things that are Caesar's", "Do not cling to Me, for I have not yet ascended", "Put your sword in its place", "We ought to obey God rather than men"], a: "Do not cling to Me, for I have not yet ascended" },
+        
+        { q: "What blessing of the cross is defined as consecration, dedication, and setting the person apart?", options: ["Forgiveness", "Sanctification", "Abiding in Him", "Purification"], a: "Sanctification" },
+        { q: "Where must all sacrifices be offered to the Lord?", options: ["At the entrance door of the Tabernacle of Meeting", "On the highest mountain", "At the gates of the city", "Inside the Most Holy Place"], a: "At the entrance door of the Tabernacle of Meeting" },
+        { q: "What did the Lord thirst for spiritually when He said 'I thirst'?", options: ["An end to the Roman empire", "A drink of pure water", "To rest from His physical pain", "The salvation of humanity"], a: "The salvation of humanity" },
+        { q: "At the station before the icon of St. Mary, what kind of cross did she endure?", options: ["The cross of the ministry", "The cross of ascetic struggle", "The cross of submission and obedience", "The cross of preaching the gospel"], a: "The cross of submission and obedience" },
+        { q: "Which Ecumenical Council did St. Shenouda attend?", options: ["Council of Chalcedon", "Council of Nicaea", "Council of Constantinople", "Council of Ephesus"], a: "Council of Ephesus" },
+        { q: "What is considered a 'Healthy' boundary regarding physical touch?", options: ["I consider any wrong touches harmless", "I politely object and set clear physical boundaries", "I never allow anyone to stand near me", "I stay silent because I am afraid to speak"], a: "I politely object and set clear physical boundaries" },
+        
+        { q: "Which Old Testament book contains the prophecy: 'He shall bruise your head, and you shall bruise His heel'?", options: ["Leviticus", "Genesis", "Deuteronomy", "Exodus"], a: "Genesis" },
+        { q: "What two things from the sacrifices must not be eaten because they belong to the Lord?", options: ["Skin and hair", "Water and grain", "Meat and bones", "Blood and fat"], a: "Blood and fat" },
+        { q: "What does 'Into Your hands I commit My spirit' demonstrate?", options: ["The Roman soldiers took His spirit", "He willingly surrendered His spirit by His own will", "He was defeated by the power of death", "The devil claimed victory over Him"], a: "He willingly surrendered His spirit by His own will" },
+        { q: "What event is associated with the Archangel Michael station?", options: ["The appointing of the 70 apostles", "Proclaiming the holy Resurrection and rolling the stone", "The annunciation to St. Mary", "The baptism of Christ in the river"], a: "Proclaiming the holy Resurrection and rolling the stone" },
+        { q: "Which heretic did St. Shenouda effectively fight against?", options: ["Macedonius", "Eutyches", "Nestorius", "Arius"], a: "Nestorius" },
+        { q: "Which of the following describes a 'Distancing' boundary regarding time?", options: ["I organize my time according to priorities", "My time belongs only to me", "I dedicate all my time to my friends", "I spend all my time on social media"], a: "My time belongs only to me" },
+        
+        { q: "Who discovered the Holy Cross in 326 AD?", options: ["Queen Esther", "St. Mary", "St. Queen Helen", "St. Demiana"], a: "St. Queen Helen" },
+        { q: "What does the sprinkling of blood around the Altar signify?", options: ["The sacrifice was physically imperfect", "The worship to which it points is founded upon blood", "The people are dismissed from the temple", "The priest is washing his hands"], a: "The worship to which it points is founded upon blood" },
+        { q: "The phrase 'It is finished' shows that the Lord destroyed the kingdom of Satan, who was known as what?", options: ["The serpent of the desert", "The king of the air", "The ruler of this world", "The fallen archangel"], a: "The ruler of this world" },
+        { q: "At which station does the Church teach that the Cross is the key to the gate of heaven?", options: ["Before the Immersion Font", "Before the Southern Door", "Before the Icon of St. John the Baptist", "Before the Main Sanctuary"], a: "Before the Main Sanctuary" },
+        { q: "What title did Pope Cyril I give to St. Shenouda?", options: ["The Defender of Orthodoxy", "The Pillar of Faith", "The Prophet Saint", "The Golden Mouthed"], a: "The Prophet Saint" },
+        { q: "What is a 'Healthy' boundary regarding love?", options: ["I do not allow myself to feel this emotion at all", "I fall in love at first sight of someone", "I engage in romantic fantasies within myself", "I understand that love is a conscious choice and prioritize my purity"], a: "I understand that love is a conscious choice and prioritize my purity" },
+        
+        { q: "Which physical action is part of declaring the doctrine of the incarnation when making the sign of the cross?", options: ["Bowing the head exactly three times", "Signing from the left to right shoulder", "Signing from the forehead to the chest", "Kneeling on the ground for prayer"], a: "Signing from the forehead to the chest" },
+        { q: "Which sacrifice symbolizes 'Sins directed towards God'?", options: ["Peace Offering", "Burnt Offering", "Trespass Offering", "Grain Offering"], a: "Trespass Offering" },
+        { q: "Which word on the cross represents Christ acting as a Priest interceding for His crucifiers?", options: ["Father, forgive them", "Woman, behold your son", "It is finished", "I thirst"], a: "Father, forgive them" },
+        { q: "Which saint represents taking up the cross of self-denial and ascetic struggle?", options: ["St. Mark", "St. Gabriel", "St. Anthony", "St. George"], a: "St. Anthony" },
+        { q: "How long did St. Shenouda serve as an abbot for monasteries and convents?", options: ["33 years", "50 years", "118 years", "66 years"], a: "66 years" },
+        { q: "When setting healthy boundaries, what should you consider?", options: ["Politeness and a respectful manner", "Speaking as loudly as possible", "Making sure others feel guilty", "Ignoring the other person completely"], a: "Politeness and a respectful manner" }
+    ];
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let selectedOption = null;
+
+    const questionEl = document.getElementById('question');
+    const optionsEl = document.getElementById('options');
+    const nextBtn = document.getElementById('next-btn');
+    const progressEl = document.getElementById('progress');
+    const quizBlock = document.getElementById('quiz-block');
+    const resultsBlock = document.getElementById('results-block');
+
+    function startQuiz() {
+        currentQuestionIndex = 0;
+        score = 0;
+        quizBlock.style.display = 'block';
+        resultsBlock.style.display = 'none';
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        selectedOption = null;
+        nextBtn.disabled = true;
+        
+        const currentData = questionsData[currentQuestionIndex];
+        questionEl.textContent = currentData.q;
+        progressEl.textContent = `Question ${currentQuestionIndex + 1} / ${questionsData.length}`;
+        
+        optionsEl.innerHTML = '';
+        currentData.options.forEach(optionText => {
+            const btn = document.createElement('button');
+            btn.textContent = optionText;
+            btn.className = 'option-btn';
+            btn.onclick = () => selectOption(btn, optionText, currentData.a);
+            optionsEl.appendChild(btn);
+        });
+    }
+
+    function selectOption(btn, selectedText, correctText) {
+        const allButtons = optionsEl.querySelectorAll('.option-btn');
+        allButtons.forEach(b => b.classList.remove('selected'));
+        
+        btn.classList.add('selected');
+        selectedOption = { selectedText, correctText };
+        nextBtn.disabled = false;
+    }
+
+    nextBtn.onclick = () => {
+        if (selectedOption) {
+            if (selectedOption.selectedText === selectedOption.correctText) {
+                score++;
+            }
+            currentQuestionIndex++;
+            
+            if (currentQuestionIndex < questionsData.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+    };
+
+    function showResults() {
+        quizBlock.style.display = 'none';
+        resultsBlock.style.display = 'block';
+        
+        const totalQuestions = questionsData.length;
+        const incorrectCount = totalQuestions - score;
+        const percentage = Math.round((score / totalQuestions) * 100);
+        
+        document.getElementById('score-percentage').textContent = `${percentage}%`;
+        document.getElementById('correct-count').textContent = score;
+        document.getElementById('incorrect-count').textContent = incorrectCount;
+    }
+
+    startQuiz();
+</script>
+
+</body>
+</html>
