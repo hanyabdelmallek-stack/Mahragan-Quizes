@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>General Qualifying Test - Version 2</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .quiz-container {
+            background: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            max-width: 600px;
+            width: 100%;
+        }
+        h1 {
+            font-size: 24px;
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        .question-header {
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .option-btn {
+            background: #e9ecef;
+            border: 2px solid transparent;
+            padding: 12px 20px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+        }
+        .option-btn:hover {
+            background: #dee2e6;
+        }
+        .option-btn.selected {
+            background: #cfe2ff;
+            border-color: #0d6efd;
+        }
+        .controls {
+            margin-top: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .next-btn {
+            background: #0d6efd;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .next-btn:hover {
+            background: #0b5ed7;
+        }
+        .next-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        .progress {
+            font-size: 14px;
+            color: #6c757d;
+        }
+        .results {
+            text-align: center;
+            display: none;
+        }
+        .results h2 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        .score-percentage {
+            font-size: 54px;
+            font-weight: bold;
+            color: #0d6efd;
+            margin: 15px 0;
+        }
+        .results p {
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: #495057;
+        }
+        .correct-text {
+            color: #198754;
+            font-weight: bold;
+        }
+        .incorrect-text {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .restart-btn {
+            background: #198754;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        .restart-btn:hover {
+            background: #157347;
+        }
+    </style>
+</head>
+<body>
+
+<div class="quiz-container">
+    <div id="quiz-block">
+        <h1>General Qualifying Test - Version 2</h1>
+        <div class="question-header" id="question">Loading question...</div>
+        <div class="options-container" id="options"></div>
+        <div class="controls">
+            <span class="progress" id="progress">Question 1 / 60</span>
+            <button class="next-btn" id="next-btn" disabled>Next Question</button>
+        </div>
+    </div>
+    
+    <div class="results" id="results-block">
+        <h2>Exam Complete!</h2>
+        <div class="score-percentage" id="score-percentage">0%</div>
+        <p>Correct Answers: <span class="correct-text" id="correct-count">0</span> out of 60</p>
+        <p>Incorrect Answers: <span class="incorrect-text" id="incorrect-count">0</span> out of 60</p>
+        <button class="restart-btn" onclick="startQuiz()">Restart Exam</button>
+    </div>
+</div>
+
+<script>
+    const questionsData = [
+        { 
+            q: "What is the primary reason Adam and Eve were not simply forgiven without redemption?", 
+            options: ["A) God wanted to test their patience", "B) Their corrupted nature would continue to produce sin", "C) They refused to apologize to the Lord", "D) The angels demanded a harsh punishment"], 
+            a: "B) Their corrupted nature would continue to produce sin" 
+        },
+        { 
+            q: "What does the person bringing the sacrifice do to transfer their sins onto the animal?", 
+            options: ["A) Sprinkles water on its back", "B) Lays his hand upon its head and confesses", "C) Ties a red cord around its neck", "D) Feeds the animal grain and oil"], 
+            a: "B) Lays his hand upon its head and confesses" 
+        },
+        { 
+            q: "What did Jesus give to humanity from the cross?", 
+            options: ["A) Atonement and redemption", "B) Wealth and earthly power", "C) A new physical kingdom", "D) Freedom from the Roman empire"], 
+            a: "A) Atonement and redemption" 
+        },
+        { 
+            q: "During which three occasions is the Procession of the Cross celebrated?", 
+            options: ["A) The two feasts of the Cross and Palm Sunday", "B) Christmas, Easter, and Pentecost", "C) Good Friday, Bright Saturday, and Easter", "D) Epiphany, Pentecost, and Ascension"], 
+            a: "A) The two feasts of the Cross and Palm Sunday" 
+        },
+        { 
+            q: "What happened to St. Shenouda's hands while he was praying in the monastery?", 
+            options: ["A) They became perfectly still", "B) Many fathers saw them illuminating", "C) They were marked with crosses", "D) They produced a sweet fragrance"], 
+            a: "B) Many fathers saw them illuminating" 
+        },
+        { 
+            q: "Which boundaries were set by God regarding fasting in the Old Testament?", 
+            options: ["A) Fasting every Wednesday and Friday", "B) Not eating from the tree of the knowledge of good and evil", "C) Avoiding meat during the spring harvest", "D) Drinking only water from the river"], 
+            a: "B) Not eating from the tree of the knowledge of good and evil" 
+        },
+        { 
+            q: "Which Old Testament figure is NOT listed as a symbol or type of Christ?", 
+            options: ["A) Abel", "B) David", "C) Melchizedek", "D) Joshua"], 
+            a: "B) David" 
+        },
+        { 
+            q: "Which sacrifice symbolizes bearing our sins?", 
+            options: ["A) The Sin Offering", "B) The Grain Offering", "C) The Peace Offering", "D) The Burnt Offering"], 
+            a: "A) The Sin Offering" 
+        },
+        { 
+            q: "What does the first word 'Father, forgive them' teach us practically?", 
+            options: ["A) To judge others fairly", "B) To isolate from unbelievers", "C) To love our enemies and bless those who curse us", "D) To demand justice for wrongs"], 
+            a: "C) To love our enemies and bless those who curse us" 
+        },
+        { 
+            q: "What does the deacon carry during the procession?", 
+            options: ["A) The Holy Cross decorated with flowers", "B) A golden censer with incense", "C) The Gospel wrapped in silk", "D) A wooden staff with a serpent"], 
+            a: "A) The Holy Cross decorated with flowers" 
+        },
+        { 
+            q: "Who succeeded St. Pigol as the abbot of the monastery around 383 A.D.?", 
+            options: ["A) St. Anthony", "B) St. Shenouda", "C) St. Pachomius", "D) St. Macarius"], 
+            a: "B) St. Shenouda" 
+        },
+        { 
+            q: "What is a 'Distancing' boundary regarding helping others?", 
+            options: ["A) I prioritize others' needs and forget my own", "B) I do not think about serving others", "C) I help others while considering my abilities", "D) I donate all my wealth immediately"], 
+            a: "B) I do not think about serving others" 
+        },
+        { 
+            q: "Why must the Savior be unlimited?", 
+            options: ["A) To travel across the entire world quickly", "B) Because Adam's sin is directed against the infinite God", "C) To perform miracles for everyone to see", "D) Because human kings demanded an infinite ransom"], 
+            a: "B) Because Adam's sin is directed against the infinite God" 
+        },
+        { 
+            q: "The daily shedding of blood of bulls and goats demonstrates what?", 
+            options: ["A) Its ultimate power", "B) The wealth of the priests", "C) Its futility", "D) The obedience of the animals"], 
+            a: "C) Its futility" 
+        },
+        { 
+            q: "How is the right-hand thief described during the crucifixion compared to the disciples?", 
+            options: ["A) He was the only one who defended the Lord", "B) He was louder than the disciples", "C) He was praying silently the whole time", "D) He was asleep until the very end"], 
+            a: "A) He was the only one who defended the Lord" 
+        },
+        { 
+            q: "Where does the Procession of the Cross begin?", 
+            options: ["A) At the Northern Door", "B) Outside the church gates", "C) Inside the altar", "D) At the baptismal font"], 
+            a: "C) Inside the altar" 
+        },
+        { 
+            q: "Which language was St. Shenouda highly educated in and loved?", 
+            options: ["A) Greek", "B) Latin", "C) Coptic", "D) Hebrew"], 
+            a: "C) Coptic" 
+        },
+        { 
+            q: "What is an 'Intrusion' boundary regarding Trends and Fashion?", 
+            options: ["A) I choose what suits me", "B) I must be like everyone else or they will think I'm closed off", "C) I refuse to entertain any new ideas", "D) I only wear traditional clothing"], 
+            a: "B) I must be like everyone else or they will think I'm closed off" 
+        },
+        { 
+            q: "How many times does the sacrifice on the Cross need to be repeated?", 
+            options: ["A) Once every year", "B) It does not need to be repeated", "C) Every time a person sins", "D) Seven times completely"], 
+            a: "B) It does not need to be repeated" 
+        },
+        { 
+            q: "What chapter in Leviticus addresses the Burnt Offering?", 
+            options: ["A) Leviticus 1", "B) Leviticus 3", "C) Leviticus 5", "D) Leviticus 7"], 
+            a: "A) Leviticus 1" 
+        },
+        { 
+            q: "What was St. Paul doing before Christ appeared to him?", 
+            options: ["A) He was a faithful disciple", "B) He persecuted the church", "C) He was a Roman soldier", "D) He was a wealthy merchant"], 
+            a: "B) He persecuted the church" 
+        },
+        { 
+            q: "In the procession, what does the Main Sanctuary symbolize?", 
+            options: ["A) The Garden of Eden", "B) Heaven", "C) The earthly Jerusalem", "D) The mountain of transfiguration"], 
+            a: "B) Heaven" 
+        },
+        { 
+            q: "How did St. Shenouda treat idol worshippers?", 
+            options: ["A) He ignored them completely", "B) He fought them and destroyed their temples", "C) He debated them in the town squares", "D) He paid them to leave the city"], 
+            a: "B) He fought them and destroyed their temples" 
+        },
+        { 
+            q: "How did St. Paul set boundaries in dealing with unbelievers?", 
+            options: ["A) Do not speak to them at all", "B) Do not be unequally yoked together with unbelievers", "C) Always share your food with them", "D) Force them to attend the church services"], 
+            a: "B) Do not be unequally yoked together with unbelievers" 
+        },
+        { 
+            q: "What does signing the cross from the forehead to the chest declare?", 
+            options: ["A) God the Son coming from heaven and being born of St. Mary", "B) The transfer from darkness to light", "C) The authority of the high priests", "D) The suffering and burial of Christ"], 
+            a: "A) God the Son coming from heaven and being born of St. Mary" 
+        },
+        { 
+            q: "The Book of Leviticus is which book of the Torah?", 
+            options: ["A) The first book", "B) The second book", "C) The third book", "D) The fifth book"], 
+            a: "C) The third book" 
+        },
+        { 
+            q: "What does Jesus teaching us to properly comfort the sorrowful correspond to?", 
+            options: ["A) Entrusting His mother to St. John", "B) Forgiving His crucifiers", "C) Promising Paradise to the thief", "D) Saying 'I thirst'"], 
+            a: "A) Entrusting His mother to St. John" 
+        },
+        { 
+            q: "The Gospel reading from Matthew 13 regarding the hidden treasure is read before which icon?", 
+            options: ["A) St. Mark", "B) St. Anthony", "C) Archangel Gabriel", "D) Archangel Michael"], 
+            a: "D) Archangel Michael" 
+        },
+        { 
+            q: "How many monks did St. Shenouda serve as a father to?", 
+            options: ["A) 1,800 monks", "B) 3,000 monks", "C) 4,000 monks", "D) 5,500 monks"], 
+            a: "C) 4,000 monks" 
+        },
+        { 
+            q: "What is an 'Intrusion' boundary regarding a distressed or depressed mood?", 
+            options: ["A) I seek professional guidance", "B) I keep my feelings to myself completely", "C) People must sympathize with me and share in my feelings", "D) I ignore my feelings until they pass"], 
+            a: "C) People must sympathize with me and share in my feelings" 
+        },
+        { 
+            q: "What is the spiritual death caused by the fall?", 
+            options: ["A) Eternal destruction in hell", "B) Corruption entering human nature", "C) Separation from God", "D) Misery and humiliation"], 
+            a: "C) Separation from God" 
+        },
+        { 
+            q: "Which flock animals are used for small livestock sacrifices?", 
+            options: ["A) Bulls and oxen", "B) Sheep and goats", "C) Turtledoves and pigeons", "D) Cows and calves"], 
+            a: "B) Sheep and goats" 
+        },
+        { 
+            q: "Which Psalm contains the words 'My God, My God, why have You forsaken Me?'", 
+            options: ["A) Psalm 22", "B) Psalm 51", "C) Psalm 91", "D) Psalm 119"], 
+            a: "A) Psalm 22" 
+        },
+        { 
+            q: "What cross did the martyrs carry faithfully unto death?", 
+            options: ["A) Sacrifice, endurance, suffering, and persecution", "B) Preaching to the entire world", "C) Building massive churches", "D) Translating the holy scriptures"], 
+            a: "A) Sacrifice, endurance, suffering, and persecution" 
+        },
+        { 
+            q: "How many nuns did St. Shenouda serve as a father to?", 
+            options: ["A) 1,000 nuns", "B) 1,800 nuns", "C) 2,500 nuns", "D) 4,000 nuns"], 
+            a: "B) 1,800 nuns" 
+        },
+        { 
+            q: "What is a 'Healthy' boundary regarding experiencing new things?", 
+            options: ["A) I refuse to entertain any new ideas", "B) I let people's opinions make my decisions", "C) I choose what suits me and stay away from what does not", "D) I always follow what is most popular"], 
+            a: "C) I choose what suits me and stay away from what does not" 
+        },
+        { 
+            q: "Which verse is chanted in the doxology of the Feast of the Cross?", 
+            options: ["A) Hail to you, O Cross, the weapon of victory", "B) Blessed is the wood of the Cross", "C) We worship Your Cross, O Master", "D) Through the Cross, joy has come to all the world"], 
+            a: "A) Hail to you, O Cross, the weapon of victory" 
+        },
+        { 
+            q: "The guilty individual bringing a sacrifice recognizes that the wages of sin is what?", 
+            options: ["A) Hard labor", "B) Death", "C) Exile", "D) Poverty"], 
+            a: "B) Death" 
+        },
+        { 
+            q: "What did Jesus drink when He said 'I thirst'?", 
+            options: ["A) Fresh water from a sponge", "B) Vinegar mixed with gall", "C) Sweet wine", "D) Oil mixed with spices"], 
+            a: "B) Vinegar mixed with gall" 
+        },
+        { 
+            q: "What does the Immersion Font station spiritually mean for believers?", 
+            options: ["A) We are preparing the way of the Lord", "B) We are cleansed from sin and put on the new man", "C) We are entering the narrow gate", "D) We are opening the gates of righteousness"], 
+            a: "B) We are cleansed from sin and put on the new man" 
+        },
+        { 
+            q: "What did St. Shenouda do for the oppressed?", 
+            options: ["A) He gave them all the monastery's gold", "B) He taught them to fight with swords", "C) He accompanied them to leaders to help get their rights", "D) He secretly moved them to a new country"], 
+            a: "C) He accompanied them to leaders to help get their rights" 
+        },
+        { 
+            q: "Why do boundaries help with maturity?", 
+            options: ["A) They allow you to avoid difficult people", "B) They help with the growth of discernment", "C) They guarantee financial success", "D) They make you more popular"], 
+            a: "B) They help with the growth of discernment" 
+        },
+        { 
+            q: "When do we openly confess our faith and boast in the Cross?", 
+            options: ["A) When we make the sign of the Cross", "B) When we light a candle", "C) When we enter the church doors", "D) When we read the Old Testament"], 
+            a: "A) When we make the sign of the Cross" 
+        },
+        { 
+            q: "Who authored the Book of Leviticus?", 
+            options: ["A) The Prophet Moses", "B) King David", "C) The Prophet Isaiah", "D) Aaron the Priest"], 
+            a: "A) The Prophet Moses" 
+        },
+        { 
+            q: "What did Jesus mean by 'I thirst' when speaking to the Samaritan woman?", 
+            options: ["A) He needed water for His journey", "B) He thirsted for her salvation and her people", "C) He wanted to test her generosity", "D) He was fulfilling a prophecy about physical pain"], 
+            a: "B) He thirsted for her salvation and her people" 
+        },
+        { 
+            q: "The Gospel reading of the Lord's entry into Jerusalem is read before which door?", 
+            options: ["A) The Northern Door", "B) The Eastern Door", "C) The Southern Door", "D) The Western Door"], 
+            a: "C) The Southern Door" 
+        },
+        { 
+            q: "When does the Church commemorate the consecration of St. Shenouda's church?", 
+            options: ["A) The 1st day of Koiahk", "B) The 7th day of Epep", "C) The 10th day of Paremhotep", "D) The 17th day of Thoout"], 
+            a: "A) The 1st day of Koiahk" 
+        },
+        { 
+            q: "What happens if a person sets boundaries that are too lenient?", 
+            options: ["A) They distance themselves from everyone", "B) They risk people intruding and overstepping their limit", "C) They become emotionally completely numb", "D) They make perfect, healthy decisions always"], 
+            a: "B) They risk people intruding and overstepping their limit" 
+        },
+        { 
+            q: "What did Christ endure for the joy that was set before Him, according to Hebrews 12:2?", 
+            options: ["A) He endured the cross, despising the shame", "B) He endured the desert for forty days", "C) He endured the betrayal of Judas", "D) He endured the temptations of Satan"], 
+            a: "A) He endured the cross, despising the shame" 
+        },
+        { 
+            q: "What is done with the blood of the sacrifice before anything else?", 
+            options: ["A) It is poured over the head of the sinner", "B) The priest sprinkles it all around the Altar", "C) It is mixed with oil and flour", "D) It is taken outside the camp to be burned"], 
+            a: "B) The priest sprinkles it all around the Altar" 
+        },
+        { 
+            q: "Who was called 'the ruler of this world' that Jesus defeated on the cross?", 
+            options: ["A) Caesar", "B) Herod", "C) Satan", "D) Pilate"], 
+            a: "C) Satan" 
+        },
+        { 
+            q: "Before whose icon is the Gospel about preparing the way of the Lord read?", 
+            options: ["A) St. Anthony", "B) St. Mark", "C) St. John the Baptist", "D) St. Mary"], 
+            a: "C) St. John the Baptist" 
+        },
+        { 
+            q: "When does the Church commemorate St. Shenouda's departure?", 
+            options: ["A) The 1st day of Koiahk", "B) The 7th day of Epep", "C) The 10th day of Paremhotep", "D) The 17th day of Thoout"], 
+            a: "B) The 7th day of Epep" 
+        },
+        { 
+            q: "What happens if a person sets boundaries that are too harsh or closed off?", 
+            options: ["A) They risk distancing themselves from others", "B) They risk people constantly intruding", "C) They gain massive popularity", "D) They build trust much faster"], 
+            a: "A) They risk distancing themselves from others" 
+        },
+        { 
+            q: "What happens to our past sins through the blood of Jesus Christ?", 
+            options: ["A) They are ignored by God entirely", "B) They are forgiven and our hearts are purified", "C) They are given to the priests", "D) They are weighed against our good deeds"], 
+            a: "B) They are forgiven and our hearts are purified" 
+        },
+        { 
+            q: "Which offering is described in Leviticus 2?", 
+            options: ["A) The Burnt Offering", "B) The Peace Offering", "C) The Grain Offering", "D) The Trespass Offering"], 
+            a: "C) The Grain Offering" 
+        },
+        { 
+            q: "What does the word 'Father, into Your hands I commit My spirit' say about Christ's authority?", 
+            options: ["A) He was forced to yield to death", "B) He gave up His spirit by His own authority and will", "C) He asked the angels to take His spirit", "D) He admitted defeat to the rulers"], 
+            a: "B) He gave up His spirit by His own authority and will" 
+        },
+        { 
+            q: "The verse 'There is no speech nor language where their voice is not heard' is chanted before which icon?", 
+            options: ["A) The Archangels", "B) The Prophets", "C) The Apostles", "D) The Martyrs"], 
+            a: "C) The Apostles" 
+        },
+        { 
+            q: "What is St. Shenouda known as regarding communal monasticism?", 
+            options: ["A) The only founder of all monasticism", "B) One of the most effective monks to practice it after St. Pachomius", "C) The monk who ended the communal system entirely", "D) The first person to ever become a monk"], 
+            a: "B) One of the most effective monks to practice it after St. Pachomius" 
+        },
+        { 
+            q: "How does God invite each person to come to Him?", 
+            options: ["A) By forcing His will upon them", "B) Lovingly, without forcing Himself upon anyone", "C) Through strictly enforced legal boundaries", "D) By demanding immediate absolute perfection"], 
+            a: "B) Lovingly, without forcing Himself upon anyone" 
+        }
+    ];
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let selectedOption = null;
+
+    const questionEl = document.getElementById('question');
+    const optionsEl = document.getElementById('options');
+    const nextBtn = document.getElementById('next-btn');
+    const progressEl = document.getElementById('progress');
+    const quizBlock = document.getElementById('quiz-block');
+    const resultsBlock = document.getElementById('results-block');
+
+    function startQuiz() {
+        currentQuestionIndex = 0;
+        score = 0;
+        quizBlock.style.display = 'block';
+        resultsBlock.style.display = 'none';
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        selectedOption = null;
+        nextBtn.disabled = true;
+        
+        const currentData = questionsData[currentQuestionIndex];
+        questionEl.textContent = currentData.q;
+        progressEl.textContent = `Question ${currentQuestionIndex + 1} / ${questionsData.length}`;
+        
+        optionsEl.innerHTML = '';
+        currentData.options.forEach(optionText => {
+            const btn = document.createElement('button');
+            btn.textContent = optionText;
+            btn.className = 'option-btn';
+            btn.onclick = () => selectOption(btn, optionText, currentData.a);
+            optionsEl.appendChild(btn);
+        });
+    }
+
+    function selectOption(btn, selectedText, correctText) {
+        const allButtons = optionsEl.querySelectorAll('.option-btn');
+        allButtons.forEach(b => b.classList.remove('selected'));
+        
+        btn.classList.add('selected');
+        selectedOption = { selectedText, correctText };
+        nextBtn.disabled = false;
+    }
+
+    nextBtn.onclick = () => {
+        if (selectedOption) {
+            if (selectedOption.selectedText === selectedOption.correctText) {
+                score++;
+            }
+            currentQuestionIndex++;
+            
+            if (currentQuestionIndex < questionsData.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+    };
+
+    function showResults() {
+        quizBlock.style.display = 'none';
+        resultsBlock.style.display = 'block';
+        
+        const totalQuestions = questionsData.length;
+        const incorrectCount = totalQuestions - score;
+        const percentage = Math.round((score / totalQuestions) * 100);
+        
+        document.getElementById('score-percentage').textContent = `${percentage}%`;
+        document.getElementById('correct-count').textContent = score;
+        document.getElementById('incorrect-count').textContent = incorrectCount;
+    }
+
+    startQuiz();
+</script>
+
+</body>
+</html>
