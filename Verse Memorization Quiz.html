@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bible Verse Memorization Quiz</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f4f8;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .quiz-container {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-top: 0;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 15px;
+        }
+        .header-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 16px;
+            font-weight: 600;
+            color: #7f8c8d;
+            margin-bottom: 25px;
+        }
+        .question-text {
+            font-size: 20px;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+        .options-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .option-btn {
+            background-color: #f8f9fa;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 16px 20px;
+            font-size: 16px;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #4a5568;
+            font-weight: 500;
+        }
+        .option-btn:hover:not(:disabled) {
+            background-color: #edf2f7;
+            border-color: #cbd5e0;
+        }
+        /* Color feedback classes */
+        .option-btn.correct {
+            background-color: #d4edda !important;
+            border-color: #28a745 !important;
+            color: #155724 !important;
+            font-weight: 700;
+        }
+        .option-btn.incorrect {
+            background-color: #f8d7da !important;
+            border-color: #dc3545 !important;
+            color: #721c24 !important;
+        }
+        .option-btn:disabled {
+            cursor: not-allowed;
+        }
+        .controls {
+            margin-top: 30px;
+            text-align: right;
+        }
+        #next-btn {
+            background-color: #3182ce;
+            color: #ffffff;
+            border: none;
+            padding: 12px 25px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.2s ease;
+            display: none;
+        }
+        #next-btn:hover {
+            background-color: #2b6cb0;
+        }
+        #results-screen {
+            display: none;
+            text-align: center;
+        }
+        .final-score {
+            font-size: 48px;
+            font-weight: bold;
+            color: #2b6cb0;
+            margin: 20px 0;
+        }
+        .restart-btn {
+            background-color: #38a169;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 18px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .restart-btn:hover {
+            background-color: #2f855a;
+        }
+    </style>
+</head>
+<body>
+
+<div class="quiz-container">
+    <div id="quiz-screen">
+        <h1>Verse Memorization Quiz</h1>
+        <div class="header-info">
+            <span id="question-counter">Question 1 / 73</span>
+            <span id="score-counter">Score: 0</span>
+        </div>
+        <div class="question-text" id="question-text">Loading question...</div>
+        <div class="options-grid" id="options-grid"></div>
+        <div class="controls">
+            <button id="next-btn" onclick="loadNextQuestion()">Next Question</button>
+        </div>
+    </div>
+
+    <div id="results-screen">
+        <h1>Quiz Complete!</h1>
+        <p>Here is your final score:</p>
+        <div class="final-score" id="final-score">0 / 73</div>
+        <button class="restart-btn" onclick="location.reload()">Restart Quiz</button>
+    </div>
+</div>
+
+<script>
+    // Comprehensive array of all 73 questions
+    const questions = [
+        { q: "Genesis 2:17 - 'But of the tree of the knowledge of good and evil you shall not eat, for in the day that you eat of it you shall surely ___.'", o: ["die", "perish", "suffer", "fall"], a: "die" },
+        { q: "Genesis 3:15 - 'And I will put enmity between you and the woman, and between your seed and her Seed; He shall bruise your ___, and you shall bruise His heel.'", o: ["head", "body", "tail", "spirit"], a: "head" },
+        { q: "Genesis 3:17-19 - 'In the sweat of your face you shall eat bread Till you return to the ___'", o: ["ground", "earth", "dust", "soil"], a: "ground" },
+        { q: "Deuteronomy 21:23 - 'For he who is hanged is ___ of God.'", o: ["accursed", "blessed", "forsaken", "rejected"], a: "accursed" },
+        { q: "Romans 6:23 - 'For the wages of sin is ___'", o: ["death", "sorrow", "pain", "hell"], a: "death" },
+        { q: "Romans 8:37 - 'Yet in all these things we are more than ___ through Him who loved us.'", o: ["conquerors", "survivors", "victors", "overcomers"], a: "conquerors" },
+        { q: "1 Corinthians 1:18 - 'For the message of the cross is foolishness to those who are perishing, but to us who are being saved it is the ___ of God'", o: ["power", "wisdom", "love", "grace"], a: "power" },
+        { q: "1 Corinthians 3:16 - 'You are the ___ of God, and the Spirit of God dwells in you'", o: ["temple", "church", "house", "body"], a: "temple" },
+        { q: "Galatians 3:13 - 'Christ has redeemed us from the ___ of the law, having become a curse for us...'", o: ["curse", "burden", "weight", "yoke"], a: "curse" },
+        { q: "Galatians 6:14 - 'God forbid that I should ___ except in the cross of our Lord Jesus Christ'", o: ["boast", "glory", "trust", "rejoice"], a: "boast" },
+        { q: "Hebrews 9:22 - 'Without shedding of blood there is no ___.'", o: ["remission", "forgiveness", "salvation", "atonement"], a: "remission" },
+        { q: "Hebrews 10:10 - 'By that will we have been sanctified through the offering of the body of Jesus Christ ___ for all.'", o: ["once", "forever", "finally", "sacrificially"], a: "once" },
+        { q: "Hebrews 12:2 - 'Looking unto Jesus, the author and finisher of our faith, who for the ___ that was set before Him endured the cross...'", o: ["joy", "glory", "hope", "peace"], a: "joy" },
+        { q: "1 Peter 2:24 - 'Who Himself bore our ___ in His own body on the tree'", o: ["sins", "griefs", "sorrows", "burdens"], a: "sins" },
+        { q: "1 John 1:7 - 'The blood of Jesus Christ His Son ___ us from all sin.'", o: ["cleanses", "frees", "saves", "redeems"], a: "cleanses" },
+        { q: "John 6:54 - 'Whoever eats My flesh and drinks My blood has ___'", o: ["eternal life", "salvation", "the Holy Spirit", "peace"], a: "eternal life" },
+        { q: "John 6:56 - 'He who eats My flesh and drinks My blood ___ in Me'", o: ["abides", "lives", "remains", "dwells"], a: "abides" },
+        { q: "Romans 6:23 - 'For the ___ of sin is death'", o: ["wages", "result", "cost", "penalty"], a: "wages" },
+        { q: "Hebrews 9:12 - 'Not with the blood of goats and calves, but with His own blood He entered the Most Holy Place once for all, having obtained eternal ___'", o: ["redemption", "salvation", "glory", "life"], a: "redemption" },
+        { q: "Hebrews 9:22 - 'without the ___ of blood there is no remission'", o: ["shedding", "pouring", "spilling", "offering"], a: "shedding" },
+        { q: "Hebrews 10:4 - 'For it is not possible that the blood of bulls and ___ could take away sins'", o: ["goats", "calves", "lambs", "sheep"], a: "goats" },
+        { q: "1 Peter 2:24 - 'who Himself bore our sins in His own body on the ___'", o: ["tree", "cross", "wood", "hill"], a: "tree" },
+        { q: "1 John 1:7 - 'The ___ of Jesus Christ His Son cleanses us from all sin'", o: ["blood", "grace", "love", "mercy"], a: "blood" },
+        { q: "Psalm 69:21 - 'And for My thirst they gave Me ___ to drink'", o: ["vinegar", "wine", "gall", "water"], a: "vinegar" },
+        { q: "Matthew 25:33 - Referenced generally regarding the repentant thief being placed among the sheep on the ___ hand.", o: ["right", "left", "holy", "blessed"], a: "right" },
+        { q: "Matthew 27:46 / Mark 15:34 - 'My God, My God, why have You ___ Me?'", o: ["forsaken", "left", "abandoned", "forgotten"], a: "forsaken" },
+        { q: "Luke 6:27-28 - 'Love your ___, do good to those who hate you...'", o: ["enemies", "neighbors", "brothers", "friends"], a: "enemies" },
+        { q: "Luke 23:34 - 'Father, ___ them, for they do not know what they do.'", o: ["forgive", "pardon", "spare", "bless"], a: "forgive" },
+        { q: "Luke 23:43 - 'Today you will be with Me in ___.'", o: ["Paradise", "Heaven", "Abraham's bosom", "My Kingdom"], a: "Paradise" },
+        { q: "Luke 23:46 - 'Father, into Your hands I commit My ___.'", o: ["spirit", "soul", "life", "body"], a: "spirit" },
+        { q: "John 10:18 - 'I have power to lay it down, and I have power to ___ it again'", o: ["take", "raise", "lift", "build"], a: "take" },
+        { q: "John 12:31 - '...now the ___ of this world will be cast out.'", o: ["ruler", "prince", "king", "god"], a: "ruler" },
+        { q: "John 14:30 - '...the ruler of this world is coming, and he has ___ in Me'", o: ["nothing", "no part", "no power", "no place"], a: "nothing" },
+        { q: "John 19:26-27 - 'Woman, behold your son!' Then He said to the disciple, 'Behold your ___!'", o: ["mother", "savior", "family", "God"], a: "mother" },
+        { q: "John 19:28 - 'I ___.'", o: ["thirst", "bleed", "suffer", "die"], a: "thirst" },
+        { q: "John 19:30 - 'It is ___.'", o: ["finished", "completed", "done", "fulfilled"], a: "finished" },
+        { q: "Philippians 2:7 - '...took the form of a ___, and coming in the likeness of men'", o: ["bondservant", "slave", "servant", "child"], a: "bondservant" },
+        { q: "1 Timothy 5:8 - 'But if anyone does not provide for his own... he has denied the faith and is worse than an ___.'", o: ["unbeliever", "hypocrite", "enemy", "sinner"], a: "unbeliever" },
+        { q: "Psalm 19:3-4 - 'There is no speech nor ___ where their voice is not heard.'", o: ["language", "tongue", "word", "sound"], a: "language" },
+        { q: "Psalm 29:3-4 - 'The voice of the Lord is over the ___...'", o: ["waters", "mountains", "heavens", "earth"], a: "waters" },
+        { q: "Psalm 34:7-8 - 'The angel of the Lord ___ all around those who fear Him...'", o: ["encamps", "stands", "protects", "guards"], a: "encamps" },
+        { q: "Psalm 52:8-9 - 'But I am like a green ___ tree in the house of God...'", o: ["olive", "fig", "cedar", "palm"], a: "olive" },
+        { q: "Psalm 68:1-12 - 'The Lord gave the word; Great was the ___ of those who proclaimed it...'", o: ["company", "multitude", "number", "army"], a: "company" },
+        { q: "Psalm 68:35, 3 - 'The God of Israel is He who gives ___ and power to His people.'", o: ["strength", "grace", "victory", "peace"], a: "strength" },
+        { q: "Psalm 84:1-2 - 'How lovely is Your ___, O Lord of hosts!'", o: ["tabernacle", "temple", "dwelling place", "sanctuary"], a: "tabernacle" },
+        { q: "Psalm 87:3, 5, 7 - '...And the Most High Himself shall ___ her forever.'", o: ["establish", "protect", "bless", "keep"], a: "establish" },
+        { q: "Psalm 97:11-12 - '___ is sown for the righteous, and gladness for the upright in heart...'", o: ["Light", "Joy", "Peace", "Love"], a: "Light" },
+        { q: "Psalm 103:20-21 - 'Bless the Lord, you His ___, who excel in strength...'", o: ["angels", "saints", "servants", "ministers"], a: "angels" },
+        { q: "Psalm 104:4; 138:1-2 - 'Who makes His angels spirits, His ministers a flame of ___...'", o: ["fire", "light", "glory", "truth"], a: "fire" },
+        { q: "Psalm 118:19-20 - 'Open to me the gates of ___; I will go through them...'", o: ["righteousness", "salvation", "justice", "heaven"], a: "righteousness" },
+        { q: "Matthew 3:13-17 - Referenced as the ___ of our Lord Jesus Christ by St. John the Baptist.", o: ["baptism", "anointing", "blessing", "calling"], a: "baptism" },
+        { q: "Matthew 10:1-8 - 'And as you go, preach, saying The ___ of heaven is at hand.'", o: ["kingdom", "glory", "power", "day"], a: "kingdom" },
+        { q: "Matthew 13:44-52 - Referenced for the ___ concerning the kingdom of heaven.", o: ["parables", "teachings", "sermons", "miracles"], a: "parables" },
+        { q: "Matthew 16:24-28 - 'If anyone desires to come after Me, let him deny himself, and take up his ___, and follow Me...'", o: ["cross", "burden", "yoke", "staff"], a: "cross" },
+        { q: "Matthew 21:1-11 - Referenced as our Lord Jesus Christ's entry into Jerusalem on ___ Sunday.", o: ["Palm", "Holy", "Easter", "Resurrection"], a: "Palm" },
+        { q: "Luke 1:26-38 - Referenced as the ___ of Archangel Gabriel to St. Mary.", o: ["Annunciation", "Visitation", "Apparition", "Message"], a: "Annunciation" },
+        { q: "Luke 1:38-56 - Referenced as the ___ of St. Mary to St. Elizabeth.", o: ["Visitation", "Journey", "Annunciation", "Greeting"], a: "Visitation" },
+        { q: "Luke 7:28-35 - '...there is not a greater ___ than John the Baptist...'", o: ["prophet", "man", "priest", "servant"], a: "prophet" },
+        { q: "Luke 10:1-12 - Referenced as the appointing and sending of the ___ apostles.", o: ["70", "12", "120", "500"], a: "70" },
+        { q: "Luke 13:22-30 - 'Strive to enter through the ___ gate...'", o: ["narrow", "small", "hidden", "straight"], a: "narrow" },
+        { q: "Luke 21:12-19 - '...they will lay their hands on you and ___ you, delivering you up...'", o: ["persecute", "arrest", "judge", "condemn"], a: "persecute" },
+        { q: "John 1:43-51 - '...You shall see heaven open, and the angels of God ___ and descending upon the Son of Man.'", o: ["ascending", "rising", "flying", "moving"], a: "ascending" },
+        { q: "Revelation 12:11 - 'And they overcame him by the blood of the Lamb and by the word of their ___...'", o: ["testimony", "faith", "preaching", "mouth"], a: "testimony" },
+        { q: "Genesis 2:16-17 - '...From every tree of the garden you may eat ___; but of the tree of the knowledge of good and evil you shall not eat...'", o: ["freely", "gladly", "daily", "always"], a: "freely" },
+        { q: "Exodus 20:12-17 - '___ your father and your mother, that your days may be long...'", o: ["Honor", "Obey", "Respect", "Love"], a: "Honor" },
+        { q: "Matthew 26:52 - 'Then Jesus said to him, Put your ___ in its place.'", o: ["sword", "knife", "weapon", "anger"], a: "sword" },
+        { q: "Mark 12:17 - 'Render therefore to ___ the things that are Caesar's, and to God the things that are God's.'", o: ["Caesar", "the Temple", "the priests", "the Romans"], a: "Caesar" },
+        { q: "Luke 8:45 - 'But Jesus said, Somebody ___ Me, for I perceived power going out from Me.'", o: ["touched", "pushed", "grabbed", "called"], a: "touched" },
+        { q: "John 18:23 - 'If I have spoken evil, bear witness of the evil; but if well, why do you ___ Me?'", o: ["strike", "arrest", "mock", "hate"], a: "strike" },
+        { q: "John 20:17 - 'Do not ___ to Me, for I have not yet ascended to My Father.'", o: ["cling", "hold", "speak", "touch"], a: "cling" },
+        { q: "Acts 5:29 - 'We ought to obey ___ rather than men.'", o: ["God", "the Spirit", "the law", "Christ"], a: "God" },
+        { q: "Galatians 1:10 - 'For do I now ___ men, or God? Or do I seek to please men?'", o: ["persuade", "serve", "impress", "follow"], a: "persuade" },
+        { q: "2 Corinthians 6:14 - 'Do not be ___ yoked together with unbelievers.'", o: ["unequally", "unfairly", "wrongly", "closely"], a: "unequally" }
+    ];
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let hasAnswered = false;
+
+    const questionTextElement = document.getElementById('question-text');
+    const optionsGridElement = document.getElementById('options-grid');
+    const nextButton = document.getElementById('next-btn');
+    const questionCounterElement = document.getElementById('question-counter');
+    const scoreCounterElement = document.getElementById('score-counter');
+    const quizScreen = document.getElementById('quiz-screen');
+    const resultsScreen = document.getElementById('results-screen');
+    const finalScoreElement = document.getElementById('final-score');
+
+    // Utility to shuffle options so correct answer isn't always in the same place
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    function loadQuestion() {
+        hasAnswered = false;
+        nextButton.style.display = 'none';
+        
+        const currentQuestion = questions[currentQuestionIndex];
+        questionCounterElement.innerText = `Question ${currentQuestionIndex + 1} / ${questions.length}`;
+        questionTextElement.innerText = currentQuestion.q;
+        optionsGridElement.innerHTML = '';
+
+        const shuffledOptions = shuffleArray([...currentQuestion.o]);
+
+        shuffledOptions.forEach(optionText => {
+            const button = document.createElement('button');
+            button.className = 'option-btn';
+            button.innerText = `• ${optionText}`;
+            
+            // Add click event for answer checking
+            button.onclick = () => checkAnswer(button, optionText, currentQuestion.a);
+            optionsGridElement.appendChild(button);
+        });
+    }
+
+    function checkAnswer(selectedButton, selectedText, correctAnswer) {
+        if (hasAnswered) return;
+        hasAnswered = true;
+
+        const allButtons = optionsGridElement.querySelectorAll('.option-btn');
+        
+        // Disable all buttons once an answer is chosen
+        allButtons.forEach(btn => {
+            btn.disabled = true;
+            // Clean text to compare properly (removing the bullet point added above)
+            const btnText = btn.innerText.replace('• ', '');
+            
+            // Immediately highlight the correct answer in green
+            if (btnText === correctAnswer) {
+                btn.classList.add('correct');
+            }
+        });
+
+        // Check if the user's choice was correct
+        if (selectedText === correctAnswer) {
+            score++;
+            scoreCounterElement.innerText = `Score: ${score}`;
+        } else {
+            // If wrong, highlight their specific choice in red
+            selectedButton.classList.add('incorrect');
+        }
+
+        // Show the next button
+        nextButton.style.display = 'inline-block';
+    }
+
+    function loadNextQuestion() {
+        currentQuestionIndex++;
+        
+        if (currentQuestionIndex < questions.length) {
+            loadQuestion();
+        } else {
+            showResults();
+        }
+    }
+
+    function showResults() {
+        quizScreen.style.display = 'none';
+        resultsScreen.style.display = 'block';
+        finalScoreElement.innerText = `${score} / ${questions.length}`;
+    }
+
+    // Initialize the quiz on load
+    loadQuestion();
+</script>
+
+</body>
+</html>
